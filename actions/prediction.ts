@@ -34,6 +34,10 @@ export async function submitPrediction(input: PredictionInput) {
     throw new Error("Predictions are locked for this match.");
   }
 
+  if (match.homeTeamId === match.awayTeamId) {
+    throw new Error("This match's teams haven't been determined yet.");
+  }
+
   if (data.winnerTeamId !== match.homeTeamId && data.winnerTeamId !== match.awayTeamId) {
     throw new Error("Winner pick must be one of the two teams in this match.");
   }

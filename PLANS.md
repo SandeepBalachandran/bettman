@@ -300,3 +300,31 @@ Follow-up: skeleton loaders were plain gray pulse blocks (not eye-catching); cou
 4. Clean `npx tsc --noEmit` and `npm run build`.
 
 **Status:** ✅ Implemented and verified live (flags, bottom nav markers, leaderboard card classes, and shimmer CSS all confirmed present in real server responses/build output). Visual/browser check of how the bottom nav and shimmer animation actually *look* in motion not done this session (no browser tool used) — recommend a manual look, especially the bottom nav on an actual phone-width viewport.
+
+---
+
+## Milestone 9: TBD Placeholders for Undetermined Knockout Matches
+
+### Context
+
+Only 5 of the tournament's 15 knockout matches had real teams assigned (the rest of Round of 16, plus all of Quarter Finals/Semi Finals/Final, depend on results not yet played). `scripts/sync-matches.ts` was previously *skipping* those 10 matches entirely rather than creating placeholders, so `/fixtures` only ever showed 5 matches instead of the full 15-match bracket.
+
+### Scope
+
+1. Rewrote `scripts/sync-matches.ts`: introduced a sentinel placeholder `Team` record (`externalId: -1`, name `"TBD"`, no flag — real football-data.org team ids are always positive so `-1` can never collide). For any knockout match football-data.org returns with a null `homeTeam`/`awayTeam` (undetermined), the script now upserts a `Match` document using the TBD team for both slots, **keyed by the match's real football-data.org id** (`externalId`) — the same id the match will keep once its participants are decided.
+2. This makes the design self-healing: **re-running `npx tsx scripts/sync-matches.ts WC` after future rounds are played will automatically upsert the same `Match` documents with real teams**, since the `externalId` doesn't change — no manual admin cleanup needed, no duplicate matches created.
+3. Added a `homeTeamId === awayTeamId` guard in `actions/prediction.ts`'s `submitPrediction()` — a TBD match has both team slots pointing at the same placeholder team, so this is a robust server-side way to reject predictions on undetermined matches regardless of how "TBD" happens to be spelled in the UI.
+4. Updated `app/(predictions)/predict/[matchId]/page.tsx` to detect TBD matches (`homeTeam.fifaCode === "TBD"`) and show a friendly "teams haven't been determined yet" message instead of a nonsensical prediction form (both dropdowns would otherwise show the same team twice).
+
+### Key files
+
+- `scripts/sync-matches.ts`, `actions/prediction.ts`, `app/(predictions)/predict/[matchId]/page.tsx`.
+
+### Verification
+
+1. Re-ran the sync script — output confirmed "Synced 5 match(es) with confirmed teams, 10 placeholder (\"TBD\") match(es)", and `Match` collection went from 5 to 15 documents total.
+2. Fetched `/fixtures` live (authenticated) — confirmed all 4 round headings now appear (Round of 16, Quarter Finals, Semi Finals, Final), with "TBD" appearing 40 times across the placeholder team-name slots.
+3. Directly queried the Final match in the DB — confirmed `homeTeamId === awayTeamId` (both point at the TBD placeholder), then fetched `/predict/[thatMatchId]` live and confirmed the friendly "haven't been determined yet" message renders instead of a broken form.
+4. Clean `npx tsc --noEmit` and `npm run build`.
+
+**Status:** ✅ Implemented and verified live. All 15 knockout matches now exist in the DB (5 real + 10 TBD placeholders that will self-update on the next sync run once each round is decided).

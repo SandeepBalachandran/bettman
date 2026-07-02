@@ -29,6 +29,7 @@ export default async function PredictPage({
   }
 
   const isLocked = match.locked || match.kickoffTime.getTime() <= Date.now();
+  const isTbd = match.homeTeam.fifaCode === "TBD" || match.awayTeam.fifaCode === "TBD";
   const existingPrediction = match.predictions[0] ?? null;
 
   return (
@@ -44,7 +45,12 @@ export default async function PredictPage({
         </p>
       </div>
 
-      {isLocked ? (
+      {isTbd ? (
+        <div className="rounded border border-highlight/30 bg-highlight/10 p-4 text-sm text-highlight-foreground dark:text-highlight">
+          The teams for this match haven&apos;t been determined yet — check back once the
+          earlier round finishes.
+        </div>
+      ) : isLocked ? (
         <div className="rounded border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
           Predictions are locked for this match.
           {existingPrediction && (
