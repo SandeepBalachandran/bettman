@@ -109,7 +109,7 @@ export function PredictionForm({
       </fieldset>
 
       {error && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {error}
         </p>
       )}
@@ -117,7 +117,7 @@ export function PredictionForm({
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-accent-foreground disabled:opacity-50"
       >
         {isPending ? "Saving..." : initialWinnerTeamId ? "Update prediction" : "Save prediction"}
       </button>

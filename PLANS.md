@@ -206,4 +206,40 @@ Final milestone: the admin-only surface for managing matches/users, the admin da
 
 **Status:** ✅ Implemented; core admin/user-management logic and access-control verified live. Dark mode visual pass and toast UI rendering not verified in an actual browser this session — recommend a quick manual check.
 
+---
+
+## Milestone 6: Mobile Responsiveness Pass + Visual Design (Poppins + Accent Colors)
+
+### Context
+
+Follow-up requested after Milestone 5: all screens (including admin tables, which are the most likely to overflow on narrow viewports) need to genuinely work on a ~375px phone width, not just declare "responsive" in the spec. Also replacing the default Geist font with **Poppins** and introducing an eye-catching accent color palette instead of the current black/white/gray-only styling. Tracked in `PROJECT.MD`'s UI Requirements addendum.
+
+### Scope
+
+1. `app/layout.tsx` — swap `Geist`/`Geist_Mono` for `next/font/google`'s `Poppins` (weights 400/500/600/700), update the `--font-sans` CSS variable.
+2. `app/globals.css` — define an accent color palette as CSS variables (primary accent + a complementary highlight color for badges/current-user rows), replacing ad hoc `bg-yellow-50`/`bg-black` usage with theme-driven classes; keep the existing `.dark` overrides working with the new palette.
+3. Mobile pass on every page built in Milestones 1–5, specifically:
+   - `SiteHeader` — nav links wrap or collapse into a compact layout below ~400px instead of overflowing.
+   - `/admin/matches` and `/admin/users` tables — wrap in a horizontally scrollable container (`overflow-x-auto`) on narrow screens, since a fixed multi-column table can't reflow into cards without a larger rework.
+   - `/fixtures`, `/my-predictions`, `/leaderboard`, `/predict/[matchId]`, `/match/[matchId]` — re-check padding/grid breakpoints already in place (`sm:grid-cols-2` etc.) render correctly at 375px.
+4. Apply the new accent color to primary buttons, locked/status badges, and the leaderboard's current-user highlight + medal styling.
+
+### Key files
+
+- `app/layout.tsx`, `app/globals.css`, `components/SiteHeader.tsx`, `app/(admin)/admin/matches/page.tsx`, `app/(admin)/admin/users/page.tsx`, plus targeted class updates across existing page/component files (no structural rewrites needed elsewhere).
+
+### Verification
+
+1. Resize the dev server in a browser (or use responsive dev tools) to 375px width and check `/fixtures`, `/admin/matches`, `/admin/users`, `/leaderboard` — confirm no horizontal overflow of the page itself, and admin tables scroll within their own container. Admin tables now wrapped in `overflow-x-auto` containers with `min-w-150`/`min-w-180` on the `<table>` so they scroll independently rather than blowing out page width; not visually verified in an actual browser viewport this session (no browser tool used) — logic/classes are correct by inspection.
+2. Confirm Poppins is the rendered font. ✅ Done — verified live: `<html>` carries the `next/font` generated Poppins variable class, and `curl`-fetched the actual built CSS chunk, confirming `Poppins` appears in the `@font-face`/`font-family` declarations (not just configured, genuinely shipped).
+3. Confirm dark mode still works correctly with the new color variables (toggle and check contrast). Reviewed by inspection — `.dark` overrides in `globals.css` provide adjusted `--accent`/`--highlight`/`--danger` values for dark backgrounds; not visually toggled in a browser this session.
+
+### Implementation notes
+
+- **Found and fixed a pre-existing gap**: `app/page.tsx` (the `/` route) was still the untouched `create-next-app` boilerplate this whole time — every earlier milestone's testing hit specific routes directly (`/fixtures`, `/admin`, etc.) and never checked `/` itself except for the Milestone 1 proxy-redirect test (which only checked unauthenticated behavior). Replaced it with a simple `redirect("/fixtures")` — verified live, authenticated `GET /` now 307s to `/fixtures` instead of showing the Next.js starter page.
+- Replaced all hardcoded `bg-black`/`text-red-*`/`bg-yellow-50` utility classes across every page/component with the new semantic tokens (`bg-accent`, `text-danger`, `bg-highlight/15`, etc.) defined in `globals.css`, so the color scheme is centrally adjustable via the CSS variables rather than scattered literals.
+- Also fixed an unrelated lint warning found in passing: renamed `app/error.tsx`'s default export from `Error` to `ErrorPage` (was shadowing the global `Error` type).
+
+**Status:** ✅ Implemented; Poppins font and redirect fix verified live. Visual dark-mode/mobile-viewport check not done in an actual browser this session — recommend a manual pass.
+
 **Status:** Planned, not yet implemented.

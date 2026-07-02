@@ -42,7 +42,7 @@ export default async function PredictPage({
       </div>
 
       {isLocked ? (
-        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
           Predictions are locked for this match.
           {existingPrediction && (
             <p className="mt-2">

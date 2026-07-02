@@ -32,7 +32,7 @@ export function CountdownBadge({ kickoffTime }: { readonly kickoffTime: string }
   }
 
   return (
-    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-200">
+    <span className="rounded-full bg-highlight/20 px-2 py-0.5 text-xs font-medium text-highlight-foreground dark:text-highlight">
       {label}
     </span>
   );

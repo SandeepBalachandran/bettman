@@ -32,8 +32,8 @@ export default async function FixturesPage() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl space-y-10 p-6">
-      <h1 className="text-2xl font-semibold">Fixtures</h1>
+    <main className="mx-auto max-w-4xl space-y-8 p-4 sm:space-y-10 sm:p-6">
+      <h1 className="text-2xl font-semibold text-accent">Fixtures</h1>
 
       {matches.length === 0 && (
         <p className="text-sm text-gray-500">

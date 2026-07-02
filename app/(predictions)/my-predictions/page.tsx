@@ -34,7 +34,7 @@ export default async function MyPredictionsPage() {
 
   return (
     <main className="mx-auto max-w-2xl space-y-8 p-6">
-      <h1 className="text-2xl font-semibold">My Predictions</h1>
+      <h1 className="text-2xl font-semibold text-accent">My Predictions</h1>
 
       {predictions.length === 0 && (
         <p className="text-sm text-gray-500">
@@ -71,7 +71,7 @@ export default async function MyPredictionsPage() {
                         {prediction.match.homeTeam.name} vs {prediction.match.awayTeam.name}
                       </span>
                       {isLocked && (
-                        <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                        <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">
                           Locked
                         </span>
                       )}

@@ -10,14 +10,18 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="flex items-center justify-between border-b px-4 py-3">
-      <nav className="flex items-center gap-4 text-sm">
-        <Link href="/fixtures" className="font-medium">
+    <header className="flex flex-col gap-2 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+        <Link href="/fixtures" className="font-semibold text-accent">
           Fixtures
         </Link>
         <Link href="/my-predictions">My Predictions</Link>
         <Link href="/leaderboard">Leaderboard</Link>
-        {session.user.role === "ADMIN" && <Link href="/admin">Admin</Link>}
+        {session.user.role === "ADMIN" && (
+          <Link href="/admin" className="font-medium text-highlight">
+            Admin
+          </Link>
+        )}
       </nav>
 
       <div className="flex items-center gap-3">

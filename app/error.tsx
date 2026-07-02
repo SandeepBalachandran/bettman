@@ -1,6 +1,6 @@
 "use client";
 
-export default function Error({
+export default function ErrorPage({
   error,
   reset,
 }: {
@@ -14,7 +14,7 @@ export default function Error({
       <button
         type="button"
         onClick={reset}
-        className="rounded bg-black px-3 py-2 text-sm font-medium text-white"
+        className="rounded bg-accent px-3 py-2 text-sm font-medium text-accent-foreground"
       >
         Try again
       </button>

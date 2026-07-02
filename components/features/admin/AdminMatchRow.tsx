@@ -59,7 +59,7 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
             type="button"
             disabled={isPending}
             onClick={() => run(() => deleteMatch(match.id), "Match deleted")}
-            className="rounded border px-2 py-1 text-xs text-red-600"
+            className="rounded border px-2 py-1 text-xs text-danger"
           >
             Delete
           </button>
@@ -111,7 +111,7 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
                   "Match finished"
                 )
               }
-              className="rounded bg-black px-2 py-1 text-xs text-white disabled:opacity-50"
+              className="rounded bg-accent px-2 py-1 text-xs text-accent-foreground disabled:opacity-50"
             >
               Finish match
             </button>

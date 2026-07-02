@@ -24,7 +24,7 @@ export default async function AdminDashboardPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-8 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-accent">Admin Dashboard</h1>
         <div className="flex gap-3 text-sm underline">
           <Link href="/admin/matches">Manage matches</Link>
           <Link href="/admin/users">Manage users</Link>

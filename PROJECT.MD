@@ -562,6 +562,12 @@ Error states
 
 Use shadcn/ui wherever possible.
 
+## Addendum (added post-Milestone 5)
+
+Every screen — including admin pages (dashboard, matches table, users table) — must be usable on a small phone viewport (~375px wide), not just desktop. Tables must scroll horizontally or reflow on narrow screens rather than overflowing/clipping.
+
+Use an eye-catching accent color palette (not just black/white/gray) for primary actions, badges, and highlights. Use **Poppins** as the site's primary font (replacing the default Geist font).
+
 ---
 
 # Folder Structure

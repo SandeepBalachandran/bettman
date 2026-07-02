@@ -9,37 +9,39 @@ export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({ orderBy: { createdAt: "asc" } });
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 p-6">
-      <h1 className="text-2xl font-semibold">Manage Users</h1>
+    <main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
+      <h1 className="text-2xl font-semibold text-accent">Manage Users</h1>
 
       <CreateUserForm />
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b text-left text-gray-500">
-            <th className="py-2 pr-2">Name</th>
-            <th className="py-2 pr-2">Email</th>
-            <th className="py-2 pr-2">Role</th>
-            <th className="py-2 pr-2">Status</th>
-            <th className="py-2 pr-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <AdminUserRow
-              key={user.id}
-              user={{
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                active: user.active,
-                isSelf: user.id === admin.id,
-              }}
-            />
-          ))}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto rounded border">
+        <table className="w-full min-w-150 text-sm">
+          <thead>
+            <tr className="border-b text-left text-gray-500">
+              <th className="py-2 pr-2 pl-3">Name</th>
+              <th className="py-2 pr-2">Email</th>
+              <th className="py-2 pr-2">Role</th>
+              <th className="py-2 pr-2">Status</th>
+              <th className="py-2 pr-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <AdminUserRow
+                key={user.id}
+                user={{
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
+                  role: user.role,
+                  active: user.active,
+                  isSelf: user.id === admin.id,
+                }}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }

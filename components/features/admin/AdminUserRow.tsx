@@ -75,7 +75,7 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
                 type="button"
                 disabled={isPending}
                 onClick={() => run(() => deleteUser(user.id), "User deleted")}
-                className="rounded border px-2 py-1 text-xs text-red-600"
+                className="rounded border px-2 py-1 text-xs text-danger"
               >
                 Delete
               </button>

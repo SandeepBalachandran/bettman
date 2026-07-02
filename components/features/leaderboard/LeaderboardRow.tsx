@@ -23,7 +23,7 @@ export function LeaderboardRow({
       layout
       layoutId={entry.userId}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className={`border-b ${isCurrentUser ? "bg-yellow-50 font-medium" : ""}`}
+      className={`border-b ${isCurrentUser ? "bg-highlight/15 font-medium" : ""}`}
     >
       <td className="py-2 pr-2">
         {medal ? <span aria-hidden>{medal}</span> : rank}

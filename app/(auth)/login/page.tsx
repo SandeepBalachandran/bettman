@@ -12,9 +12,9 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center p-4">
       <form
         action={formAction}
-        className="w-full max-w-sm space-y-4 rounded-lg border p-6"
+        className="w-full max-w-sm space-y-4 rounded-lg border p-6 shadow-sm"
       >
-        <h1 className="text-xl font-semibold">Sign in</h1>
+        <h1 className="text-xl font-semibold text-accent">Sign in</h1>
 
         <div className="space-y-1">
           <label htmlFor="email" className="text-sm font-medium">
@@ -48,7 +48,7 @@ export default function LoginPage() {
         </label>
 
         {state.error && (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-danger" role="alert">
             {state.error}
           </p>
         )}
@@ -56,7 +56,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-accent-foreground disabled:opacity-50"
         >
           {pending ? "Signing in..." : "Sign in"}
         </button>

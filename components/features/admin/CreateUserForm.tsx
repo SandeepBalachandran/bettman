@@ -29,7 +29,7 @@ export function CreateUserForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2 rounded border p-4">
+    <form onSubmit={handleSubmit} className="flex flex-col flex-wrap items-stretch gap-2 rounded border p-4 sm:flex-row sm:items-end">
       <div>
         <label className="block text-xs text-gray-500">Name</label>
         <input
@@ -63,7 +63,7 @@ export function CreateUserForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded bg-black px-3 py-1.5 text-sm text-white disabled:opacity-50"
+        className="rounded bg-accent px-3 py-1.5 text-sm text-accent-foreground disabled:opacity-50"
       >
         {isPending ? "Creating..." : "Create user"}
       </button>
