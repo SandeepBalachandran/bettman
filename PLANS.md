@@ -328,3 +328,29 @@ Only 5 of the tournament's 15 knockout matches had real teams assigned (the rest
 4. Clean `npx tsc --noEmit` and `npm run build`.
 
 **Status:** ✅ Implemented and verified live. All 15 knockout matches now exist in the DB (5 real + 10 TBD placeholders that will self-update on the next sync run once each round is decided).
+
+---
+
+## Milestone 10: Admin "View All Predictions" Page
+
+### Context
+
+`PROJECT.MD`'s Administrator role explicitly lists "View every prediction" as a capability, but no page for it was ever built across Milestones 1–9 — the admin dashboard only showed aggregate counts, not the actual picks. User asked where to see everyone's predictions; this was a genuine gap, not a discoverability issue.
+
+### Scope
+
+1. New `app/(admin)/admin/predictions/page.tsx` — admin-only (`requireAdmin()`), lists every match grouped by round (same round badge styling as Fixtures/My Predictions), and under each match shows every user's prediction (winner pick + scorer picks) plus which players *haven't* predicted that match yet.
+2. Linked from the Admin Dashboard: added to the top link row ("View all predictions") and made the "Predictions submitted" stat card clickable through to this page.
+
+### Key files
+
+- `app/(admin)/admin/predictions/page.tsx`, `app/(admin)/admin/page.tsx`.
+
+### Verification
+
+1. Confirmed live as admin: `/admin/predictions` returns 200 and renders real prediction data — two actual players (not test/demo accounts) each show their winner pick and scorer picks under the correct match.
+2. Confirmed the "Not yet predicted" list correctly names players who haven't picked a given match yet.
+3. Clean `npx tsc --noEmit` and `npm run build`, `/admin/predictions` registered as a route.
+4. Noted in passing: the demo `bettor@fifu.local` account from Milestone 7 is gone and three real accounts now exist (`sandeep@gmail.com`, `midhun@gmail.com`, `hrishi@gmail.com`) — the app is now being used with real data, so verification for this milestone deliberately read existing real predictions rather than injecting synthetic ones into a real player's account.
+
+**Status:** ✅ Implemented and verified live with real (non-test) prediction data.

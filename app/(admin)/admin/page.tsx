@@ -25,9 +25,10 @@ export default async function AdminDashboardPage() {
     <main className="mx-auto max-w-3xl space-y-8 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold gradient-text">Admin Dashboard</h1>
-        <div className="flex gap-3 text-sm underline">
+        <div className="flex flex-wrap gap-3 text-sm underline">
           <Link href="/admin/matches">Manage matches</Link>
           <Link href="/admin/users">Manage players</Link>
+          <Link href="/admin/predictions">View all predictions</Link>
         </div>
       </div>
 
@@ -38,7 +39,9 @@ export default async function AdminDashboardPage() {
           value={`${finishedCount} / ${matchCount}`}
           color="secondary"
         />
-        <StatCard label="Predictions submitted" value={predictionCount} color="highlight" />
+        <Link href="/admin/predictions">
+          <StatCard label="Predictions submitted" value={predictionCount} color="highlight" />
+        </Link>
         <StatCard label="Prediction %" value={`${predictionPercentage}%`} color="success" />
       </div>
 
