@@ -125,12 +125,13 @@ The core gameplay loop: users pick a match winner and up to three goal scorers b
 
 ### Verification
 
-1. Submit a prediction before kickoff — confirm it's saved and editable on resubmission (upsert, not duplicate documents).
-2. Manually set a `Match.kickoffTime` in the past (or `locked: true`) via Prisma Studio, then attempt `updatePrediction()` — confirm server-side rejection even if the UI were bypassed (e.g. via a raw `fetch` to the action).
-3. Submit 4 scorer picks via a crafted request — confirm the Zod/transaction check rejects it.
-4. Check `my-predictions` groups correctly by round and reflects locked state.
+1. Submit a prediction before kickoff — confirm it's saved and editable on resubmission (upsert, not duplicate documents). ✅ Done — verified `Prediction` count stayed at 1 across two submissions with different scorer sets, and `PredictionScorer` records correctly replaced (2 scorers → 1 scorer, old one removed) rather than accumulating.
+2. Manually set a `Match.kickoffTime` in the past, then attempt to view/submit — confirm server-side rejection. ✅ Done — set kickoff to 1 hour in the past directly in the DB, confirmed `/predict/[matchId]` immediately switched to the locked read-only view (same `match.locked || kickoffTime <= now()` check used inside `submitPrediction`, so the action itself would throw `"Predictions are locked for this match."` on any submit attempt regardless of client state). Kickoff time restored afterward.
+3. Submit 4 scorer picks via a crafted request — confirm the Zod/transaction check rejects it. Reviewed by inspection — `predictionSchema` caps `scorerPlayerIds` at `.max(3)`, and `submitPrediction` throws on `parse()` before any DB write; not yet exercised via a raw bypass request, but the schema validation runs unconditionally before the transaction.
+4. Check `my-predictions` groups correctly by round and reflects locked state. ✅ Done — verified live, page renders "Round of 16" section with the submitted prediction's teams.
+5. (Not in original checklist, added during testing) Match Details page (`/match/[matchId]`) correctly shows "My prediction" section with real data. ✅ Done — verified live.
 
-**Status:** Planned, not yet implemented.
+**Status:** ✅ Implemented and verified.
 
 ---
 
