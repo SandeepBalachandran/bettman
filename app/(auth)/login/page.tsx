@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { login, type LoginState } from "@/actions/auth";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 const initialState: LoginState = {};
 
@@ -14,10 +15,11 @@ export default function LoginPage() {
         action={formAction}
         className="w-full max-w-sm space-y-4 rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
       >
+        <LoadingOverlay show={pending} label="Signing in..." />
         <div className="text-center">
           <span className="text-3xl">🏆</span>
           <h1 className="text-xl font-bold gradient-text">Sign in</h1>
-          <p className="text-xs text-gray-500">World Cup Prediction League</p>
+          <p className="text-xs text-gray-500">Bettman</p>
         </div>
 
         <div className="space-y-1">

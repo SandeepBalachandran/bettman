@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createUser } from "@/actions/user";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export function CreateUserForm() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export function CreateUserForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col flex-wrap items-stretch gap-2 rounded border p-4 sm:flex-row sm:items-end">
+      <LoadingOverlay show={isPending} label="Creating player..." />
       <div>
         <label className="block text-xs text-gray-500">Name</label>
         <input

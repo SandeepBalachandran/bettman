@@ -14,7 +14,7 @@ export async function SiteHeader() {
     <>
       <header className="gradient-header flex items-center justify-between gap-2 px-4 py-3 text-white shadow-md">
         <div className="flex items-center gap-3">
-          <span className="text-lg font-bold tracking-tight">🏆 FIFU</span>
+          <span className="text-lg font-bold tracking-tight">🏆 Bettman</span>
           <nav className="hidden items-center gap-x-4 gap-y-1 text-sm font-medium sm:flex">
             <Link href="/fixtures" className="rounded-full px-3 py-1 transition hover:bg-white/20">
               Fixtures

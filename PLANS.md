@@ -354,3 +354,31 @@ Only 5 of the tournament's 15 knockout matches had real teams assigned (the rest
 4. Noted in passing: the demo `bettor@fifu.local` account from Milestone 7 is gone and three real accounts now exist (`sandeep@gmail.com`, `midhun@gmail.com`, `hrishi@gmail.com`) — the app is now being used with real data, so verification for this milestone deliberately read existing real predictions rather than injecting synthetic ones into a real player's account.
 
 **Status:** ✅ Implemented and verified live with real (non-test) prediction data.
+
+---
+
+## Milestone 11: Blocking Loaders + Toasts on Every Action, App Renamed to "Bettman", Full Squad Rosters
+
+### Context
+
+Three follow-ups: (1) prediction submission and other admin actions only disabled their own button while pending, with no full-screen feedback and inconsistent success toasts; (2) rebranding from "FIFU"/"World Cup Prediction League" to "Bettman"; (3) player dropdowns (prediction form, admin finish-match) only ever showed 3 hand-picked players per team from the manually-maintained `prisma/data/players.json` seed — not the real squad.
+
+### Scope
+
+1. New `components/LoadingOverlay.tsx` — a full-screen blocking overlay (spinner + label, backdrop blur) rendered via `createPortal(..., document.body)` specifically so it's safe to drop inside table rows (`<tr>`) without producing invalid HTML nesting. Added to every action-triggering component: `PredictionForm`, `AdminMatchRow`, `AdminUserRow`, `CreateUserForm`, and the login form.
+2. Added a missing success toast to `PredictionForm` (previously only showed errors); all admin action rows already had both success/error toasts from Milestone 5, just needed the overlay added alongside.
+3. Renamed the app from "FIFU"/"World Cup Prediction League" to **Bettman** — `app/layout.tsx` metadata title, `components/SiteHeader.tsx` wordmark, login page subtitle.
+4. **Full squad rosters**: discovered football-data.org's `Team` endpoint (`/v4/teams/{id}`) — already on the confirmed-available list from Milestone 2 — returns a full ~26-29 player squad (name, position), not just the 3 hand-picked players per team from the manual JSON fixture. Added `fetchTeamSquad()` to `lib/football-data.ts` (same file-cache pattern as match sync) and a new `scripts/sync-squads.ts` that fetches every synced team's real squad and creates any missing `Player` records (deduped by team+name against the existing manual entries, so no duplicates), with a 7-second delay between requests to stay safely under the confirmed 10 req/min rate limit.
+
+### Key files
+
+- `components/LoadingOverlay.tsx`, `components/features/predictions/PredictionForm.tsx`, `components/features/admin/AdminMatchRow.tsx`, `components/features/admin/AdminUserRow.tsx`, `components/features/admin/CreateUserForm.tsx`, `app/(auth)/login/page.tsx`, `app/layout.tsx`, `components/SiteHeader.tsx`, `lib/football-data.ts`, `scripts/sync-squads.ts`.
+
+### Verification
+
+1. Ran `npx tsx scripts/sync-squads.ts` live — output: "244 player(s) created, 16 already existed" across the 10 real (non-TBD) teams. Directly queried the DB afterward: every team now has 26-29 players (was 3), 274 total players.
+2. Signed in live, fetched `/predict/[a real Canada vs Morocco match]` — counted 54 unique `<option>` values in the scorer dropdowns (26 Canada + 28 Morocco = 54), confirming the full squads are genuinely reaching the UI, not just sitting in the DB unused.
+3. Confirmed "Bettman" renders on both `/login` and `/fixtures` (authenticated), and grepped for the old "FIFU" string — none found.
+4. Clean `npx tsc --noEmit` and `npm run build`.
+
+**Status:** ✅ Implemented and verified live (squad counts, dropdown option counts, and branding all confirmed against real server responses). The `LoadingOverlay`'s actual visual appearance/animation wasn't checked in a real browser this session (no browser tool used) — logic and portal-safety are correct by inspection and the `aria-busy`/spinner markup is in place, but worth a quick look.

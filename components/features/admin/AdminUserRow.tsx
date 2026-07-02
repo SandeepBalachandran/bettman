@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deactivateUser, deleteUser, reactivateUser, resetPassword } from "@/actions/user";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export type AdminUserRowData = {
   id: string;
@@ -33,6 +34,7 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
 
   return (
     <tr className="border-b align-top">
+      <LoadingOverlay show={isPending} />
       <td className="py-2 pr-2">{user.name}</td>
       <td className="py-2 pr-2 text-xs">{user.email}</td>
       <td className="py-2 pr-2 text-xs">{user.role}</td>

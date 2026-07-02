@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { deleteMatch, finishMatch, setMatchLocked } from "@/actions/match";
 import { TeamFlag } from "@/components/TeamFlag";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export type AdminMatchRowData = {
   id: string;
@@ -38,6 +39,7 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
 
   return (
     <tr className="border-b align-top">
+      <LoadingOverlay show={isPending} />
       <td className="py-2 pr-2 text-xs">{match.round}</td>
       <td className="py-2 pr-2">
         <span className="flex items-center gap-1.5">

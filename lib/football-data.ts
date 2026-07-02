@@ -29,6 +29,18 @@ type CompetitionMatchesResponse = {
   matches: FootballDataMatch[];
 };
 
+export type FootballDataSquadPlayer = {
+  id: number;
+  name: string;
+  position: string | null;
+};
+
+type TeamResponse = {
+  id: number;
+  name: string;
+  squad: FootballDataSquadPlayer[];
+};
+
 async function readCache<T>(cacheKey: string, ttlMs: number): Promise<T | null> {
   try {
     const filePath = path.join(CACHE_DIR, `${cacheKey}.json`);
@@ -82,4 +94,37 @@ export async function fetchCompetitionMatches(
   await writeCache(cacheKey, data);
 
   return data.matches;
+}
+
+export async function fetchTeamSquad(
+  teamExternalId: number,
+  options: { ttlMs?: number } = {}
+): Promise<FootballDataSquadPlayer[]> {
+  const ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
+  const cacheKey = `team-${teamExternalId}`;
+
+  const cached = await readCache<TeamResponse>(cacheKey, ttlMs);
+  if (cached) {
+    return cached.squad;
+  }
+
+  const token = process.env.FOOTBALL_DATA_API_TOKEN;
+  if (!token) {
+    throw new Error("FOOTBALL_DATA_API_TOKEN is not set in the environment.");
+  }
+
+  const response = await fetch(`${BASE_URL}/teams/${teamExternalId}`, {
+    headers: { "X-Auth-Token": token },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `football-data.org request failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data = (await response.json()) as TeamResponse;
+  await writeCache(cacheKey, data);
+
+  return data.squad ?? [];
 }

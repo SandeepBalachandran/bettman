@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { submitPrediction } from "@/actions/prediction";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export type PredictionFormPlayer = { id: string; name: string };
 export type PredictionFormTeam = {
@@ -62,17 +64,22 @@ export function PredictionForm({
     startTransition(async () => {
       try {
         await submitPrediction({ matchId, winnerTeamId, scorerPlayerIds });
+        toast.success(
+          initialWinnerTeamId ? "Prediction updated!" : "Prediction submitted!"
+        );
         router.refresh();
       } catch (submitError) {
-        setError(
-          submitError instanceof Error ? submitError.message : "Failed to save prediction."
-        );
+        const message =
+          submitError instanceof Error ? submitError.message : "Failed to save prediction.";
+        setError(message);
+        toast.error(message);
       }
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <LoadingOverlay show={isPending} label="Saving your prediction..." />
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">Winner</legend>
         {[homeTeam, awayTeam].map((team) => (

@@ -12,7 +12,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "World Cup Prediction League",
+  title: "Bettman",
   description: "Private knockout-stage prediction game",
 };
 
