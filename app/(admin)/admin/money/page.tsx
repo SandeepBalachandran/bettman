@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/authz";
 import { getAllUsersMoney } from "@/lib/leaderboard-money";
 import { formatMoney } from "@/lib/format-money";
+import { MoneyRulesCard } from "@/components/MoneyRulesCard";
 
 export const metadata = {
   title: "Admin Money Dashboard - Bettman",
@@ -19,14 +20,19 @@ export default async function AdminMoneyPage() {
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold gradient-text">Admin Money Dashboard</h1>
-        <Link href="/admin/settlement" className="text-sm underline">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-bold gradient-text sm:text-2xl">Admin Money Dashboard</h1>
+        <Link
+          href="/admin/settlement"
+          className="rounded-full bg-accent/10 px-3 py-1 text-sm text-accent self-start"
+        >
           View settlement audit
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <MoneyRulesCard />
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <SummaryCard label="Total Players" value={String(players.length)} />
         <SummaryCard label="Total Money Won" value={formatMoney(totalMoneyWon)} color="success" />
         <SummaryCard label="Total Money Lost" value={formatMoney(totalMoneyLost)} color="danger" />
@@ -104,9 +110,9 @@ function SummaryCard({
   readonly color?: keyof typeof SUMMARY_CARD_COLORS;
 }) {
   return (
-    <div className={`card card-interactive border-t-4 p-4 ${SUMMARY_CARD_COLORS[color]}`}>
+    <div className={`card card-interactive border-t-4 p-3 sm:p-4 ${SUMMARY_CARD_COLORS[color]}`}>
       <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-xl font-bold">{value}</p>
+      <p className="text-lg font-bold wrap-break-word sm:text-xl">{value}</p>
     </div>
   );
 }

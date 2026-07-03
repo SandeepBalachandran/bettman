@@ -103,6 +103,14 @@ body {
     box-shadow 0.15s ease;
 }
 
+/* .card's white background would otherwise win the cascade over
+   .gradient-header (both are same-specificity classes; .card is declared
+   later), hiding white title text on a white box in light mode. */
+.gradient-header.card {
+  background: var(--header-gradient);
+  border-color: transparent;
+}
+
 .card-interactive:hover {
   transform: translateY(-2px);
   box-shadow:
@@ -172,6 +180,15 @@ body {
   .responsive-table td {
     display: block;
     width: 100%;
+  }
+  /* Overrides any Tailwind min-w-* utility on the <table> itself — without
+     this, tables set up with a wide min-width for desktop scrolling still
+     force horizontal overflow here even though rows are stacked to blocks. */
+  .responsive-table {
+    min-width: 0 !important;
+  }
+  .table-card:has(.responsive-table) {
+    overflow-x: hidden;
   }
   .responsive-table tbody tr {
     margin: 0.75rem;

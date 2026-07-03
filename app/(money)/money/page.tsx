@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/format-money";
 import { moneyConfig } from "@/lib/money-config";
 import { calculateMatchMoney } from "@/lib/money";
 import { FinancialSummaryWidget } from "@/components/FinancialSummaryWidget";
+import { MoneyRulesCard } from "@/components/MoneyRulesCard";
 
 export const metadata = {
   title: "Money Dashboard - Bettman",
@@ -86,6 +87,8 @@ export default async function MoneyPage() {
         <h1 className="gradient-text text-3xl font-bold">Money Dashboard</h1>
         <p className="text-muted-foreground">Track your financial performance</p>
       </div>
+
+      <MoneyRulesCard />
 
       {/* Financial Summary */}
       <FinancialSummaryWidget

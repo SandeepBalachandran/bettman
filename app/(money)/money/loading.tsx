@@ -9,7 +9,7 @@ export default function MoneyLoading() {
       </div>
 
       {/* Financial Summary Skeleton */}
-      <div className="grid grid-cols-3 gap-4 rounded-lg border border-accent/20 bg-accent/5 p-4">
+      <div className="grid grid-cols-1 gap-4 rounded-2xl bg-accent/5 p-4 sm:grid-cols-3">
         <div className="text-center">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="mx-auto mt-2 h-8 w-20" />
@@ -27,7 +27,7 @@ export default function MoneyLoading() {
       {/* Stats Skeletons */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg border border-accent/20 bg-accent/5 p-4">
+          <div key={i} className="rounded-2xl bg-accent/5 p-4">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="mt-2 h-8 w-24" />
           </div>
@@ -35,9 +35,9 @@ export default function MoneyLoading() {
       </div>
 
       {/* Pending Exposure Skeleton */}
-      <div className="rounded-lg border border-orange-500/20 bg-orange-50 p-4 dark:bg-orange-950/20">
+      <div className="rounded-2xl bg-highlight/10 p-4">
         <Skeleton className="h-6 w-40" />
-        <div className="mt-3 grid grid-cols-3 gap-4">
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <div key={i}>
               <Skeleton className="h-4 w-24" />
@@ -52,7 +52,7 @@ export default function MoneyLoading() {
         <Skeleton className="h-6 w-48" />
         <div className="mt-4 space-y-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-12 w-full rounded-lg" />
+            <Skeleton key={i} className="h-12 w-full rounded-2xl" />
           ))}
         </div>
       </div>

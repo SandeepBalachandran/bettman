@@ -558,4 +558,15 @@ The app functioned correctly through Milestone 12b but the visual design was inc
 4. Manual/visual check in an actual mobile-width browser viewport (admin tables collapsing to cards, touch target sizes, safe-area bottom nav clearance) — **not done this session** (no browser tool used) — recommend a manual pass, especially the `.responsive-table` stacking behavior on `/admin/matches` and `/admin/money`.
 
 **Status:** ✅ Implemented; `tsc`, `eslint`, and `npm run build` all clean. Live browser/visual verification not performed this session — recommend a manual pass across a phone-width viewport in both light and dark mode.
+
+### Follow-up: mobile money dashboard fix, borderless skeletons, in-app money rules
+
+After the initial pass, three more issues came up:
+
+1. **Root cause of remaining mobile overflow on `/admin/money` (and every other admin table)**: the `<table>` elements carry a Tailwind `min-w-*` utility (e.g. `min-w-180`) for desktop horizontal scrolling. `.responsive-table`'s `@media (max-width: 640px)` block collapses rows to `display: block`, but the `min-width` utility still applied to the table element itself, so it kept forcing the table wider than the viewport even though rows were visually stacked — the actual bug behind "money dashboard needs more mobile work." Fixed once, in `app/globals.css`, by adding `.responsive-table { min-width: 0 !important; }` inside the mobile media query — fixes all 4 admin tables (`matches`, `users`, `money`, `settlement`) at the same time, not just money.
+2. Also on `/admin/money`: the header row (`title` + `View settlement audit` link) now stacks vertically below `sm`, summary-card grid drops to `lg:grid-cols-4` (was `sm:grid-cols-4`, too cramped at tablet widths), and card values wrap instead of overflowing (`wrap-break-word`, smaller `text-lg` on mobile).
+3. **Borders removed from all `loading.tsx` skeleton placeholders** (`admin`, `fixtures`, `leaderboard`, `money`, `my-predictions`) — skeleton containers previously used `border border-accent/20`/`border-l-4`/etc., which looked odd combined with the shimmer animation; replaced with borderless tinted (`bg-accent/5` etc.) rounded-2xl blocks to match the new card language minus the outline.
+4. **New `components/MoneyRulesCard.tsx`** — a collapsible (`<details>`) card reading live values from `lib/money-config.ts` (`moneyConfig.moneyPerCorrectWinner`, `.moneyPerCorrectScorer`, `.moneyPerIncorrectScorer`, `.maxMoneyPerMatch`, `.maxLossPerMatch`) so the win/loss rules are never hardcoded and always match whatever `.env` config is active. Placed at the top of both `/money` (user dashboard) and `/admin/money` (admin dashboard), above the summary cards.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .` (same 2 pre-existing unrelated errors as before, none new), and `npm run build` all clean, all 15 routes compile. Manual phone-viewport check still not performed this session — recommend confirming the `.responsive-table` fix visually on `/admin/money` and `/admin/matches` at a real ~375px width.
 - Invalid `.env` config is rejected on app startup (validation in `lib/money-config.ts`).

@@ -101,7 +101,7 @@ function StatCard({
   return (
     <div className={`card card-interactive h-full border-t-4 p-4 ${STAT_CARD_COLORS[color]}`}>
       <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-xl font-bold break-words">{value}</p>
+      <p className="text-xl font-bold wrap-break-word">{value}</p>
     </div>
   );
 }

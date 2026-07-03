@@ -6,7 +6,7 @@ export default function Loading() {
       <Skeleton className="h-8 w-56" />
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="space-y-2 rounded-lg border-t-4 border-accent/30 p-4">
+          <div key={index} className="space-y-2 rounded-2xl bg-accent/5 p-4">
             <Skeleton className="h-3 w-16" />
             <Skeleton className="h-6 w-12" />
           </div>
