@@ -34,7 +34,7 @@ export default async function PredictPage({
 
   return (
     <main className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
-      <div className="gradient-header rounded-xl p-5 text-white shadow-md">
+      <div className="gradient-header card rounded-2xl border-0 p-5 text-white shadow-xl">
         <h1 className="flex items-center justify-center gap-2 text-lg font-bold">
           <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={24} />
           {match.homeTeam.name} vs {match.awayTeam.name}
@@ -46,12 +46,12 @@ export default async function PredictPage({
       </div>
 
       {isTbd ? (
-        <div className="rounded border border-highlight/30 bg-highlight/10 p-4 text-sm text-highlight-foreground dark:text-highlight">
+        <div className="card border-highlight/30 bg-highlight/10 p-4 text-sm text-highlight-foreground dark:text-highlight">
           The teams for this match haven&apos;t been determined yet — check back once the
           earlier round finishes.
         </div>
       ) : isLocked ? (
-        <div className="rounded border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
+        <div className="card border-danger/30 bg-danger/10 p-4 text-sm text-danger">
           Predictions are locked for this match.
           {existingPrediction && (
             <p className="mt-2">

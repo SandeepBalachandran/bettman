@@ -13,7 +13,7 @@ export default function LoginPage() {
     <main className="gradient-header flex min-h-screen items-center justify-center p-4">
       <form
         action={formAction}
-        className="w-full max-w-sm space-y-4 rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-900"
+        className="card w-full max-w-sm space-y-4 p-6 shadow-2xl"
       >
         <LoadingOverlay show={pending} label="Signing in..." />
         <div className="text-center">
@@ -31,7 +31,7 @@ export default function LoginPage() {
             name="email"
             type="email"
             required
-            className="w-full rounded border px-3 py-2 text-sm"
+            className="input-pill w-full"
           />
         </div>
 
@@ -44,7 +44,7 @@ export default function LoginPage() {
             name="password"
             type="password"
             required
-            className="w-full rounded border px-3 py-2 text-sm"
+            className="input-pill w-full"
           />
         </div>
 
@@ -62,7 +62,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="gradient-header w-full rounded px-3 py-2 text-sm font-semibold text-white shadow disabled:opacity-50"
+          className="gradient-header btn w-full py-2.5 text-sm font-semibold text-white"
         >
           {pending ? "Signing in..." : "Sign in"}
         </button>

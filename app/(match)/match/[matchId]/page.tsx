@@ -51,7 +51,7 @@ export default async function MatchDetailsPage({
     <main className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
       <PerfectPredictionConfetti isPerfect={points?.total === 60} />
 
-      <div className="gradient-header rounded-xl p-5 text-white shadow-md">
+      <div className="gradient-header card rounded-2xl border-0 p-5 text-white shadow-xl">
         <div className="flex items-center justify-center gap-3 text-lg font-bold">
           <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={28} />
           <span>{match.homeTeam.name}</span>
@@ -65,7 +65,7 @@ export default async function MatchDetailsPage({
       </div>
 
       {isFinished && (
-        <section className="space-y-1 rounded-lg border-l-4 border-success bg-white p-4 text-sm shadow-sm dark:bg-white/5">
+        <section className="card space-y-1 border-l-4 border-success p-4 text-sm">
           <p className="font-semibold text-success">
             Winner: {match.winnerTeam?.name ?? "—"}
           </p>
@@ -78,7 +78,7 @@ export default async function MatchDetailsPage({
         </section>
       )}
 
-      <section className="space-y-1 rounded-lg border-l-4 border-secondary bg-white p-4 text-sm shadow-sm dark:bg-white/5">
+      <section className="card space-y-1 border-l-4 border-secondary p-4 text-sm">
         <p className="font-semibold text-secondary">My prediction</p>
         {myPrediction ? (
           <>
@@ -109,7 +109,7 @@ export default async function MatchDetailsPage({
       {!isFinished && (
         <Link
           href={`/predict/${match.id}`}
-          className="gradient-header block rounded-lg py-2 text-center text-sm font-semibold text-white shadow"
+          className="gradient-header btn block py-2.5 text-center text-sm font-semibold text-white"
         >
           Go to prediction page
         </Link>

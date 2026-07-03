@@ -14,15 +14,15 @@ export default async function AdminUsersPage() {
 
       <CreateUserForm />
 
-      <div className="overflow-x-auto rounded border">
-        <table className="w-full min-w-150 text-sm">
+      <div className="table-card overflow-x-auto">
+        <table className="responsive-table w-full min-w-150 text-sm">
           <thead>
-            <tr className="border-b text-left text-gray-500">
-              <th className="py-2 pr-2 pl-3">Name</th>
-              <th className="py-2 pr-2">Email</th>
-              <th className="py-2 pr-2">Role</th>
-              <th className="py-2 pr-2">Status</th>
-              <th className="py-2 pr-3">Actions</th>
+            <tr className="text-left">
+              <th className="py-2.5 pr-2 pl-3">Name</th>
+              <th className="py-2.5 pr-2">Email</th>
+              <th className="py-2.5 pr-2">Role</th>
+              <th className="py-2.5 pr-2">Status</th>
+              <th className="py-2.5 pr-3">Actions</th>
             </tr>
           </thead>
           <tbody>

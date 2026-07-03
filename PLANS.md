@@ -382,3 +382,180 @@ Three follow-ups: (1) prediction submission and other admin actions only disable
 4. Clean `npx tsc --noEmit` and `npm run build`.
 
 **Status:** ✅ Implemented and verified live (squad counts, dropdown option counts, and branding all confirmed against real server responses). The `LoadingOverlay`'s actual visual appearance/animation wasn't checked in a real browser this session (no browser tool used) — logic and portal-safety are correct by inspection and the `aria-busy`/spinner markup is in place, but worth a quick look.
+
+---
+
+## Milestone 12a: Money Calculation Core + User Money Dashboard (MVP)
+
+### Context
+
+The application already calculates prediction points dynamically (Milestone 4). This milestone extends that with a parallel financial calculation system. **All money amounts are configurable via `.env`** — the system supports any currency, any point values, and any scoring rules without code changes. Money is never stored — only calculated on read, just like points. Milestones 12a (core) and 12b (admin tools) split the work into digestible chunks.
+
+### Scope
+
+1. **`.env` configuration additions**:
+   - `CURRENCY_SYMBOL=₹` (or `$`, `€`, etc.)
+   - `MONEY_PER_CORRECT_WINNER=30` (predicted winner correctly)
+   - `MONEY_PER_CORRECT_SCORER=10` (predicted scorer scored)
+   - `MONEY_PER_INCORRECT_SCORER=-5` (predicted scorer didn't score)
+   - These feed into `lib/money-config.ts` (exported constant object) so the app reads them once on boot, avoiding `.env` lookups in tight loops.
+
+2. **`lib/money-config.ts`** — reads and validates `.env` money config on startup; exports `{ currencySymbol, moneyPerCorrectWinner, moneyPerCorrectScorer, moneyPerIncorrectScorer, maxMoneyPerMatch, maxLossPerMatch }` (the last two are derived from the first three). Throw on invalid config (negative amounts, etc.) so deployment catches mistakes early.
+
+3. **`lib/money.ts`** — pure function `calculateMatchMoney(prediction, match, actualScorerPlayerIds, config)` using the config object (passed in, not global) to calculate returns `{ winnerMoney, scorerMoney, total }`. Mirrors `calculateMatchPoints()` logic exactly but with configurable amounts.
+
+4. **`lib/leaderboard-money.ts`** — `getUserMoney(userId)`: loads all finished matches + user's predictions, runs `calculateMatchMoney` per match with config, sums into `{ currentBalance, moneyWon, moneyLost, pendingExposure: { matchesRemaining, maxWin, maxLoss } }`. Runs on every request (no caching needed at this scale).
+
+5. **`app/(money)/money/page.tsx`** — user's personal money dashboard:
+   - **Financial Summary card**: Current Balance (₹105), Money Won (₹180), Money Lost (₹75), Completed Matches (8), Pending Matches (7).
+   - **Match-by-match history**: card-based layout (mobile-first, like leaderboard redesign in M8) listing finished matches with money earned/lost (color-coded green/red).
+   - **Stats row**: Highest Winning Match, Worst Match, Average Per Match.
+   - **Pending Exposure card**: Remaining Matches (5), Maximum Possible Win, Maximum Possible Loss (amounts computed from config).
+
+6. **Enhanced `app/(leaderboard)/leaderboard/page.tsx`** — add a "Money Balance" column showing each player's calculated balance (sorted by currency symbol from config); sort still by points, money is informational only.
+
+7. **`components/FinancialSummaryWidget.tsx`** — small 3-stat card (Current Balance, Money Won, Money Lost) reusable in admin dashboards, uses the configured currency symbol.
+
+8. **`lib/format-money.ts`** — simple utility `formatMoney(amount, config)` → `"₹105"` or `"$105"` depending on `config.currencySymbol`. Used everywhere money displays.
+
+9. **.env.example** — documents the new money config vars with defaults (₹30/₹10/-₹5) and comments explaining the meaning.
+
+### Key design constraints
+
+- **Configuration-first**: All money amounts live in `.env`, not code. Changing the scoring from ₹30/₹10/-₹5 to ₹50/₹15/-₹10 requires only `.env` edit + restart, no code deploy.
+- **Config validation**: Invalid config (e.g., negative amounts, backward incentives) is caught on app startup, not runtime.
+- **Calculation logic is pure**: `calculateMatchMoney(prediction, match, actualScorerPlayerIds, config)` takes config as a parameter, stays testable and doesn't rely on global state.
+- **Money calculation logic must mirror points logic** — if the scoring rules change, both must be updated together (both read from `.env` equivalents, if points were also configurable; for now, points are hardcoded in `lib/scoring.ts` and money is configurable, so they're independently tuneable).
+- **All financial values are calculated dynamically**, never stored.
+- **Pending (unfinished) matches never affect current balance** — only completed matches count.
+- **Currency symbol is global** — set once in `.env`, used everywhere via `config.currencySymbol`.
+
+### Key files
+
+- `.env`, `.env.example`, `lib/money-config.ts`, `lib/money.ts`, `lib/leaderboard-money.ts`, `app/(money)/money/page.tsx`, `app/(leaderboard)/leaderboard/page.tsx`, `components/FinancialSummaryWidget.tsx`, `lib/format-money.ts`.
+
+### Verification
+
+1. Set `.env` to `MONEY_PER_CORRECT_WINNER=50 MONEY_PER_CORRECT_SCORER=15 MONEY_PER_INCORRECT_SCORER=-10`, restart the app, and load `/money` — confirm all calculations use the new amounts (not the defaults), and max/min displays reflect the new config.
+2. Load `/money` as a logged-in user with default `.env` config — confirm all three financial summary cards populate with real calculated values.
+3. Mark a seeded match finished with a winner and 1 actual scorer; submit a prediction (e.g., correct winner, 2 correct + 1 incorrect scorers); reload `/money` — confirm calculated balance matches expectation (default config: +₹30 winner + (+₹10 -₹5 -₹5) scorers = +₹30 total per match).
+4. Confirm `/leaderboard` now shows a "Money Balance" column with the configured currency symbol.
+5. Change `CURRENCY_SYMBOL=$` and restart — confirm all money displays switch to `$` (e.g., `$105` instead of `₹105`).
+6. Try invalid config (e.g., `MONEY_PER_CORRECT_WINNER=-30`); app should refuse to start or warn loudly.
+7. Clean `npx tsc --noEmit` and `npm run build`.
+
+**Status:** *To be implemented.*
+
+---
+
+## Milestone 12b: Admin Money Dashboard & Settlement Audit
+
+### Context
+
+Builds on 12a. The administrator needs to see every player's financial position and verify that all calculations are correct. Inherits configuration flexibility from 12a.
+
+### Scope
+
+1. **`app/(admin)/admin/money/page.tsx`** — admin-only (`requireAdmin()`):
+   - **Summary cards at top**: Total Players (3), Total Money Won, Total Money Lost, Tournament Net (uses configured currency symbol).
+   - **Player financial table**: rank by money balance descending; columns: Player, Money Won, Money Lost, Current Balance, Pending Max Win, Pending Max Loss.
+   - Reuses `getUserMoney()` from 12a across all users.
+
+2. **`app/(admin)/admin/settlement/page.tsx`** — complete match-by-match audit:
+   - **Settlement table**: Player, Match, Money Earned/Lost (color-coded green/red, currency formatted).
+   - Shows every `prediction + finished match` combination so the admin can verify calculations by hand if needed.
+
+3. **`lib/money.ts` addition** — `getSettlementLog()`: returns array of `{ userId, userName, matchId, matchName, amount }` for all finished matches, one row per user per match.
+
+4. Linked from Admin Dashboard: added to the top link row ("View finances") and the "Payments" stat card clickable through to `/admin/money`.
+
+### Key files
+
+- `app/(admin)/admin/money/page.tsx`, `app/(admin)/admin/settlement/page.tsx`, `lib/money.ts` (add `getSettlementLog()`), `app/(admin)/admin/page.tsx`.
+
+### Verification
+
+1. Load `/admin/money` as admin — confirm it shows real players with calculated balances using the configured currency symbol, and the summary cards sum correctly.
+2. Load `/admin/settlement` — confirm every finished match's outcomes for every player are listed, amounts are formatted with the correct currency, and spot-check 2-3 rows against hand-computed math.
+3. Change `.env` config amounts, restart, reload `/admin/money` — confirm all displayed balances recalculate with the new amounts (not cached).
+4. Clean `npx tsc --noEmit` and `npm run build`.
+
+**Status:** ✅ Implemented; `npx tsc --noEmit`, `eslint`, and `npm run build` all clean. Live browser verification of `/admin/money` and `/admin/settlement` (real balances, currency formatting, config-change recalculation, spot-checked math) not done in an actual browser this session — recommend a manual pass.
+
+---
+
+## Financial Configuration (shared across 12a & 12b)
+
+All money amounts are stored in `.env` and loaded via `lib/money-config.ts` on app startup.
+
+| Config Var | Default | Meaning |
+|------------|---------|---------|
+| `CURRENCY_SYMBOL` | `₹` | Display symbol for all money amounts |
+| `MONEY_PER_CORRECT_WINNER` | `30` | Money earned for correctly predicting the match winner |
+| `MONEY_PER_CORRECT_SCORER` | `10` | Money earned for each correctly predicted goal scorer |
+| `MONEY_PER_INCORRECT_SCORER` | `-5` | Money lost for each incorrectly predicted goal scorer |
+
+**Derived limits** (computed from the above):
+- Max money per match: `MONEY_PER_CORRECT_WINNER + (3 × MONEY_PER_CORRECT_SCORER)` = `30 + 30 = 60` (with defaults)
+- Max loss per match: `3 × MONEY_PER_INCORRECT_SCORER` = `3 × -5 = -15` (with defaults)
+
+To change scoring (e.g., tripling stakes to ₹90/₹30/-₹15):
+1. Edit `.env`: `MONEY_PER_CORRECT_WINNER=90 MONEY_PER_CORRECT_SCORER=30 MONEY_PER_INCORRECT_SCORER=-15`
+2. Restart the app.
+3. All dashboards and calculations automatically use the new amounts — no code changes.
+
+---
+
+## Business Rules (shared across 12a & 12b)
+
+- Money and points are independent; leaderboard ranks by points, money is informational.
+- All financial calculations use the configured amounts from `.env` — no hardcoded values in code.
+- Users see only their own `/money` dashboard; admins see `/admin/money` (all players) and `/admin/settlement` (audit log).
+- Regular players cannot access admin money pages — `requireAdmin()` guards them.
+- Money is calculated dynamically, never stored in the database.
+- Pending matches never affect balance — only finished matches count.
+
+---
+
+## Milestone 13: UI Polish — Mobile-Friendly Layout, Curvy/Shadowed Design System
+
+### Context
+
+The app functioned correctly through Milestone 12b but the visual design was inconsistent: admin tables used bare `border`/`rounded` HTML tables that overflowed horizontally on phones, and cards/buttons across pages used ad-hoc `rounded-lg border shadow-sm` combinations with no shared vocabulary. User asked to make every screen mobile-friendly and to make tables (and everything else) "more curvy, shadows, polymorphism [neumorphism]."
+
+### Scope
+
+1. **Design system in `app/globals.css`** (new, additive — no existing tokens changed):
+   - `.card` / `.card-interactive` — rounded-2xl, soft dual-layer shadow (tighter contact shadow + diffuse ambient shadow), subtle border, light/dark variants, hover lift on interactive cards.
+   - `.table-card` — rounded-2xl overflow-hidden wrapper for `<table>`s: shadow, tinted uppercase header row, hover-highlighted rows, hairline row dividers.
+   - `.responsive-table` — CSS-only technique (`@media max-width: 640px`) that collapses each `<tr>` into its own rounded card with `data-label`-driven pseudo-headers (`td::before { content: attr(data-label) }`), so table data reads as label/value pairs on phones instead of overflowing horizontally.
+   - `.btn` / `.btn-primary` / `.btn-outline` / `.btn-danger` — unified pill-shaped buttons with press/hover feedback, replacing one-off `rounded border px-2 py-1` buttons scattered across admin components.
+   - `.input-pill` — unified rounded input/select style with focus ring.
+
+2. **Applied across all screens:**
+   - Admin tables (`/admin/matches`, `/admin/users`, `/admin/money`, `/admin/settlement`) — wrapped in `.table-card`, made `.responsive-table` (stacks to cards on mobile), all action buttons/inputs switched to `.btn*`/`.input-pill`.
+   - Admin dashboard (`/admin`) — stat cards and the leaderboard list switched to `.card`; top link row restyled as pill links; responsive `flex-col`/`grid-cols-2` on mobile.
+   - `MatchCard`, `LeaderboardRow`, admin predictions match cards, my-predictions rows, `FinancialSummaryWidget`, money-page stat boxes and pending-exposure box, login form — all switched to `.card`/`.card-interactive`.
+   - Buttons/inputs across `CreateUserForm`, `PredictionForm`, login page, `error.tsx`, `SyncMatchesButton` switched to `.btn*`/`.input-pill`.
+   - Fixed 3 pre-existing `no-explicit-any` lint errors in `lib/leaderboard-money.ts` and 3 missing `htmlFor`/`id` label associations in `CreateUserForm` while touching those files.
+
+3. **Not changed (already fine or out of scope):** `BottomNav`/`SiteHeader` (already had a working mobile bottom-nav + safe-area padding), `app/page.tsx`, `not-found.tsx`, `unauthorized.tsx` (trivial, low-traffic). Two pre-existing, unrelated ESLint errors surfaced by a full-repo lint (`Date.now()` called during render in `predict/[matchId]/page.tsx`, `setState` in a `useEffect` in `ThemeToggle.tsx`) were **not** introduced by this change (confirmed via `git diff`) and were left alone as out of scope.
+
+### Key files
+
+- `app/globals.css` (new design-system classes)
+- `app/(admin)/admin/{matches,users,money,settlement,page}.tsx`
+- `components/features/admin/{AdminMatchRow,AdminUserRow,CreateUserForm,SyncMatchesButton}.tsx`
+- `components/features/{matches/MatchCard,leaderboard/LeaderboardRow,predictions/PredictionForm}.tsx`
+- `components/FinancialSummaryWidget.tsx`
+- `app/(money)/money/page.tsx`, `app/(auth)/login/page.tsx`, `app/(predictions)/{my-predictions,predict/[matchId]}/page.tsx`, `app/(match)/match/[matchId]/page.tsx`, `app/error.tsx`
+
+### Verification
+
+1. `npx tsc --noEmit` — clean.
+2. `npm run build` — clean, all 15 routes still compile.
+3. `npx eslint .` — no new errors (2 pre-existing, unrelated errors confirmed via `git diff` to predate this change).
+4. Manual/visual check in an actual mobile-width browser viewport (admin tables collapsing to cards, touch target sizes, safe-area bottom nav clearance) — **not done this session** (no browser tool used) — recommend a manual pass, especially the `.responsive-table` stacking behavior on `/admin/matches` and `/admin/money`.
+
+**Status:** ✅ Implemented; `tsc`, `eslint`, and `npm run build` all clean. Live browser/visual verification not performed this session — recommend a manual pass across a phone-width viewport in both light and dark mode.
+- Invalid `.env` config is rejected on app startup (validation in `lib/money-config.ts`).

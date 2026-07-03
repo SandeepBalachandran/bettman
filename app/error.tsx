@@ -14,7 +14,7 @@ export default function ErrorPage({
       <button
         type="button"
         onClick={reset}
-        className="rounded bg-accent px-3 py-2 text-sm font-medium text-accent-foreground"
+        className="btn btn-primary"
       >
         Try again
       </button>

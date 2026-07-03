@@ -8,21 +8,37 @@ export type MatchCardData = {
   homeTeam: { name: string; flag: string | null };
   awayTeam: { name: string; flag: string | null };
   hasPrediction: boolean;
+  liveStatus?: string;
+};
+
+const LIVE_STATUS_LABELS: Record<string, string> = {
+  IN_PLAY: "Live",
+  PAUSED: "Half-time",
+  FINISHED: "Full-time",
 };
 
 export function MatchCard({ match }: { readonly match: MatchCardData }) {
+  const liveLabel = match.liveStatus ? LIVE_STATUS_LABELS[match.liveStatus] : undefined;
+
   return (
     <Link
       href={`/predict/${match.id}`}
-      className="block rounded-lg border-l-4 border-accent bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:bg-white/5 sm:p-4"
+      className="card card-interactive block border-l-4 border-accent p-3 sm:p-4"
     >
       <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
         <CountdownBadge kickoffTime={match.kickoffTime.toISOString()} />
-        {match.locked && (
-          <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs font-medium text-danger">
-            Locked
-          </span>
-        )}
+        <div className="flex items-center gap-1">
+          {liveLabel && (
+            <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success">
+              {liveLabel}
+            </span>
+          )}
+          {match.locked && (
+            <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs font-medium text-danger">
+              Locked
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center justify-between gap-2 sm:gap-4">

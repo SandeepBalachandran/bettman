@@ -33,20 +33,28 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
   }
 
   return (
-    <tr className="border-b align-top">
+    <tr className="align-top">
       <LoadingOverlay show={isPending} />
-      <td className="py-2 pr-2">{user.name}</td>
-      <td className="py-2 pr-2 text-xs">{user.email}</td>
-      <td className="py-2 pr-2 text-xs">{user.role}</td>
-      <td className="py-2 pr-2 text-xs">{user.active ? "Active" : "Deactivated"}</td>
-      <td className="py-2 pr-2">
-        <div className="flex flex-wrap gap-1">
+      <td className="py-2 pr-2 font-medium" data-label="Name">
+        {user.name}
+      </td>
+      <td className="py-2 pr-2 text-xs" data-label="Email">
+        {user.email}
+      </td>
+      <td className="py-2 pr-2 text-xs" data-label="Role">
+        {user.role}
+      </td>
+      <td className="py-2 pr-2 text-xs" data-label="Status">
+        {user.active ? "Active" : "Deactivated"}
+      </td>
+      <td className="py-2 pr-2" data-label="Actions">
+        <div className="flex flex-wrap justify-end gap-1 sm:justify-start">
           <input
             type="password"
             placeholder="New password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-32 rounded border px-2 py-1 text-xs"
+            className="input-pill w-32"
           />
           <button
             type="button"
@@ -54,7 +62,7 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
             onClick={() =>
               run(() => resetPassword(user.id, { password: newPassword }), "Password reset")
             }
-            className="rounded border px-2 py-1 text-xs"
+            className="btn btn-outline"
           >
             Reset
           </button>
@@ -69,7 +77,7 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
                     user.active ? "User deactivated" : "User reactivated"
                   )
                 }
-                className="rounded border px-2 py-1 text-xs"
+                className="btn btn-outline"
               >
                 {user.active ? "Deactivate" : "Reactivate"}
               </button>
@@ -77,7 +85,7 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
                 type="button"
                 disabled={isPending}
                 onClick={() => run(() => deleteUser(user.id), "User deleted")}
-                className="rounded border px-2 py-1 text-xs text-danger"
+                className="btn btn-danger"
               >
                 Delete
               </button>

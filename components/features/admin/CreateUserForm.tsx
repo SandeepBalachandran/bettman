@@ -30,43 +30,51 @@ export function CreateUserForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col flex-wrap items-stretch gap-2 rounded border p-4 sm:flex-row sm:items-end">
+    <form
+      onSubmit={handleSubmit}
+      className="card flex flex-col flex-wrap items-stretch gap-3 p-4 sm:flex-row sm:items-end"
+    >
       <LoadingOverlay show={isPending} label="Creating player..." />
-      <div>
-        <label className="block text-xs text-gray-500">Name</label>
+      <div className="flex-1">
+        <label htmlFor="new-user-name" className="block text-xs text-gray-500">
+          Name
+        </label>
         <input
+          id="new-user-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="rounded border px-2 py-1 text-sm"
+          className="input-pill w-full"
         />
       </div>
-      <div>
-        <label className="block text-xs text-gray-500">Email</label>
+      <div className="flex-1">
+        <label htmlFor="new-user-email" className="block text-xs text-gray-500">
+          Email
+        </label>
         <input
+          id="new-user-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="rounded border px-2 py-1 text-sm"
+          className="input-pill w-full"
         />
       </div>
-      <div>
-        <label className="block text-xs text-gray-500">Password</label>
+      <div className="flex-1">
+        <label htmlFor="new-user-password" className="block text-xs text-gray-500">
+          Password
+        </label>
         <input
+          id="new-user-password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={8}
-          className="rounded border px-2 py-1 text-sm"
+          className="input-pill w-full"
         />
       </div>
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded bg-accent px-3 py-1.5 text-sm text-accent-foreground disabled:opacity-50"
-      >
+      <button type="submit" disabled={isPending} className="btn btn-primary">
         {isPending ? "Creating..." : "Create user"}
       </button>
     </form>

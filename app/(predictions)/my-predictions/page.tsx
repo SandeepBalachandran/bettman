@@ -41,7 +41,7 @@ export default async function MyPredictionsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl space-y-8 p-6">
+    <main className="mx-auto max-w-2xl space-y-8 p-4 sm:p-6">
       <h1 className="text-2xl font-bold gradient-text">My Predictions</h1>
 
       {predictions.length === 0 && (
@@ -78,7 +78,7 @@ export default async function MyPredictionsPage() {
                   <Link
                     key={prediction.id}
                     href={`/match/${prediction.match.id}`}
-                    className="block rounded-lg border-l-4 border-secondary bg-white p-3 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:bg-white/5"
+                    className="card card-interactive block border-l-4 border-secondary p-3 text-sm"
                   >
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-2">

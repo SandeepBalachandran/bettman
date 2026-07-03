@@ -77,7 +77,7 @@ export default async function AdminPredictionsPage() {
                 const missingUsers = allUsers.filter((u) => !predictedUserIds.has(u.id));
 
                 return (
-                  <div key={match.id} className="rounded-lg border p-3 shadow-sm">
+                  <div key={match.id} className="card p-3">
                     <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
                       <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={18} />
                       {match.homeTeam.name} vs {match.awayTeam.name}

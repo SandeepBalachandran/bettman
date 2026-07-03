@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
+import { formatMoney } from "@/lib/format-money";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -22,10 +23,12 @@ export function LeaderboardRow({
   entry,
   rank,
   isCurrentUser,
+  moneyBalance,
 }: {
   readonly entry: LeaderboardEntry;
   readonly rank: number;
   readonly isCurrentUser: boolean;
+  readonly moneyBalance: number;
 }) {
   const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
   const scorerGains = entry.scorerPoints - penalty;
@@ -37,10 +40,8 @@ export function LeaderboardRow({
       layout
       layoutId={entry.userId}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className={`flex items-center gap-3 rounded-xl border p-3 shadow-sm transition ${
-        isCurrentUser
-          ? "border-highlight bg-highlight/10"
-          : "border-transparent bg-white dark:bg-white/5"
+      className={`card card-interactive flex items-center gap-3 p-3 ${
+        isCurrentUser ? "border-highlight bg-highlight/10" : ""
       } ${rank <= 3 ? "ring-1 ring-inset ring-highlight/30" : ""}`}
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold dark:bg-white/10">
@@ -79,9 +80,16 @@ export function LeaderboardRow({
         </div>
       </div>
 
-      <div className="text-right">
-        <p className="gradient-text text-xl font-extrabold">{entry.total}</p>
-        <p className="text-[10px] text-gray-400">pts</p>
+      <div className="flex flex-col items-end gap-1">
+        <div>
+          <p className="gradient-text text-xl font-extrabold">{entry.total}</p>
+          <p className="text-[10px] text-gray-400">pts</p>
+        </div>
+        <div className={`text-right text-[10px] font-semibold ${
+          moneyBalance >= 0 ? "text-success" : "text-danger"
+        }`}>
+          <p>{formatMoney(moneyBalance)}</p>
+        </div>
       </div>
     </motion.div>
   );

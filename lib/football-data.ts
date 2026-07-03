@@ -96,6 +96,38 @@ export async function fetchCompetitionMatches(
   return data.matches;
 }
 
+/**
+ * Live lookup for the schedule page. Unlike fetchCompetitionMatches (which is
+ * for the offline sync script and uses an on-disk cache), this relies on
+ * Next.js's fetch data cache so repeated page loads within the revalidate
+ * window don't re-hit the football-data.org API.
+ */
+export async function fetchLiveCompetitionMatches(
+  competitionCode: string,
+  options: { revalidateSeconds?: number } = {}
+): Promise<FootballDataMatch[]> {
+  const revalidate = options.revalidateSeconds ?? 60;
+
+  const token = process.env.FOOTBALL_DATA_API_TOKEN;
+  if (!token) {
+    throw new Error("FOOTBALL_DATA_API_TOKEN is not set in the environment.");
+  }
+
+  const response = await fetch(`${BASE_URL}/competitions/${competitionCode}/matches`, {
+    headers: { "X-Auth-Token": token },
+    next: { revalidate, tags: [`live-matches-${competitionCode}`] },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `football-data.org request failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data = (await response.json()) as CompetitionMatchesResponse;
+  return data.matches;
+}
+
 export async function fetchTeamSquad(
   teamExternalId: number,
   options: { ttlMs?: number } = {}

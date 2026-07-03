@@ -1,7 +1,21 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { MatchCard, type MatchCardData } from "@/components/features/matches/MatchCard";
+import { fetchLiveCompetitionMatches, type FootballDataMatch } from "@/lib/football-data";
 import type { Round } from "@prisma/client";
+
+const COMPETITION_CODE = process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC";
+
+async function getLiveStatusByExternalId(): Promise<Map<number, FootballDataMatch>> {
+  try {
+    const liveMatches = await fetchLiveCompetitionMatches(COMPETITION_CODE);
+    return new Map(liveMatches.map((match) => [match.id, match]));
+  } catch {
+    // Live status is a display enhancement — fall back to DB-only rendering
+    // if the API token is missing or football-data.org is unreachable.
+    return new Map();
+  }
+}
 
 const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
 
@@ -22,14 +36,17 @@ const ROUND_BADGE_STYLES: Record<Round, string> = {
 export default async function FixturesPage() {
   const user = await requireAuth();
 
-  const matches = await prisma.match.findMany({
-    include: {
-      homeTeam: true,
-      awayTeam: true,
-      predictions: { where: { userId: user.id } },
-    },
-    orderBy: { kickoffTime: "asc" },
-  });
+  const [matches, liveStatusByExternalId] = await Promise.all([
+    prisma.match.findMany({
+      include: {
+        homeTeam: true,
+        awayTeam: true,
+        predictions: { where: { userId: user.id } },
+      },
+      orderBy: { kickoffTime: "asc" },
+    }),
+    getLiveStatusByExternalId(),
+  ]);
 
   const matchesByRound = new Map<Round, typeof matches>();
   for (const match of matches) {
@@ -65,6 +82,9 @@ export default async function FixturesPage() {
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {roundMatches.map((match) => {
+                const liveMatch = match.externalId
+                  ? liveStatusByExternalId.get(match.externalId)
+                  : undefined;
                 const cardData: MatchCardData = {
                   id: match.id,
                   kickoffTime: match.kickoffTime,
@@ -72,6 +92,7 @@ export default async function FixturesPage() {
                   homeTeam: { name: match.homeTeam.name, flag: match.homeTeam.flag },
                   awayTeam: { name: match.awayTeam.name, flag: match.awayTeam.flag },
                   hasPrediction: match.predictions.length > 0,
+                  liveStatus: liveMatch?.status,
                 };
                 return <MatchCard key={match.id} match={cardData} />;
               })}

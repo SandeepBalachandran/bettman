@@ -78,12 +78,19 @@ export function PredictionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="card space-y-6 p-4 sm:p-5">
       <LoadingOverlay show={isPending} label="Saving your prediction..." />
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">Winner</legend>
         {[homeTeam, awayTeam].map((team) => (
-          <label key={team.id} className="flex items-center gap-2 text-sm">
+          <label
+            key={team.id}
+            className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
+              winnerTeamId === team.id
+                ? "border-accent bg-accent/10"
+                : "border-transparent bg-black/2 dark:bg-white/5"
+            }`}
+          >
             <input
               type="radio"
               name="winnerTeamId"
@@ -103,7 +110,7 @@ export function PredictionForm({
             key={index}
             value={scorers[index]}
             onChange={(event) => handleScorerChange(index, event.target.value)}
-            className="w-full rounded border px-3 py-2 text-sm"
+            className="input-pill w-full"
           >
             <option value="">— None —</option>
             {allPlayers.map((player) => (
@@ -121,11 +128,7 @@ export function PredictionForm({
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-accent-foreground disabled:opacity-50"
-      >
+      <button type="submit" disabled={isPending} className="btn btn-primary w-full py-2.5">
         {isPending ? "Saving..." : initialWinnerTeamId ? "Update prediction" : "Save prediction"}
       </button>
     </form>

@@ -31,6 +31,12 @@ export async function SiteHeader() {
             >
               Leaderboard
             </Link>
+            <Link
+              href="/money"
+              className="rounded-full px-3 py-1 transition hover:bg-white/20"
+            >
+              Money
+            </Link>
             {session.user.role === "ADMIN" && (
               <Link
                 href="/admin"

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authz";
+import { syncMatchesFromLiveApi, type SyncMatchesResult } from "@/lib/sync-matches";
 
 const matchObjectSchema = z.object({
   round: z.enum(["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"]),
@@ -131,6 +132,16 @@ export async function finishMatch(
   revalidatePath(`/match/${matchId}`);
   revalidatePath("/leaderboard");
   revalidatePath("/admin");
+}
+
+export async function syncMatchesFromLiveApiAction(
+  competitionCode = "WC"
+): Promise<SyncMatchesResult> {
+  await requireAdmin();
+  const result = await syncMatchesFromLiveApi(prisma, competitionCode);
+  revalidatePath("/fixtures");
+  revalidatePath("/admin/matches");
+  return result;
 }
 
 export async function calculateLeaderboard() {

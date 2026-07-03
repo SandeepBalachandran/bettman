@@ -86,3 +86,199 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.6s ease-in-out infinite;
 }
+
+/* ---------------------------------------------------------------------- */
+/* Design system: curvy cards, soft shadows, unified buttons + tables     */
+/* ---------------------------------------------------------------------- */
+
+.card {
+  border-radius: 1.25rem;
+  background: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 10px 26px -14px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 18px 34px -16px rgba(0, 0, 0, 0.28);
+}
+
+.dark .card {
+  background: color-mix(in srgb, #ffffff 5%, transparent);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    0 12px 30px -16px rgba(0, 0, 0, 0.7);
+}
+
+.table-card {
+  border-radius: 1.25rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 12px 28px -16px rgba(0, 0, 0, 0.2);
+}
+
+.dark .table-card {
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    0 14px 32px -16px rgba(0, 0, 0, 0.7);
+}
+
+.table-card table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-card thead th {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+}
+
+.table-card tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.table-card tbody tr:hover {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.table-card tbody tr:not(:last-child) td {
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+/* Stacks each row into its own rounded card below the sm breakpoint */
+@media (max-width: 640px) {
+  .responsive-table thead {
+    display: none;
+  }
+  .responsive-table,
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+  .responsive-table tbody tr {
+    margin: 0.75rem;
+    border-radius: 1rem;
+    border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+    box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.25);
+  }
+  .dark .responsive-table tbody tr {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  .responsive-table tbody tr:hover {
+    background: transparent;
+  }
+  .responsive-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.85rem !important;
+    text-align: right;
+    border-bottom: none !important;
+  }
+  .responsive-table tbody tr td:not(:last-child) {
+    border-bottom: 1px dashed color-mix(in srgb, var(--foreground) 10%, transparent) !important;
+  }
+  .responsive-table td::before {
+    content: attr(data-label);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--foreground) 55%, transparent);
+    text-align: left;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease,
+    background-color 0.15s ease;
+  box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.18);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-outline {
+  border: 1px solid color-mix(in srgb, var(--foreground) 18%, transparent);
+  background: transparent;
+  box-shadow: none;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.btn-danger {
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+  box-shadow: none;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 20%, transparent);
+}
+
+.input-pill {
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.input-pill:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
