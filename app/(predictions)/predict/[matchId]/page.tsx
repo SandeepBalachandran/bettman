@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { PredictionForm } from "@/components/features/predictions/PredictionForm";
 import { TeamFlag } from "@/components/TeamFlag";
+import { MoneyRulesCard } from "@/components/MoneyRulesCard";
 
 export default async function PredictPage({
   params,
@@ -44,6 +45,8 @@ export default async function PredictPage({
           Kickoff: {match.kickoffTime.toLocaleString()}
         </p>
       </div>
+
+      <MoneyRulesCard />
 
       {isTbd ? (
         <div className="card border-highlight/30 bg-highlight/10 p-4 text-sm text-highlight-foreground dark:text-highlight">

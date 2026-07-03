@@ -38,99 +38,97 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
   }
 
   return (
-    <tr className="align-top">
+    <div className="card relative space-y-3 p-4">
       <LoadingOverlay show={isPending} />
-      <td className="py-2 pr-2 text-xs" data-label="Round">
-        {match.round}
-      </td>
-      <td className="py-2 pr-2" data-label="Match">
-        <span className="flex items-center gap-1.5">
-          <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={16} />
-          {match.homeTeam.name} vs {match.awayTeam.name}
-          <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={16} />
-        </span>
-      </td>
-      <td className="py-2 pr-2 text-xs" data-label="Kickoff">
-        {new Date(match.kickoffTime).toLocaleString()}
-      </td>
-      <td className="py-2 pr-2 text-xs" data-label="Status">
-        {match.status}
-      </td>
-      <td className="py-2 pr-2" data-label="Actions">
-        <div className="flex flex-col items-end gap-1 sm:items-stretch">
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() =>
-              run(() => setMatchLocked(match.id, !match.locked), "Lock state updated")
-            }
-            className="btn btn-outline"
-          >
-            {match.locked ? "Unlock" : "Lock"}
-          </button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => run(() => deleteMatch(match.id), "Match deleted")}
-            className="btn btn-danger"
-          >
-            Delete
-          </button>
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
+            {match.round}
+          </span>
+          <span className="text-xs text-gray-500">
+            {new Date(match.kickoffTime).toLocaleString()}
+          </span>
         </div>
-      </td>
-      <td className="py-2 pr-2" data-label="Finish">
-        {match.status === "FINISHED" ? (
-          <span className="text-xs text-gray-500">Finished</span>
-        ) : (
-          <div className="flex flex-col items-end gap-1 sm:items-stretch">
+        <span className="text-xs font-medium text-gray-500">{match.status}</span>
+      </div>
+
+      <div className="flex items-center gap-2 text-sm font-medium">
+        <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={18} />
+        {match.homeTeam.name} vs {match.awayTeam.name}
+        <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={18} />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={() => run(() => setMatchLocked(match.id, !match.locked), "Lock state updated")}
+          className="btn btn-outline"
+        >
+          {match.locked ? "Unlock" : "Lock"}
+        </button>
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={() => run(() => deleteMatch(match.id), "Match deleted")}
+          className="btn btn-danger"
+        >
+          Delete
+        </button>
+      </div>
+
+      {match.status === "FINISHED" ? (
+        <p className="text-xs text-gray-500">Finished</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-2 border-t border-[color-mix(in_srgb,var(--foreground)_8%,transparent)] pt-3 sm:grid-cols-2">
+          <select
+            value={winnerTeamId}
+            onChange={(e) => setWinnerTeamId(e.target.value)}
+            className="input-pill sm:col-span-2"
+          >
+            <option value="">Winner...</option>
+            <option value={match.homeTeam.id}>{match.homeTeam.name}</option>
+            <option value={match.awayTeam.id}>{match.awayTeam.name}</option>
+          </select>
+          {[0, 1, 2].map((index) => (
             <select
-              value={winnerTeamId}
-              onChange={(e) => setWinnerTeamId(e.target.value)}
+              key={index}
+              value={scorers[index]}
+              onChange={(e) => {
+                const next = [...scorers];
+                next[index] = e.target.value;
+                setScorers(next);
+              }}
               className="input-pill"
             >
-              <option value="">Winner...</option>
-              <option value={match.homeTeam.id}>{match.homeTeam.name}</option>
-              <option value={match.awayTeam.id}>{match.awayTeam.name}</option>
+              <option value="">Scorer {index + 1}...</option>
+              {match.players.map((player) => (
+                <option key={player.id} value={player.id}>
+                  {player.name}
+                </option>
+              ))}
             </select>
-            {[0, 1, 2].map((index) => (
-              <select
-                key={index}
-                value={scorers[index]}
-                onChange={(e) => {
-                  const next = [...scorers];
-                  next[index] = e.target.value;
-                  setScorers(next);
-                }}
-                className="input-pill"
-              >
-                <option value="">Scorer {index + 1}...</option>
-                {match.players.map((player) => (
-                  <option key={player.id} value={player.id}>
-                    {player.name}
-                  </option>
-                ))}
-              </select>
-            ))}
-            <button
-              type="button"
-              disabled={isPending || !winnerTeamId}
-              onClick={() =>
-                run(
-                  () =>
-                    finishMatch(match.id, {
-                      winnerTeamId,
-                      scorerPlayerIds: scorers.filter(Boolean),
-                    }),
-                  "Match finished"
-                )
-              }
-              className="btn btn-primary"
-            >
-              Finish match
-            </button>
-          </div>
-        )}
-      </td>
-    </tr>
+          ))}
+          <button
+            type="button"
+            disabled={isPending || !winnerTeamId}
+            onClick={() =>
+              run(
+                () =>
+                  finishMatch(match.id, {
+                    winnerTeamId,
+                    scorerPlayerIds: scorers.filter(Boolean),
+                  }),
+                "Match finished"
+              )
+            }
+            className="btn btn-primary sm:col-span-2"
+          >
+            Finish match
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

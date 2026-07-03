@@ -85,8 +85,10 @@ export async function fetchCompetitionMatches(
   });
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
     throw new Error(
-      `football-data.org request failed: ${response.status} ${response.statusText}`
+      `football-data.org request failed: ${response.status} ${response.statusText}` +
+        (body ? ` — ${body.slice(0, 300)}` : "")
     );
   }
 
@@ -106,7 +108,9 @@ export async function fetchLiveCompetitionMatches(
   competitionCode: string,
   options: { revalidateSeconds?: number } = {}
 ): Promise<FootballDataMatch[]> {
-  const revalidate = options.revalidateSeconds ?? 60;
+  // football-data.org's free tier caps requests at ~10/min; 5 minutes keeps
+  // this well under that even with several admins/users loading /fixtures.
+  const revalidate = options.revalidateSeconds ?? 300;
 
   const token = process.env.FOOTBALL_DATA_API_TOKEN;
   if (!token) {
@@ -119,8 +123,10 @@ export async function fetchLiveCompetitionMatches(
   });
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
     throw new Error(
-      `football-data.org request failed: ${response.status} ${response.statusText}`
+      `football-data.org request failed: ${response.status} ${response.statusText}` +
+        (body ? ` — ${body.slice(0, 300)}` : "")
     );
   }
 
@@ -150,8 +156,10 @@ export async function fetchTeamSquad(
   });
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
     throw new Error(
-      `football-data.org request failed: ${response.status} ${response.statusText}`
+      `football-data.org request failed: ${response.status} ${response.statusText}` +
+        (body ? ` — ${body.slice(0, 300)}` : "")
     );
   }
 

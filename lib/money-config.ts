@@ -17,10 +17,10 @@ function loadMoneyConfig(): MoneyConfig {
     process.env.MONEY_PER_INCORRECT_WINNER || "-30"
   );
   const moneyPerCorrectScorer = parseInt(
-    process.env.MONEY_PER_CORRECT_SCORER || "10"
+    process.env.MONEY_PER_CORRECT_SCORER || "5"
   );
   const moneyPerIncorrectScorer = parseInt(
-    process.env.MONEY_PER_INCORRECT_SCORER || "-10"
+    process.env.MONEY_PER_INCORRECT_SCORER || "-5"
   );
 
   // Validation

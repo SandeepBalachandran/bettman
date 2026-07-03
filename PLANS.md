@@ -493,19 +493,21 @@ All money amounts are stored in `.env` and loaded via `lib/money-config.ts` on a
 | `CURRENCY_SYMBOL` | `₹` | Display symbol for all money amounts |
 | `MONEY_PER_CORRECT_WINNER` | `30` | Money earned for correctly predicting the match winner |
 | `MONEY_PER_INCORRECT_WINNER` | `-30` | Money lost for incorrectly predicting the match winner |
-| `MONEY_PER_CORRECT_SCORER` | `10` | Money earned for each correctly predicted goal scorer |
-| `MONEY_PER_INCORRECT_SCORER` | `-10` | Money lost for each incorrectly predicted goal scorer |
+| `MONEY_PER_CORRECT_SCORER` | `5` | Money earned per correct scorer pick (each of up to 3 picks scored independently) |
+| `MONEY_PER_INCORRECT_SCORER` | `-5` | Money lost per incorrect scorer pick (each of up to 3 picks scored independently) |
 
 **Derived limits** (computed from the above):
-- Max money per match: `MONEY_PER_CORRECT_WINNER + (3 × MONEY_PER_CORRECT_SCORER)` = `30 + 30 = 60` (with defaults)
-- Max loss per match: `MONEY_PER_INCORRECT_WINNER + (3 × MONEY_PER_INCORRECT_SCORER)` = `-30 + -30 = -60` (with defaults)
+- Max money per match: `MONEY_PER_CORRECT_WINNER + (3 × MONEY_PER_CORRECT_SCORER)` = `30 + 15 = 45` (with defaults)
+- Max loss per match: `MONEY_PER_INCORRECT_WINNER + (3 × MONEY_PER_INCORRECT_SCORER)` = `-30 + -15 = -45` (with defaults)
 
-To change scoring (e.g., tripling stakes to ₹90/-₹90/₹30/-₹30):
-1. Edit `.env`: `MONEY_PER_CORRECT_WINNER=90 MONEY_PER_INCORRECT_WINNER=-90 MONEY_PER_CORRECT_SCORER=30 MONEY_PER_INCORRECT_SCORER=-30`
+To change scoring (e.g., tripling stakes to ₹90/-₹90/₹15/-₹15):
+1. Edit `.env`: `MONEY_PER_CORRECT_WINNER=90 MONEY_PER_INCORRECT_WINNER=-90 MONEY_PER_CORRECT_SCORER=15 MONEY_PER_INCORRECT_SCORER=-15`
 2. Restart the app.
-
-**2026-07-03 update:** originally an incorrect winner pick earned `0` (no penalty, winner-only downside was opportunity cost). User asked to make the winner pick symmetric-risk like the scorer picks: `MONEY_PER_INCORRECT_WINNER` added (default `-30`, mirroring `MONEY_PER_CORRECT_WINNER`), and `MONEY_PER_INCORRECT_SCORER` default changed from `-5` to `-10` (mirroring `MONEY_PER_CORRECT_SCORER`). `lib/money.ts`'s `calculateMatchMoney` now applies `moneyPerIncorrectWinner` whenever a finished match's prediction picked the wrong team (previously fell through to `0`). `maxLossPerMatch` in `lib/money-config.ts` now includes the winner term. `components/MoneyRulesCard.tsx` updated to display the new incorrect-winner rule.
 3. All dashboards and calculations automatically use the new amounts — no code changes.
+
+**2026-07-03 update 1:** originally an incorrect winner pick earned `0` (no penalty, winner-only downside was opportunity cost). User asked to make the winner pick symmetric-risk like the scorer picks: `MONEY_PER_INCORRECT_WINNER` added (default `-30`, mirroring `MONEY_PER_CORRECT_WINNER`). `lib/money.ts`'s `calculateMatchMoney` now applies `moneyPerIncorrectWinner` whenever a finished match's prediction picked the wrong team (previously fell through to `0`). `maxLossPerMatch` in `lib/money-config.ts` now includes the winner term.
+
+**2026-07-03 update 2:** user clarified the scorer amount should be **₹5 per individual scorer pick**, not ₹10 (a same-day update had briefly set it to ±10 to mirror the winner-symmetry change above — that was wrong for scorers specifically). The underlying calculation logic in `lib/money.ts` (`calculateMatchMoney`) was already correct — it sums `moneyPerCorrectScorer`/`moneyPerIncorrectScorer` independently per scorer pick in the reduce over `prediction.scorerPlayerIds`, never as a shared/divided pool — only the config *values* were off. Reverted `MONEY_PER_CORRECT_SCORER`/`MONEY_PER_INCORRECT_SCORER` defaults to `5`/`-5` in `.env`, `.env.example`, and `lib/money-config.ts`. `components/MoneyRulesCard.tsx` copy updated to explicitly state "per pick, independently scored" with a worked example (2 correct + 1 wrong = 2×5 + 1×-5 = ₹5, not one combined amount) to prevent this confusion in the UI itself. Also added `<MoneyRulesCard />` to `/predict/[matchId]` (where users actually make picks), on top of its existing placement on `/money` and `/admin/money`.
 
 ---
 
@@ -573,3 +575,11 @@ After the initial pass, three more issues came up:
 
 **Verification:** `npx tsc --noEmit`, `npx eslint .` (same 2 pre-existing unrelated errors as before, none new), and `npm run build` all clean, all 15 routes compile. Manual phone-viewport check still not performed this session — recommend confirming the `.responsive-table` fix visually on `/admin/money` and `/admin/matches` at a real ~375px width.
 - Invalid `.env` config is rejected on app startup (validation in `lib/money-config.ts`).
+
+### Follow-up 2: money rule corrections + rules visible on the predict page, `/admin/matches` horizontal scroll removed, live-sync error hardening
+
+1. **Money rule corrections** — see the two "2026-07-03 update" notes above (winner symmetry, scorer amount fixed to ₹5/pick). `MoneyRulesCard` is now also rendered on `/predict/[matchId]` (not just `/money` and `/admin/money`), and takes an optional `defaultOpen` prop for future use on pages where it should start expanded.
+2. **`/admin/matches` no longer scrolls horizontally.** Root cause: the page rendered matches as a `<table>` with a wide `Finish` column (winner select + 3 scorer selects + submit button all inline), so even the `.responsive-table` mobile fix from Follow-up 1 couldn't make that column narrow enough without truncating controls. Redesigned `app/(admin)/admin/matches/page.tsx` and `components/features/admin/AdminMatchRow.tsx` from a `<table>`/`<tr>` layout to a **card-list layout** (`<div className="card">` per match, `space-y-3` list) — round/kickoff/status header row, team names, lock/delete buttons, then a `grid grid-cols-1 sm:grid-cols-2` of the finish-match controls. No table semantics left on this page, so there's no min-width to fight on any screen size.
+3. **Live-sync error hardening** — `fetchCompetitionMatches`/`fetchLiveCompetitionMatches`/`fetchTeamSquad` in `lib/football-data.ts` now include the response body (first 300 chars) in thrown errors, so a failed sync surfaces the actual football-data.org error (e.g. invalid token, rate limit, restricted endpoint) in the admin's toast instead of just an HTTP status code. Also raised `fetchLiveCompetitionMatches`'s default cache window from 60s to 300s to reduce how often `/fixtures` re-hits the live-status endpoint — football-data.org's free tier caps requests at ~10/minute, and repeated fast page loads plus a manual sync could plausibly collide into a 429. Verified the underlying fetch (`node -e` direct call) and `scripts/sync-matches.ts` both still succeed end-to-end against the live API and MongoDB. Could not reproduce the reported error directly (no browser driven this session) — if it recurs, the toast message now includes the real football-data.org response body, which should pinpoint the cause (expired token vs. rate limit vs. something else).
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .` (same pre-existing unrelated error, none new), `npm run build` all clean; `npx tsx scripts/sync-matches.ts WC` re-run successfully end-to-end against the live API and MongoDB. Manual phone-viewport check of the new `/admin/matches` card layout, and confirmation that the sync error is actually resolved, not done this session — recommend checking the browser toast text next time the sync fails.

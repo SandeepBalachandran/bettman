@@ -27,49 +27,35 @@ export default async function AdminMatchesPage() {
           <code>npx tsx scripts/sync-matches.ts WC</code>.
         </p>
       ) : (
-        <div className="table-card overflow-x-auto">
-          <table className="responsive-table w-full min-w-180 text-sm">
-            <thead>
-              <tr className="text-left">
-                <th className="py-2.5 pr-2 pl-3">Round</th>
-                <th className="py-2.5 pr-2">Match</th>
-                <th className="py-2.5 pr-2">Kickoff</th>
-                <th className="py-2.5 pr-2">Status</th>
-                <th className="py-2.5 pr-2">Actions</th>
-                <th className="py-2.5 pr-3">Finish</th>
-              </tr>
-            </thead>
-            <tbody>
-              {matches.map((match) => (
-                <AdminMatchRow
-                  key={match.id}
-                  match={{
-                    id: match.id,
-                    round: match.round,
-                    homeTeam: {
-                      id: match.homeTeam.id,
-                      name: match.homeTeam.name,
-                      flag: match.homeTeam.flag,
-                    },
-                    awayTeam: {
-                      id: match.awayTeam.id,
-                      name: match.awayTeam.name,
-                      flag: match.awayTeam.flag,
-                    },
-                    players: [...match.homeTeam.players, ...match.awayTeam.players].map((p) => ({
-                      id: p.id,
-                      name: p.name,
-                      teamId: p.teamId,
-                    })),
-                    kickoffTime: match.kickoffTime.toISOString(),
-                    status: match.status,
-                    locked: match.locked,
-                    winnerTeamId: match.winnerTeamId,
-                  }}
-                />
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-3">
+          {matches.map((match) => (
+            <AdminMatchRow
+              key={match.id}
+              match={{
+                id: match.id,
+                round: match.round,
+                homeTeam: {
+                  id: match.homeTeam.id,
+                  name: match.homeTeam.name,
+                  flag: match.homeTeam.flag,
+                },
+                awayTeam: {
+                  id: match.awayTeam.id,
+                  name: match.awayTeam.name,
+                  flag: match.awayTeam.flag,
+                },
+                players: [...match.homeTeam.players, ...match.awayTeam.players].map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  teamId: p.teamId,
+                })),
+                kickoffTime: match.kickoffTime.toISOString(),
+                status: match.status,
+                locked: match.locked,
+                winnerTeamId: match.winnerTeamId,
+              }}
+            />
+          ))}
         </div>
       )}
     </main>
