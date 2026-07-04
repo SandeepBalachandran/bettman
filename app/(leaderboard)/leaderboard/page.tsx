@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { requireAuth } from "@/lib/authz";
 import { getLeaderboard, getPreviousLeaderboard } from "@/lib/leaderboard";
 import { getUserMoney } from "@/lib/leaderboard-money";
@@ -51,6 +52,10 @@ export default async function LeaderboardPage() {
   const myEntry = myIndex >= 0 ? leaderboard[myIndex] : null;
   const myRank = myIndex >= 0 ? myIndex + 1 : null;
   const myBalance = myEntry ? moneyByUserId.get(myEntry.userId) || 0 : 0;
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("host");
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+  const appUrl = host ? `${protocol}://${host}` : "";
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
@@ -65,7 +70,7 @@ export default async function LeaderboardPage() {
           <ShareToWhatsApp
             text={`⚽ World Cup Predictions update!\nI'm #${myRank} on the leaderboard with ${myEntry.total} pts (${formatMoney(
               myBalance
-            )}). Think you can beat me?`}
+            )}). Think you can beat me?${appUrl ? ` Check it out: ${appUrl}` : ""}`}
           />
         </div>
       )}
