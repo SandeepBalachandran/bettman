@@ -24,11 +24,16 @@ export function LeaderboardRow({
   rank,
   isCurrentUser,
   moneyBalance,
+  streak = 0,
+  rankChange = 0,
 }: {
   readonly entry: LeaderboardEntry;
   readonly rank: number;
   readonly isCurrentUser: boolean;
   readonly moneyBalance: number;
+  readonly streak?: number;
+  /** Positive = moved up this many spots since the last finished match, negative = moved down. */
+  readonly rankChange?: number;
 }) {
   const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
   const scorerGains = entry.scorerPoints - penalty;
@@ -44,8 +49,17 @@ export function LeaderboardRow({
         isCurrentUser ? "border-highlight bg-highlight/10" : ""
       } ${rank <= 3 ? "ring-1 ring-inset ring-highlight/30" : ""}`}
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-bold dark:bg-white/10">
-        {medal ?? <span className="text-gray-500">#{rank}</span>}
+      <div className="flex shrink-0 flex-col items-center gap-0.5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-sm font-bold dark:bg-white/10">
+          {medal ?? <span className="text-gray-500">#{rank}</span>}
+        </div>
+        {rankChange !== 0 && (
+          <span
+            className={`text-[10px] font-bold ${rankChange > 0 ? "text-success" : "text-danger"}`}
+          >
+            {rankChange > 0 ? `▲${rankChange}` : `▼${Math.abs(rankChange)}`}
+          </span>
+        )}
       </div>
 
       <div
@@ -75,6 +89,11 @@ export function LeaderboardRow({
           {penalty < 0 && (
             <span className="rounded-full bg-danger/10 px-1.5 py-0.5 font-medium text-danger">
               P {penalty}
+            </span>
+          )}
+          {streak >= 2 && (
+            <span className="rounded-full bg-highlight/15 px-1.5 py-0.5 font-medium text-highlight-foreground dark:text-highlight">
+              🔥 {streak}
             </span>
           )}
         </div>

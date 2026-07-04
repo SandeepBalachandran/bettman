@@ -678,3 +678,44 @@ Discussed as a design question first (signup system → rejected as unnecessary 
 **Prisma client regeneration note:** unlike the earlier `upiId`/Round-of-32 schema changes (which hit `EPERM` because the user's `next dev` was running and holding the query-engine binary open), this time the user fully stopped the dev server first, and `npx prisma generate` completed cleanly with no error.
 
 **Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` (all 15 routes) all clean. Not verified this session (no browser/phone driven): the actual permission prompt UX, whether a real push notification is received and tapped correctly on an Android device, and whether `finishMatch`'s push fires without delaying the UI. Recommend testing end-to-end on a real phone: enable notifications from `/fixtures`, then have an admin finish a match and confirm the push arrives.
+
+### Push notification debugging session (same day)
+
+While testing on the desktop, "Send to all players" reported 0 recipients — confirmed via a direct DB query (`prisma.pushSubscription.count()`) that no subscription had ever been saved. `PushNotificationPrompt.tsx`'s `enableNotifications()` had no error handling, so a failure anywhere in the subscribe chain failed silently with no visible feedback. Added `try/catch` + `sonner` toasts on every path (missing VAPID key, permission denied/dismissed, any thrown error also now `console.error`'d), plus reuse an existing `PushManager` subscription via `getSubscription()` before creating a new one. Root cause for this particular session turned out to be the OS/browser notification pipeline (Windows Focus Assist / per-app notification settings / Chrome's system-notifications toggle), not application code — confirmed by testing the plain `Notification` API directly in the console, independent of the push/service-worker stack, and observing the same silent no-popup behavior.
+
+### Feature: remind players who haven't predicted yet
+
+Following up on push notifications, added a targeted nudge — `/admin/predictions` already computed `missingUsers` per match (used only for the "Not yet predicted: ..." text); now there's also a **"🔔 Remind"** button next to that list.
+- `actions/push.ts` → new `remindMissingPredictions(matchId)` (admin-only) — recomputes missing users **server-side** from the match's actual predictions (doesn't trust a client-supplied list), sends each of them a push via `sendPushToUser`, returns `{ remindedUsers, recipientDevices }` (a user can have 0+ devices subscribed).
+- `components/features/admin/RemindMissingButton.tsx` (client) — same `useTransition` + toast pattern as other admin action buttons; shows "Everyone has already predicted this match" if `remindedUsers` is 0.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean.
+
+### Feature: Round MVP + correct-pick streak
+
+Third pick from a suggested feature list ("Round MVP / streaks — pure fun/engagement, computed from data you already have"). New `lib/round-mvp.ts`:
+- `getRoundMvps()` — for each round with finished matches, sums each player's total points (via the existing `calculateMatchPoints`) across just that round's matches, and returns the top scorer(s) — ties share the MVP spot rather than picking one arbitrarily. Rounds where nobody scored above 0 are skipped.
+- `getUserWinnerStreak(userId)` — walks a user's finished matches most-recent-first and counts consecutive correct winner picks, stopping at the first wrong/missing pick. Resets naturally to 0 the moment a streak breaks — no stored state, recomputed fresh each time.
+
+Wired into `/leaderboard`: a "🏅 Round MVPs" card at the top (one pill per round, e.g. "Round of 16: Alice & Bob (45 pts)" for ties), and each `LeaderboardRow` now shows a "🔥 N" badge next to their points breakdown when their current streak is 2+.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Not verified visually — recommend checking the MVP pills and streak badges once more matches finish (currently early in the tournament, so MVP/streak data will be sparse).
+
+### Feature: rank-change indicators on the leaderboard
+
+Fourth pick from the suggested feature list ("▲/▼ next to each name showing movement since the last finished match"). Refactored `lib/leaderboard.ts` to share its scoring logic (`computeLeaderboardEntries`) between two exports:
+- `getLeaderboard()` — unchanged behavior, all finished matches.
+- `getPreviousLeaderboard()` (new) — same computation but with the single most-recently-finished match excluded (`finishedMatches.slice(0, -1)`, matches now fetched `orderBy: kickoffTime: "asc"` so `.slice(0, -1)` reliably drops the latest one) — i.e. "the leaderboard as it stood right before the last result came in."
+
+`/leaderboard` now fetches both, builds a `previousRank` lookup, and passes `rankChange = previousRank - currentRank` to each `LeaderboardRow`. `LeaderboardRow` renders a small ▲N/▼N badge (green/red) under the rank circle when `rankChange !== 0` — nothing shown for players whose rank didn't move.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Not verified visually — with only a few finished matches so far, most players likely show no rank change yet; worth checking again once more results come in and ranks actually shuffle.
+
+### Feature: Share-to-WhatsApp result card
+
+Fifth pick from the suggested feature list. No new dependency or image generation needed — used a plain WhatsApp deep link (`https://wa.me/?text=...`), which is enough to open WhatsApp with a pre-filled message on any of the group's Android phones.
+
+- `components/ShareToWhatsApp.tsx` (new, client) — a small `<a>` styled as `.btn.btn-outline` pointing at `https://wa.me/?text=<encoded text>`, opened in a new tab. Reusable — takes any `text` string, so it isn't tied to the leaderboard specifically.
+- `/leaderboard` — added a card above the "🏅 Round MVPs" section showing the signed-in user's own rank/points/money ("You're #2 with 45 pts (+₹30)") next to a "📤 Share to WhatsApp" button. The shared text includes rank, points, and money balance plus a "Think you can beat me?" prompt.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Not tested on an actual phone this session — recommend confirming the `wa.me` link opens WhatsApp with the pre-filled text correctly on Android.

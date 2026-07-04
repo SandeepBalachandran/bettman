@@ -9,18 +9,20 @@ export type LeaderboardEntry = {
   total: number;
 };
 
-export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
-  const [users, finishedMatches] = await Promise.all([
-    prisma.user.findMany({ where: { role: "USER" }, select: { id: true, name: true } }),
-    prisma.match.findMany({
-      where: { status: "FINISHED" },
-      include: {
-        scorers: true,
-        predictions: { include: { scorers: true } },
-      },
-    }),
-  ]);
+type FinishedMatchWithPredictions = {
+  winnerTeamId: string | null;
+  scorers: { playerId: string }[];
+  predictions: {
+    userId: string;
+    winnerTeamId: string;
+    scorers: { playerId: string }[];
+  }[];
+};
 
+function computeLeaderboardEntries(
+  users: { id: string; name: string }[],
+  finishedMatches: FinishedMatchWithPredictions[]
+): LeaderboardEntry[] {
   const entries = new Map<string, LeaderboardEntry>(
     users.map((user) => [
       user.id,
@@ -53,4 +55,29 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
   }
 
   return Array.from(entries.values()).sort((a, b) => b.total - a.total);
+}
+
+async function getUsersAndFinishedMatches() {
+  return Promise.all([
+    prisma.user.findMany({ where: { role: "USER" }, select: { id: true, name: true } }),
+    prisma.match.findMany({
+      where: { status: "FINISHED" },
+      include: {
+        scorers: true,
+        predictions: { include: { scorers: true } },
+      },
+      orderBy: { kickoffTime: "asc" },
+    }),
+  ]);
+}
+
+export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
+  const [users, finishedMatches] = await getUsersAndFinishedMatches();
+  return computeLeaderboardEntries(users, finishedMatches);
+}
+
+/** The leaderboard as it stood before the most recently finished match — used to show rank movement. */
+export async function getPreviousLeaderboard(): Promise<LeaderboardEntry[]> {
+  const [users, finishedMatches] = await getUsersAndFinishedMatches();
+  return computeLeaderboardEntries(users, finishedMatches.slice(0, -1));
 }

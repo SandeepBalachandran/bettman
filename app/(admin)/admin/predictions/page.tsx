@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { TeamFlag } from "@/components/TeamFlag";
+import { RemindMissingButton } from "@/components/features/admin/RemindMissingButton";
 import type { Round } from "@prisma/client";
 
 const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
@@ -112,9 +113,12 @@ export default async function AdminPredictionsPage() {
                     )}
 
                     {missingUsers.length > 0 && (
-                      <p className="mt-1 text-xs text-gray-400">
-                        Not yet predicted: {missingUsers.map((u) => u.name).join(", ")}
-                      </p>
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs text-gray-400">
+                          Not yet predicted: {missingUsers.map((u) => u.name).join(", ")}
+                        </p>
+                        <RemindMissingButton matchId={match.id} />
+                      </div>
                     )}
                   </div>
                 );

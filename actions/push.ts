@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireAdmin } from "@/lib/authz";
-import { sendPushToAll } from "@/lib/push";
+import { sendPushToAll, sendPushToUser } from "@/lib/push";
 
 const subscriptionSchema = z.object({
   endpoint: z.string().min(1),
@@ -45,4 +45,36 @@ export async function sendAdminNotification(input: z.infer<typeof adminNotificat
 
   const recipientCount = await sendPushToAll({ title: data.title, body: data.body });
   return { recipientCount };
+}
+
+export async function remindMissingPredictions(matchId: string) {
+  await requireAdmin();
+
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    include: { homeTeam: true, awayTeam: true, predictions: { select: { userId: true } } },
+  });
+
+  if (!match) {
+    throw new Error("Match not found.");
+  }
+
+  const predictedUserIds = new Set(match.predictions.map((p) => p.userId));
+  const missingUsers = await prisma.user.findMany({
+    where: { role: "USER", active: true, id: { notIn: [...predictedUserIds] } },
+    select: { id: true },
+  });
+
+  const matchName = `${match.homeTeam.name} vs ${match.awayTeam.name}`;
+  const counts = await Promise.all(
+    missingUsers.map((u) =>
+      sendPushToUser(u.id, {
+        title: "Don't forget to predict!",
+        body: `${matchName} — get your picks in before it locks.`,
+        url: `/predict/${matchId}`,
+      })
+    )
+  );
+
+  return { remindedUsers: missingUsers.length, recipientDevices: counts.reduce((a, b) => a + b, 0) };
 }
