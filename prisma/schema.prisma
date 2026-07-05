@@ -73,6 +73,7 @@ model Player {
   name     String
   position String?
   photoUrl String?
+  jerseyNumber Int?
 
   team              Team               @relation(fields: [teamId], references: [id])
   matchScorers      MatchScorer[]

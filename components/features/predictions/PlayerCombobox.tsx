@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { TeamFlag } from "@/components/TeamFlag";
 
 export type ComboboxPlayer = {
   id: string;
   name: string;
   photoUrl?: string | null;
   position?: string | null;
+  jerseyNumber?: number | null;
+  teamFlag?: string | null;
 };
 
 export function PlayerCombobox({
@@ -45,7 +48,11 @@ export function PlayerCombobox({
         {selected ? (
           <>
             <PlayerAvatar name={selected.name} photoUrl={selected.photoUrl} size={20} />
+            {selected.teamFlag && <TeamFlag flag={selected.teamFlag} name="" size={14} />}
             <span className="truncate">
+              {selected.jerseyNumber != null && (
+                <span className="text-gray-400">#{selected.jerseyNumber} </span>
+              )}
               {selected.name}
               {selected.position && (
                 <span className="ml-1 text-xs text-gray-400">({selected.position})</span>
@@ -110,7 +117,11 @@ export function PlayerCombobox({
                     }`}
                   >
                     <PlayerAvatar name={player.name} photoUrl={player.photoUrl} size={24} />
+                    {player.teamFlag && <TeamFlag flag={player.teamFlag} name="" size={14} />}
                     <span className="truncate">
+                      {player.jerseyNumber != null && (
+                        <span className="text-gray-400">#{player.jerseyNumber} </span>
+                      )}
                       {player.name}
                       {player.position && (
                         <span className="ml-1 text-xs text-gray-400">({player.position})</span>

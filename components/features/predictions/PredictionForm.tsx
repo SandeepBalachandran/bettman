@@ -12,10 +12,12 @@ export type PredictionFormPlayer = {
   name: string;
   photoUrl?: string | null;
   position?: string | null;
+  jerseyNumber?: number | null;
 };
 export type PredictionFormTeam = {
   id: string;
   name: string;
+  flag?: string | null;
   players: PredictionFormPlayer[];
 };
 
@@ -45,7 +47,10 @@ export function PredictionForm({
   // Sort alphabetically within each team, but keep the two teams as separate
   // blocks (home team's roster, then away team's) rather than interleaving them.
   const byName = (a: PredictionFormPlayer, b: PredictionFormPlayer) => a.name.localeCompare(b.name);
-  const allPlayers = [...[...homeTeam.players].sort(byName), ...[...awayTeam.players].sort(byName)];
+  const allPlayers = [
+    ...[...homeTeam.players].sort(byName).map((p) => ({ ...p, teamFlag: homeTeam.flag })),
+    ...[...awayTeam.players].sort(byName).map((p) => ({ ...p, teamFlag: awayTeam.flag })),
+  ];
 
   function handleScorerChange(index: number, playerId: string) {
     setScorers((prev) => {

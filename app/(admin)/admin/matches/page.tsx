@@ -59,6 +59,7 @@ export default async function AdminMatchesPage() {
                   teamId: p.teamId,
                   photoUrl: p.photoUrl,
                   position: p.position,
+                  jerseyNumber: p.jerseyNumber,
                 })),
                 kickoffTime: match.kickoffTime.toISOString(),
                 status: match.status,

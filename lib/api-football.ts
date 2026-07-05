@@ -66,7 +66,15 @@ function getToken(): string {
   return token;
 }
 
+let networkCallCount = 0;
+
+/** How many real HTTP requests have gone out this process — lets a caller (e.g. a sync script's rate-limit delay) skip waiting when every call was actually served from the disk cache. */
+export function getApiFootballNetworkCallCount(): number {
+  return networkCallCount;
+}
+
 async function apiFootballGet<T>(endpoint: string): Promise<T> {
+  networkCallCount++;
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     headers: { "x-apisports-key": getToken() },
   });

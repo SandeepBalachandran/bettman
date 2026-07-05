@@ -81,11 +81,13 @@ export default async function PredictPage({
             homeTeam={{
               id: match.homeTeam.id,
               name: match.homeTeam.name,
+              flag: match.homeTeam.flag,
               players: match.homeTeam.players,
             }}
             awayTeam={{
               id: match.awayTeam.id,
               name: match.awayTeam.name,
+              flag: match.awayTeam.flag,
               players: match.awayTeam.players,
             }}
             initialWinnerTeamId={existingPrediction?.winnerTeamId ?? null}

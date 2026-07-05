@@ -795,3 +795,17 @@ Added a new `.popover` class (`app/globals.css`) — solid `var(--background)` i
 - `PredictionForm.tsx` and `admin/matches/page.tsx` now sort each team's roster alphabetically by name *before* concatenating into the combined list passed to `PlayerCombobox` — home team's players A-Z, then away team's players A-Z, rather than sorting the whole 50+ player list together (which would interleave the two teams' players).
 
 **Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean.
+
+### Added jersey number + team flag to the scorer picker
+
+Follow-up to "what other player details can be shown" — user picked jersey number and team flag, both derivable from data already fetched/stored (no new API calls needed).
+
+- **`prisma/schema.prisma`** — added `Player.jerseyNumber Int?`.
+- **`scripts/sync-player-photos.ts`** — now also persists `jerseyNumber` from the squad data it already fetches (the `number` field was already in every api-football squad response and in the on-disk cache, just never saved to the DB before). Backfilled **379 players** across all 16 Round of 16 teams from already-cached data — no network calls needed.
+- **`lib/api-football.ts`** — added `getApiFootballNetworkCallCount()`, a simple counter incremented in the one chokepoint (`apiFootballGet`) every real HTTP request passes through. `sync-player-photos.ts` now checks this before/after each team and only sleeps the 7s rate-limit delay if that team's calls actually hit the network — a fully cached re-run (like this one) now finishes in milliseconds instead of ~2 minutes of unconditional sleeping. Verified in isolation (cached lookup: 13ms, 0 network calls).
+- **`PlayerCombobox`** — `ComboboxPlayer` gained `jerseyNumber` and `teamFlag`; both now render as "🇧🇷 #10 Neymar (Forward)" style in the dropdown list and the selected-value trigger.
+- **`PredictionForm.tsx`** — `PredictionFormTeam` gained an optional `flag`, threaded into each player's `teamFlag` when building the combined scorer list.
+- **`AdminMatchRow.tsx`** — derives each player's `teamFlag` by comparing `player.teamId` against `match.homeTeam.id`/`match.awayTeam.id` (already had both team flags available).
+- **`predict/[matchId]/page.tsx`** and **`admin/matches/page.tsx`** — pass `flag`/`jerseyNumber` through to the components above.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Jersey numbers confirmed present in the DB for 379 players via a throwaway check script. Not yet visually checked in a browser.

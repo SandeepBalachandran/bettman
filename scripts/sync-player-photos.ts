@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
-import { searchApiFootballTeam, fetchApiFootballSquad } from "@/lib/api-football";
+import {
+  searchApiFootballTeam,
+  fetchApiFootballSquad,
+  getApiFootballNetworkCallCount,
+} from "@/lib/api-football";
 import { playerMatchKey } from "@/lib/player-name-match";
 
 const prisma = new PrismaClient();
@@ -31,6 +35,7 @@ async function main() {
 
   for (const [index, team] of teams.entries()) {
     console.log(`[${index + 1}/${teams.length}] ${team.name}...`);
+    const callsBefore = getApiFootballNetworkCallCount();
 
     const apiTeam = await searchApiFootballTeam(team.name);
     if (!apiTeam) {
@@ -38,7 +43,6 @@ async function main() {
       continue;
     }
 
-    await sleep(DELAY_BETWEEN_REQUESTS_MS);
     const squad = await fetchApiFootballSquad(apiTeam.id);
     const squadByKey = new Map<string, (typeof squad)[number]>();
     for (const p of squad) {
@@ -49,19 +53,26 @@ async function main() {
     for (const player of team.players) {
       const key = playerMatchKey(player.name);
       const match = key ? squadByKey.get(key) : undefined;
-      if (!match || !match.photo) {
+      if (!match) {
         unmatched++;
         continue;
       }
 
       await prisma.player.update({
         where: { id: player.id },
-        data: { photoUrl: match.photo },
+        data: {
+          ...(match.photo ? { photoUrl: match.photo } : {}),
+          jerseyNumber: match.number,
+        },
       });
       updated++;
     }
 
-    if (index < teams.length - 1) {
+    // Only wait if this team actually hit the network (cached responses are
+    // instant and don't count against the rate limit) and there's another
+    // team left to process.
+    const madeNetworkCalls = getApiFootballNetworkCallCount() > callsBefore;
+    if (madeNetworkCalls && index < teams.length - 1) {
       await sleep(DELAY_BETWEEN_REQUESTS_MS);
     }
   }

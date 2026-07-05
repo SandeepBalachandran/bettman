@@ -19,6 +19,7 @@ export type AdminMatchRowData = {
     teamId: string;
     photoUrl?: string | null;
     position?: string | null;
+    jerseyNumber?: number | null;
   }[];
   kickoffTime: string;
   status: string;
@@ -31,6 +32,11 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
   const [isPending, startTransition] = useTransition();
   const [winnerTeamId, setWinnerTeamId] = useState(match.winnerTeamId ?? "");
   const [scorers, setScorers] = useState<string[]>(["", "", ""]);
+
+  const playersWithTeamFlag = match.players.map((p) => ({
+    ...p,
+    teamFlag: p.teamId === match.homeTeam.id ? match.homeTeam.flag : match.awayTeam.flag,
+  }));
 
   function run(action: () => Promise<unknown>, successMessage: string) {
     startTransition(async () => {
@@ -101,7 +107,7 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
           {[0, 1, 2].map((index) => (
             <PlayerCombobox
               key={index}
-              players={match.players}
+              players={playersWithTeamFlag}
               value={scorers[index]}
               onChange={(playerId) => {
                 const next = [...scorers];
