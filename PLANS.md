@@ -773,3 +773,10 @@ Extended the photo work beyond the scorer-picker dropdown to every other place a
 - **`components/features/admin/AdminMatchRow.tsx`** — the admin "Finish match" scorer pickers were still plain `<select>` elements (the searchable-photo `PlayerCombobox` built earlier only replaced the *player-facing* prediction form); swapped these to `PlayerCombobox` too for consistency, so admins see the same searchable, photo-enabled picker when manually finishing a match. Required adding `photoUrl` to `AdminMatchRowData.players` and to the mapping in `/admin/matches`.
 
 **Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Not yet visually checked in a browser.
+### Fix: PlayerCombobox dropdown overlapping the submit button on mobile
+
+User reported the scorer dropdown looked broken on a phone — the "Scorer 3" combobox's popup (previously `position: absolute`, anchored just below its own trigger) visually collided with the "Update prediction" submit button sitting right underneath it in the form, since the popup doesn't push page content down and there's little vertical room left on a small screen for the last scorer slot.
+
+Rebuilt `PlayerCombobox`'s open panel as a **fixed bottom-sheet with a backdrop** instead of an anchored popup: `fixed inset-x-4 bottom-4 z-50` (centered as a `sm:w-96` modal on wider screens) plus a `fixed inset-0 z-40 bg-black/40` backdrop that closes the sheet on tap. This can never collide with surrounding form content regardless of which scorer slot opened it, and reads more like a native mobile picker. Dropped the old `mousedown`-listener close-on-outside-click logic in favor of the backdrop's `onClick` — simpler and more reliable on touch.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Not yet visually re-checked on an actual phone.
