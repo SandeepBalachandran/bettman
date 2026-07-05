@@ -22,7 +22,7 @@ function avatarColorFor(userId: string) {
 
 /** Deterministic cartoon avatar per user — same seed always renders the same character. */
 function CartoonAvatar({ userId, name }: { readonly userId: string; readonly name: string }) {
-  const [failed, setFailed] = useState(true);
+  const [failed, setFailed] = useState(false);
   const initials = name.slice(0, 2).toUpperCase();
 
   if (failed) {
@@ -40,8 +40,7 @@ function CartoonAvatar({ userId, name }: { readonly userId: string; readonly nam
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(initials+'male'
-      )}`}
+      src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(userId)}`}
       alt=""
       width={36}
       height={36}

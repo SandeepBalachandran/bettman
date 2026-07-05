@@ -9,6 +9,7 @@ export type MatchCardData = {
   awayTeam: { name: string; flag: string | null };
   hasPrediction: boolean;
   liveStatus?: string;
+  isNext?: boolean;
 };
 
 const LIVE_STATUS_LABELS: Record<string, string> = {
@@ -23,11 +24,18 @@ export function MatchCard({ match }: { readonly match: MatchCardData }) {
   return (
     <Link
       href={`/predict/${match.id}`}
-      className="card card-interactive block border-l-4 border-accent p-3 sm:p-4"
+      className={`card card-interactive block border-l-4 border-accent p-3 sm:p-4 ${
+        match.isNext ? "animate-pulse-border" : ""
+      }`}
     >
       <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
         <CountdownBadge kickoffTime={match.kickoffTime.toISOString()} />
         <div className="flex items-center gap-1">
+          {match.isNext && (
+            <span className="rounded-full bg-highlight/15 px-2 py-0.5 text-xs font-medium text-highlight-foreground dark:text-highlight">
+              Up next
+            </span>
+          )}
           {liveLabel && (
             <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success">
               {liveLabel}

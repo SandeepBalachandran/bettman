@@ -96,6 +96,41 @@ export default async function LeaderboardPage() {
         </div>
       )}
 
+      {leaderboard.length > 0 && (
+        <div className="card flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 text-[11px] text-gray-500">
+          <span className="font-semibold text-gray-400">Legend:</span>
+          <span className="inline-flex items-center gap-1">
+            <span className="rounded-full bg-accent/10 px-1.5 py-0.5 font-medium text-accent">
+              W
+            </span>
+            winner points
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="rounded-full bg-success/10 px-1.5 py-0.5 font-medium text-success">
+              S
+            </span>
+            scorer points
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="rounded-full bg-danger/10 px-1.5 py-0.5 font-medium text-danger">
+              P
+            </span>
+            penalty (wrong scorer picks)
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="rounded-full bg-highlight/15 px-1.5 py-0.5 font-medium text-highlight-foreground dark:text-highlight">
+              🔥
+            </span>
+            win streak
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="font-semibold text-success">▲</span>/
+            <span className="font-semibold text-danger">▼</span>
+            rank change since last match
+          </span>
+        </div>
+      )}
+
       {leaderboard.length === 0 ? (
         <p className="text-sm text-gray-500">No players yet.</p>
       ) : (

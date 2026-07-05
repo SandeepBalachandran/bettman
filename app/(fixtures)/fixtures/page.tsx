@@ -58,6 +58,13 @@ export default async function FixturesPage() {
     matchesByRound.set(match.round, existing);
   }
 
+  const nextMatch = matches
+    .filter((m) => m.status !== "FINISHED")
+    .reduce<(typeof matches)[number] | null>(
+      (earliest, m) => (!earliest || m.kickoffTime < earliest.kickoffTime ? m : earliest),
+      null
+    );
+
   const roundOf16Matches = matchesByRound.get("ROUND_OF_16");
   const firstMatchKickoff = roundOf16Matches?.length
     ? roundOf16Matches.reduce(
@@ -115,6 +122,7 @@ export default async function FixturesPage() {
                   awayTeam: { name: match.awayTeam.name, flag: match.awayTeam.flag },
                   hasPrediction: match.predictions.length > 0,
                   liveStatus: liveMatch?.status,
+                  isNext: match.id === nextMatch?.id,
                 };
                 return <MatchCard key={match.id} match={cardData} />;
               })}

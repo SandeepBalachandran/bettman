@@ -67,6 +67,21 @@ body {
   color: transparent;
 }
 
+@keyframes pulse-border {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--highlight) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--highlight) 0%, transparent);
+  }
+}
+
+.animate-pulse-border {
+  border-color: var(--highlight) !important;
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
