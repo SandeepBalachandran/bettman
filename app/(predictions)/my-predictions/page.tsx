@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { TeamFlag } from "@/components/TeamFlag";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { isMatchLocked } from "@/lib/match-lock";
 import type { Round } from "@prisma/client";
 
@@ -21,7 +22,6 @@ const ROUND_BADGE_STYLES: Record<Round, string> = {
   FINAL: "bg-danger/15 text-danger",
 };
 
-const SCORER_EMOJI = "⚽";
 
 export default async function MyPredictionsPage() {
   const user = await requireAuth();
@@ -115,8 +115,9 @@ export default async function MyPredictionsPage() {
                       {prediction.scorers.length > 0 ? (
                         <div className="flex flex-wrap gap-x-3 gap-y-1">
                           {prediction.scorers.map((s) => (
-                            <span key={s.id}>
-                              {SCORER_EMOJI} {s.player.name}
+                            <span key={s.id} className="inline-flex items-center gap-1">
+                              <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={16} />
+                              {s.player.name}
                             </span>
                           ))}
                         </div>

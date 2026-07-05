@@ -6,13 +6,14 @@ import { useRouter } from "next/navigation";
 import { deleteMatch, finishMatch, setMatchLocked } from "@/actions/match";
 import { TeamFlag } from "@/components/TeamFlag";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { PlayerCombobox } from "@/components/features/predictions/PlayerCombobox";
 
 export type AdminMatchRowData = {
   id: string;
   round: string;
   homeTeam: { id: string; name: string; flag: string | null };
   awayTeam: { id: string; name: string; flag: string | null };
-  players: { id: string; name: string; teamId: string }[];
+  players: { id: string; name: string; teamId: string; photoUrl?: string | null }[];
   kickoffTime: string;
   status: string;
   locked: boolean;
@@ -92,23 +93,18 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
             <option value={match.awayTeam.id}>{match.awayTeam.name}</option>
           </select>
           {[0, 1, 2].map((index) => (
-            <select
+            <PlayerCombobox
               key={index}
+              players={match.players}
               value={scorers[index]}
-              onChange={(e) => {
+              onChange={(playerId) => {
                 const next = [...scorers];
-                next[index] = e.target.value;
+                next[index] = playerId;
                 setScorers(next);
               }}
-              className="input-pill"
-            >
-              <option value="">Scorer {index + 1}...</option>
-              {match.players.map((player) => (
-                <option key={player.id} value={player.id}>
-                  {player.name}
-                </option>
-              ))}
-            </select>
+              placeholder={`Scorer ${index + 1}...`}
+              excludeIds={scorers.filter((_, i) => i !== index)}
+            />
           ))}
           <button
             type="button"

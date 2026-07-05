@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { AdminMatchRow } from "@/components/features/admin/AdminMatchRow";
 import { SyncMatchesButton } from "@/components/features/admin/SyncMatchesButton";
+import { SyncMatchResultsButton } from "@/components/features/admin/SyncMatchResultsButton";
 
 export default async function AdminMatchesPage() {
   await requireAdmin();
@@ -18,7 +19,10 @@ export default async function AdminMatchesPage() {
     <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold gradient-text">Manage Matches</h1>
-        <SyncMatchesButton />
+        <div className="flex flex-wrap gap-2">
+          <SyncMatchResultsButton />
+          <SyncMatchesButton />
+        </div>
       </div>
 
       {matches.length === 0 ? (
@@ -48,6 +52,7 @@ export default async function AdminMatchesPage() {
                   id: p.id,
                   name: p.name,
                   teamId: p.teamId,
+                  photoUrl: p.photoUrl,
                 })),
                 kickoffTime: match.kickoffTime.toISOString(),
                 status: match.status,

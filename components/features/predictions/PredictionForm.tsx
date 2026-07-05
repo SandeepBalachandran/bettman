@@ -5,8 +5,9 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { submitPrediction } from "@/actions/prediction";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { PlayerCombobox } from "@/components/features/predictions/PlayerCombobox";
 
-export type PredictionFormPlayer = { id: string; name: string };
+export type PredictionFormPlayer = { id: string; name: string; photoUrl?: string | null };
 export type PredictionFormTeam = {
   id: string;
   name: string;
@@ -110,19 +111,14 @@ export function PredictionForm({
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">Goal scorers (pick at least 2, up to 3)</legend>
         {[0, 1, 2].map((index) => (
-          <select
+          <PlayerCombobox
             key={index}
+            players={allPlayers}
             value={scorers[index]}
-            onChange={(event) => handleScorerChange(index, event.target.value)}
-            className="input-pill w-full"
-          >
-            <option value="">Scorer {index + 1}...</option>
-            {allPlayers.map((player) => (
-              <option key={player.id} value={player.id}>
-                {player.name}
-              </option>
-            ))}
-          </select>
+            onChange={(playerId) => handleScorerChange(index, playerId)}
+            placeholder={`Scorer ${index + 1}...`}
+            excludeIds={scorers.filter((_, i) => i !== index)}
+          />
         ))}
       </fieldset>
 

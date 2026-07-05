@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/authz";
 import { syncMatchesFromLiveApi, type SyncMatchesResult } from "@/lib/sync-matches";
+import { syncFinishedMatchResults, syncFinishedMatchResultsWithScorers } from "@/lib/sync-match-results";
 import { sendPushToAll } from "@/lib/push";
 
 const matchObjectSchema = z.object({
@@ -153,6 +154,58 @@ export async function syncMatchesFromLiveApiAction(
   const result = await syncMatchesFromLiveApi(prisma, competitionCode);
   revalidatePath("/fixtures");
   revalidatePath("/admin/matches");
+  return result;
+}
+
+export async function syncMatchResultsAction(competitionCode = "WC") {
+  await requireAdmin();
+  const result = await syncFinishedMatchResults(prisma, competitionCode);
+
+  if (result.updated.length > 0) {
+    revalidatePath("/fixtures");
+    revalidatePath("/admin/matches");
+    revalidatePath("/leaderboard");
+    revalidatePath("/admin");
+    revalidatePath("/money");
+
+    for (const match of result.updated) {
+      revalidatePath(`/match/${match.matchId}`);
+      await sendPushToAll({
+        title: "Match finished!",
+        body: `${match.homeTeamName} vs ${match.awayTeamName} — ${match.winnerName} won. Check your points and money. (Scorers pending admin entry.)`,
+        url: `/match/${match.matchId}`,
+      }).catch((error) => console.error("Failed to send match-finished push:", error));
+    }
+  }
+
+  return result;
+}
+
+export async function syncMatchResultsWithScorersAction() {
+  await requireAdmin();
+  const result = await syncFinishedMatchResultsWithScorers(prisma);
+
+  if (result.updated.length > 0) {
+    revalidatePath("/fixtures");
+    revalidatePath("/admin/matches");
+    revalidatePath("/leaderboard");
+    revalidatePath("/admin");
+    revalidatePath("/money");
+
+    for (const match of result.updated) {
+      revalidatePath(`/match/${match.matchId}`);
+      const scorerNote =
+        match.scorerNames.length > 0
+          ? ` Scorers: ${match.scorerNames.join(", ")}.`
+          : "";
+      await sendPushToAll({
+        title: "Match finished!",
+        body: `${match.homeTeamName} vs ${match.awayTeamName} — ${match.winnerName} won.${scorerNote} Check your points and money.`,
+        url: `/match/${match.matchId}`,
+      }).catch((error) => console.error("Failed to send match-finished push:", error));
+    }
+  }
+
   return result;
 }
 

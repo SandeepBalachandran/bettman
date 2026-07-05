@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { TeamFlag } from "@/components/TeamFlag";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { RemindMissingButton } from "@/components/features/admin/RemindMissingButton";
 import type { Round } from "@prisma/client";
 
@@ -101,11 +102,22 @@ export default async function AdminPredictionsPage() {
                               {prediction.user.name}
                             </span>
                             <span>→ winner: {prediction.winnerTeam.name}</span>
-                            <span className="text-gray-500">
-                              scorers:{" "}
-                              {prediction.scorers.length > 0
-                                ? prediction.scorers.map((s) => s.player.name).join(", ")
-                                : "none"}
+                            <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-500">
+                              scorers:
+                              {prediction.scorers.length > 0 ? (
+                                prediction.scorers.map((s) => (
+                                  <span key={s.id} className="inline-flex items-center gap-1">
+                                    <PlayerAvatar
+                                      name={s.player.name}
+                                      photoUrl={s.player.photoUrl}
+                                      size={14}
+                                    />
+                                    {s.player.name}
+                                  </span>
+                                ))
+                              ) : (
+                                <span>none</span>
+                              )}
                             </span>
                           </li>
                         ))}

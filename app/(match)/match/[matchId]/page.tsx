@@ -6,8 +6,7 @@ import { calculateMatchPoints } from "@/lib/scoring";
 import { isMatchLocked } from "@/lib/match-lock";
 import { PerfectPredictionConfetti } from "@/components/features/match/PerfectPredictionConfetti";
 import { TeamFlag } from "@/components/TeamFlag";
-
-const SCORER_EMOJI = "⚽";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 
 export default async function MatchDetailsPage({
   params,
@@ -73,12 +72,19 @@ export default async function MatchDetailsPage({
           <p className="font-semibold text-success">
             Winner: {match.winnerTeam?.name ?? "—"}
           </p>
-          <p>
-            Scorers:{" "}
-            {match.scorers.length > 0
-              ? match.scorers.map((s) => s.player.name).join(", ")
-              : "None"}
-          </p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>Scorers:</span>
+            {match.scorers.length > 0 ? (
+              match.scorers.map((s) => (
+                <span key={s.id} className="inline-flex items-center gap-1">
+                  <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={16} />
+                  {s.player.name}
+                </span>
+              ))
+            ) : (
+              <span>None</span>
+            )}
+          </div>
         </section>
       )}
 
@@ -92,12 +98,19 @@ export default async function MatchDetailsPage({
                 ? match.homeTeam.name
                 : match.awayTeam.name}
             </p>
-            <p>
-              Scorers:{" "}
-              {myPrediction.scorers.length > 0
-                ? myPrediction.scorers.map((s) => s.player.name).join(", ")
-                : "None"}
-            </p>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span>Scorers:</span>
+              {myPrediction.scorers.length > 0 ? (
+                myPrediction.scorers.map((s) => (
+                  <span key={s.id} className="inline-flex items-center gap-1">
+                    <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={16} />
+                    {s.player.name}
+                  </span>
+                ))
+              ) : (
+                <span>None</span>
+              )}
+            </div>
             {points && (
               <p className="font-bold text-highlight-foreground dark:text-highlight">
                 Points earned: {points.total} (winner {points.winnerPoints}, scorers{" "}
@@ -139,8 +152,9 @@ export default async function MatchDetailsPage({
                     {prediction.scorers.length > 0 ? (
                       <div className="flex flex-wrap gap-x-3 gap-y-1">
                         {prediction.scorers.map((s) => (
-                          <span key={s.id}>
-                            {SCORER_EMOJI} {s.player.name}
+                          <span key={s.id} className="inline-flex items-center gap-1">
+                            <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={16} />
+                            {s.player.name}
                           </span>
                         ))}
                       </div>

@@ -13,7 +13,13 @@ function sleep(ms: number) {
 
 async function main() {
   const teams = await prisma.team.findMany({
-    where: { externalId: { not: null, gt: 0 } }, // excludes the -1 TBD placeholder team
+    where: {
+      externalId: { not: null, gt: 0 }, // excludes the -1 TBD placeholder team
+      OR: [
+        { homeMatches: { some: { round: "ROUND_OF_16" } } },
+        { awayMatches: { some: { round: "ROUND_OF_16" } } },
+      ],
+    },
   });
 
   console.log(`Fetching full squads for ${teams.length} team(s)...`);
