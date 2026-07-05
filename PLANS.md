@@ -780,3 +780,18 @@ User reported the scorer dropdown looked broken on a phone — the "Scorer 3" co
 Rebuilt `PlayerCombobox`'s open panel as a **fixed bottom-sheet with a backdrop** instead of an anchored popup: `fixed inset-x-4 bottom-4 z-50` (centered as a `sm:w-96` modal on wider screens) plus a `fixed inset-0 z-40 bg-black/40` backdrop that closes the sheet on tap. This can never collide with surrounding form content regardless of which scorer slot opened it, and reads more like a native mobile picker. Dropped the old `mousedown`-listener close-on-outside-click logic in favor of the backdrop's `onClick` — simpler and more reliable on touch.
 
 **Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Not yet visually re-checked on an actual phone.
+
+### Fix: dropdown/menu backgrounds transparent in dark mode
+
+The `.card` class is intentionally translucent in dark mode (`color-mix(in srgb, #ffffff 5%, transparent)`) — fine for content sitting in normal page flow against the page's own dark background, but both the `ProfileMenu` header dropdown and the new `PlayerCombobox` bottom-sheet reused `.card` for their floating overlay, which let whatever was behind them bleed through and looked "transparent"/broken.
+
+Added a new `.popover` class (`app/globals.css`) — solid `var(--background)` in light mode, solid `#1c1c1e` in dark mode — for anything that floats over other content rather than sitting inline. Swapped both `ProfileMenu`'s dropdown and `PlayerCombobox`'s sheet from `.card` to `.popover`.
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean. Not yet visually re-checked in dark mode on a phone.
+
+### PlayerCombobox: show position, sort alphabetically per team (no interleaving)
+
+- `ComboboxPlayer` gained an optional `position` field, shown next to the name in both the dropdown list and the selected-value trigger (e.g. "Erling Haaland (Forward)").
+- `PredictionForm.tsx` and `admin/matches/page.tsx` now sort each team's roster alphabetically by name *before* concatenating into the combined list passed to `PlayerCombobox` — home team's players A-Z, then away team's players A-Z, rather than sorting the whole 50+ player list together (which would interleave the two teams' players).
+
+**Verification:** `npx tsc --noEmit`, `npx eslint .`, `npm run build` all clean.

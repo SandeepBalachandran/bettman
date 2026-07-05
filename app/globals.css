@@ -126,6 +126,26 @@ body {
     0 12px 30px -16px rgba(0, 0, 0, 0.7);
 }
 
+/* .card's translucent dark background is intentional for content sitting in
+   normal page flow, but it reads as "broken/see-through" for a floating menu
+   or dropdown overlaid on top of other content — those need a solid backing. */
+.popover {
+  border-radius: 1.25rem;
+  background: var(--background);
+  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 10px 26px -14px rgba(0, 0, 0, 0.2);
+}
+
+.dark .popover {
+  background: #1c1c1e;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.45),
+    0 12px 30px -16px rgba(0, 0, 0, 0.7);
+}
+
 .table-card {
   border-radius: 1.25rem;
   overflow: hidden;

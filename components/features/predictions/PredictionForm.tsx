@@ -7,7 +7,12 @@ import { submitPrediction } from "@/actions/prediction";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PlayerCombobox } from "@/components/features/predictions/PlayerCombobox";
 
-export type PredictionFormPlayer = { id: string; name: string; photoUrl?: string | null };
+export type PredictionFormPlayer = {
+  id: string;
+  name: string;
+  photoUrl?: string | null;
+  position?: string | null;
+};
 export type PredictionFormTeam = {
   id: string;
   name: string;
@@ -37,7 +42,10 @@ export function PredictionForm({
     initialScorerPlayerIds[2] ?? "",
   ]);
 
-  const allPlayers = [...homeTeam.players, ...awayTeam.players];
+  // Sort alphabetically within each team, but keep the two teams as separate
+  // blocks (home team's roster, then away team's) rather than interleaving them.
+  const byName = (a: PredictionFormPlayer, b: PredictionFormPlayer) => a.name.localeCompare(b.name);
+  const allPlayers = [...[...homeTeam.players].sort(byName), ...[...awayTeam.players].sort(byName)];
 
   function handleScorerChange(index: number, playerId: string) {
     setScorers((prev) => {

@@ -48,11 +48,17 @@ export default async function AdminMatchesPage() {
                   name: match.awayTeam.name,
                   flag: match.awayTeam.flag,
                 },
-                players: [...match.homeTeam.players, ...match.awayTeam.players].map((p) => ({
+                // Sort alphabetically within each team, but keep the two teams as
+                // separate blocks rather than interleaving them.
+                players: [
+                  ...[...match.homeTeam.players].sort((a, b) => a.name.localeCompare(b.name)),
+                  ...[...match.awayTeam.players].sort((a, b) => a.name.localeCompare(b.name)),
+                ].map((p) => ({
                   id: p.id,
                   name: p.name,
                   teamId: p.teamId,
                   photoUrl: p.photoUrl,
+                  position: p.position,
                 })),
                 kickoffTime: match.kickoffTime.toISOString(),
                 status: match.status,

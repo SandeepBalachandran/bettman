@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 
-export type ComboboxPlayer = { id: string; name: string; photoUrl?: string | null };
+export type ComboboxPlayer = {
+  id: string;
+  name: string;
+  photoUrl?: string | null;
+  position?: string | null;
+};
 
 export function PlayerCombobox({
   players,
@@ -40,7 +45,12 @@ export function PlayerCombobox({
         {selected ? (
           <>
             <PlayerAvatar name={selected.name} photoUrl={selected.photoUrl} size={20} />
-            <span className="truncate">{selected.name}</span>
+            <span className="truncate">
+              {selected.name}
+              {selected.position && (
+                <span className="ml-1 text-xs text-gray-400">({selected.position})</span>
+              )}
+            </span>
           </>
         ) : (
           <span className="text-gray-400">{placeholder}</span>
@@ -58,7 +68,7 @@ export function PlayerCombobox({
             onClick={close}
             aria-hidden="true"
           />
-          <div className="card fixed inset-x-4 bottom-4 z-50 max-h-[70vh] space-y-1 p-2 shadow-2xl sm:inset-x-auto sm:left-1/2 sm:w-96 sm:-translate-x-1/2">
+          <div className="popover fixed inset-x-4 bottom-4 z-50 max-h-[70vh] space-y-1 p-2 shadow-2xl sm:inset-x-auto sm:left-1/2 sm:w-96 sm:-translate-x-1/2">
             <input
               autoFocus
               value={query}
@@ -100,7 +110,12 @@ export function PlayerCombobox({
                     }`}
                   >
                     <PlayerAvatar name={player.name} photoUrl={player.photoUrl} size={24} />
-                    <span className="truncate">{player.name}</span>
+                    <span className="truncate">
+                      {player.name}
+                      {player.position && (
+                        <span className="ml-1 text-xs text-gray-400">({player.position})</span>
+                      )}
+                    </span>
                   </button>
                 );
               })}

@@ -13,7 +13,13 @@ export type AdminMatchRowData = {
   round: string;
   homeTeam: { id: string; name: string; flag: string | null };
   awayTeam: { id: string; name: string; flag: string | null };
-  players: { id: string; name: string; teamId: string; photoUrl?: string | null }[];
+  players: {
+    id: string;
+    name: string;
+    teamId: string;
+    photoUrl?: string | null;
+    position?: string | null;
+  }[];
   kickoffTime: string;
   status: string;
   locked: boolean;

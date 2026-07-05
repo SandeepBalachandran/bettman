@@ -49,7 +49,7 @@ export function ProfileMenu({ name }: { readonly name: string }) {
       {open && (
         <div
           role="menu"
-          className="card absolute right-0 top-[calc(100%+0.5rem)] z-50 w-48 overflow-hidden p-1 text-foreground"
+          className="popover absolute right-0 top-[calc(100%+0.5rem)] z-50 w-48 overflow-hidden p-1 text-foreground"
         >
           <div className="px-3 py-2 text-sm font-medium sm:hidden">{name}</div>
           <button
