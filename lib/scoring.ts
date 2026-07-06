@@ -18,7 +18,8 @@ export function calculateMatchPoints(
     match.winnerTeamId && prediction.winnerTeamId === match.winnerTeamId ? 30 : 0;
 
   const scorerPoints = prediction.scorerPlayerIds.reduce((sum, playerId) => {
-    return sum + (actualScorerPlayerIds.includes(playerId) ? 10 : 0);
+    const goalCount = actualScorerPlayerIds.filter(id => id === playerId).length;
+    return sum + (goalCount > 0 ? goalCount * 10 : 0);
   }, 0);
 
   return { winnerPoints, scorerPoints, total: winnerPoints + scorerPoints };

@@ -132,7 +132,7 @@ export default async function LeaderboardPage() {
               </p>
               <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
                 <li>✅ Correct winner: +30 pts</li>
-                <li>✅ Correct scorer: +10 pts</li>
+                <li>✅ Correct scorer: +10 pts per goal</li>
                 <li>❌ Wrong scorer: 0</li>
               </ul>
             </div>
@@ -143,12 +143,12 @@ export default async function LeaderboardPage() {
               <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
                 <li>✅ Correct winner: +₹30</li>
                 <li>❌ Wrong winner: -₹30</li>
-                <li>✅ Correct scorer: +₹5</li>
+                <li>✅ Correct scorer: +₹5 per goal</li>
                 <li>❌ Wrong scorer: -₹5</li>
               </ul>
             </div>
             <p className="text-[9px] sm:text-[10px] text-gray-500 italic mt-1 sm:mt-2">
-              💡 Points reward only. Money has penalties.
+              💡 If a player scores multiple goals, you get points/money for each goal. Points reward only. Money has penalties.
             </p>
           </div>
         </div>

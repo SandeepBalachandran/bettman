@@ -4,6 +4,10 @@ import { requireAuth } from "@/lib/authz";
 import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { isMatchLocked } from "@/lib/match-lock";
+import { calculateMatchPoints } from "@/lib/scoring";
+import { calculateMatchMoney } from "@/lib/money";
+import { moneyConfig } from "@/lib/money-config";
+import { formatMoney } from "@/lib/format-money";
 import type { Round } from "@prisma/client";
 
 const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
@@ -29,7 +33,7 @@ export default async function MyPredictionsPage() {
   const predictions = await prisma.prediction.findMany({
     where: { userId: user.id },
     include: {
-      match: { include: { homeTeam: true, awayTeam: true } },
+      match: { include: { homeTeam: true, awayTeam: true, scorers: true } },
       winnerTeam: true,
       scorers: { include: { player: true } },
     },
@@ -74,6 +78,33 @@ export default async function MyPredictionsPage() {
             <div className="w-full space-y-2">
               {roundPredictions.map((prediction) => {
                 const isLocked = isMatchLocked(prediction.match);
+                const isFinished = prediction.match.status === "FINISHED";
+
+                let points = 0;
+                let money = 0;
+
+                if (isFinished && prediction.match.winnerTeamId) {
+                  const actualScorerPlayerIds = prediction.match.scorers.map(s => s.playerId);
+                  const pointsData = calculateMatchPoints(
+                    {
+                      winnerTeamId: prediction.winnerTeamId,
+                      scorerPlayerIds: prediction.scorers.map(s => s.playerId),
+                    },
+                    { winnerTeamId: prediction.match.winnerTeamId },
+                    actualScorerPlayerIds
+                  );
+                  const moneyData = calculateMatchMoney(
+                    {
+                      winnerTeamId: prediction.winnerTeamId,
+                      scorerPlayerIds: prediction.scorers.map(s => s.playerId),
+                    },
+                    { winnerTeamId: prediction.match.winnerTeamId },
+                    actualScorerPlayerIds,
+                    moneyConfig
+                  );
+                  points = pointsData.total;
+                  money = moneyData.total;
+                }
 
                 return (
                   <Link
@@ -95,11 +126,30 @@ export default async function MyPredictionsPage() {
                           name={prediction.match.awayTeam.name}
                         />
                       </span>
-                      {isLocked && (
-                        <span className="shrink-0 rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">
-                          Locked
-                        </span>
-                      )}
+                      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                        {isFinished && (
+                          <>
+                            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
+                              +{points} pts
+                            </span>
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                              money >= 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'
+                            }`}>
+                              {money >= 0 ? '+' : ''}{formatMoney(money)}
+                            </span>
+                          </>
+                        )}
+                        {!isFinished && isLocked && (
+                          <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">
+                            Locked
+                          </span>
+                        )}
+                        {!isFinished && !isLocked && (
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-white/10 dark:text-gray-300">
+                            Pending
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">

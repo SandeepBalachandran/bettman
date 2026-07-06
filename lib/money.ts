@@ -27,10 +27,11 @@ export function calculateMatchMoney(
   }
 
   const scorerMoney = prediction.scorerPlayerIds.reduce((sum, playerId) => {
-    return sum +
-      (actualScorerPlayerIds.includes(playerId)
-        ? config.moneyPerCorrectScorer
-        : config.moneyPerIncorrectScorer);
+    const goalCount = actualScorerPlayerIds.filter(id => id === playerId).length;
+    if (goalCount > 0) {
+      return sum + goalCount * config.moneyPerCorrectScorer;
+    }
+    return sum + config.moneyPerIncorrectScorer;
   }, 0);
 
   return { winnerMoney, scorerMoney, total: winnerMoney + scorerMoney };
