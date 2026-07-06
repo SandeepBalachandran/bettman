@@ -75,27 +75,6 @@ export default async function LeaderboardPage() {
         </div>
       )}
 
-      {roundMvps.length > 0 && (
-        <div className="card space-y-2 p-4">
-          <p className="font-semibold">🏅 Round MVPs</p>
-          <div className="flex flex-wrap gap-2 text-xs">
-            {ROUND_ORDER.map((round) => {
-              const mvps = mvpsByRound.get(round);
-              if (!mvps || mvps.length === 0) return null;
-              return (
-                <span
-                  key={round}
-                  className="rounded-full bg-highlight/15 px-3 py-1 text-highlight-foreground dark:text-highlight"
-                >
-                  {ROUND_LABELS[round]}: {mvps.map((m) => m.name).join(" & ")} ({mvps[0].points}{" "}
-                  pts)
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {leaderboard.length > 0 && (
         <div className="card flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 text-[11px] text-gray-500">
           <span className="font-semibold text-gray-400">Legend:</span>
@@ -152,6 +131,38 @@ export default async function LeaderboardPage() {
           })}
         </div>
       )}
+
+      <div className="card space-y-3 p-4">
+        <div className="space-y-2">
+          <p className="font-semibold text-sm">📋 Scoring Guide</p>
+          <div className="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
+            <div>
+              <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">
+                ⭐ <span className="text-accent">Points (Leaderboard)</span>
+              </p>
+              <ul className="ml-5 list-disc space-y-0.5">
+                <li>✅ Correct winner: +30 pts</li>
+                <li>✅ Correct scorer: +10 pts each</li>
+                <li>❌ Wrong scorer: -5 pts each</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">
+                💰 <span className="text-success">Money</span>
+              </p>
+              <ul className="ml-5 list-disc space-y-0.5">
+                <li>✅ Correct winner: +₹30</li>
+                <li>❌ Wrong winner: -₹30</li>
+                <li>✅ Correct scorer: +₹5 each</li>
+                <li>❌ Wrong scorer: -₹5 each</li>
+              </ul>
+            </div>
+            <p className="text-[10px] text-gray-500 italic mt-2">
+              💡 Tip: You can win/lose money even if you don't gain/lose points (e.g., 0 scorers = 0 pts but still ±₹ per prediction)
+            </p>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

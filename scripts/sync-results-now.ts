@@ -10,12 +10,12 @@ async function main() {
   if (result.updated.length > 0) {
     console.log("\nMatches updated:");
     for (const m of result.updated) {
-      console.log(`  • ${m.homeTeamName} vs ${m.awayTeamName} — Winner: ${m.winnerTeamName}, Scorers: ${m.scorerNames.join(", ")}`);
+      console.log(`  • ${m.homeTeamName} vs ${m.awayTeamName} — Winner: ${m.winnerName}, Scorers: ${m.scorerNames.join(", ")}`);
     }
   }
 
-  if (result.teamLookupFailed > 0) {
-    console.log(`⚠️ ${result.teamLookupFailed} matches had team lookup failures`);
+  if (result.teamLookupFailed.length > 0) {
+    console.log(`⚠️ ${result.teamLookupFailed.length} teams had lookup failures: ${result.teamLookupFailed.join(", ")}`);
   }
   if (result.tbdSkipped > 0) {
     console.log(`⏳ ${result.tbdSkipped} TBD matches skipped`);
