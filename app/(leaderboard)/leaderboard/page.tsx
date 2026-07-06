@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/authz";
 import { getLeaderboard, getPreviousLeaderboard } from "@/lib/leaderboard";
 import { getUserMoney } from "@/lib/leaderboard-money";
 import { getRoundMvps, getUserWinnerStreak } from "@/lib/round-mvp";
-import { LeaderboardRow } from "@/components/features/leaderboard/LeaderboardRow";
+import { LeaderboardList } from "@/components/features/leaderboard/LeaderboardList";
 import { ShareToWhatsApp } from "@/components/ShareToWhatsApp";
 import { formatMoney } from "@/lib/format-money";
 import type { Round } from "@prisma/client";
@@ -58,12 +58,12 @@ export default async function LeaderboardPage() {
   const appUrl = host ? `${protocol}://${host}` : "";
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
-      <h1 className="text-2xl font-bold gradient-text">Leaderboard</h1>
+    <main className="mx-auto max-w-2xl space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
+      <h1 className="text-xl sm:text-2xl font-bold gradient-text">Leaderboard</h1>
 
       {myEntry && myRank && (
-        <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
-          <p className="text-sm">
+        <div className="card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4">
+          <p className="text-xs sm:text-sm">
             You&apos;re <span className="font-bold">#{myRank}</span> with{" "}
             <span className="font-bold">{myEntry.total} pts</span> ({formatMoney(myBalance)})
           </p>
@@ -76,36 +76,36 @@ export default async function LeaderboardPage() {
       )}
 
       {leaderboard.length > 0 && (
-        <div className="card flex flex-wrap items-center gap-x-3 gap-y-1.5 p-3 text-[11px] text-gray-500">
+        <div className="card flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1.5 p-2 sm:p-3 text-[9px] sm:text-[11px] text-gray-500">
           <span className="font-semibold text-gray-400">Legend:</span>
-          <span className="inline-flex items-center gap-1">
-            <span className="rounded-full bg-accent/10 px-1.5 py-0.5 font-medium text-accent">
+          <span className="inline-flex items-center gap-0.5 sm:gap-1">
+            <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
               W
             </span>
-            winner points
+            <span className="hidden sm:inline">winner points</span><span className="sm:hidden">wins</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="rounded-full bg-success/10 px-1.5 py-0.5 font-medium text-success">
+          <span className="inline-flex items-center gap-0.5 sm:gap-1">
+            <span className="rounded-full bg-success/10 px-1 sm:px-1.5 py-0.5 font-medium text-success">
               S
             </span>
-            scorer points
+            <span className="hidden sm:inline">scorer points</span><span className="sm:hidden">scorers</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="rounded-full bg-danger/10 px-1.5 py-0.5 font-medium text-danger">
+          <span className="inline-flex items-center gap-0.5 sm:gap-1">
+            <span className="rounded-full bg-danger/10 px-1 sm:px-1.5 py-0.5 font-medium text-danger">
               P
             </span>
-            penalty (wrong scorer picks)
+            <span className="hidden sm:inline">penalty</span><span className="sm:hidden">pen</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="rounded-full bg-highlight/15 px-1.5 py-0.5 font-medium text-highlight-foreground dark:text-highlight">
+          <span className="inline-flex items-center gap-0.5 sm:gap-1">
+            <span className="rounded-full bg-highlight/15 px-1 sm:px-1.5 py-0.5 font-medium text-highlight-foreground dark:text-highlight">
               🔥
             </span>
-            win streak
+            <span className="hidden sm:inline">win streak</span><span className="sm:hidden">streak</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="font-semibold text-success">▲</span>/
+          <span className="inline-flex items-center gap-0.5 sm:gap-1">
+            <span className="font-semibold text-success">▲</span><span className="hidden sm:inline">/</span>
             <span className="font-semibold text-danger">▼</span>
-            rank change since last match
+            <span className="hidden sm:inline">rank change</span><span className="sm:hidden">change</span>
           </span>
         </div>
       )}
@@ -113,52 +113,42 @@ export default async function LeaderboardPage() {
       {leaderboard.length === 0 ? (
         <p className="text-sm text-gray-500">No players yet.</p>
       ) : (
-        <div className="space-y-2">
-          {leaderboard.map((entry, index) => {
-            const rank = index + 1;
-            const previousRank = previousRankByUserId.get(entry.userId) ?? rank;
-            return (
-              <LeaderboardRow
-                key={entry.userId}
-                entry={entry}
-                rank={rank}
-                isCurrentUser={entry.userId === user.id}
-                moneyBalance={moneyByUserId.get(entry.userId) || 0}
-                streak={streakByUserId.get(entry.userId) || 0}
-                rankChange={previousRank - rank}
-              />
-            );
-          })}
-        </div>
+        <LeaderboardList
+          entries={leaderboard}
+          currentUserId={user.id}
+          previousRankByUserId={previousRankByUserId}
+          moneyByUserId={moneyByUserId}
+          streakByUserId={streakByUserId}
+        />
       )}
 
-      <div className="card space-y-3 p-4">
+      <div className="card space-y-2 sm:space-y-3 p-3 sm:p-4">
         <div className="space-y-2">
-          <p className="font-semibold text-sm">📋 Scoring Guide</p>
-          <div className="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
+          <p className="font-semibold text-xs sm:text-sm">📋 Scoring Guide</p>
+          <div className="space-y-1 sm:space-y-1.5 text-[11px] sm:text-xs text-gray-600 dark:text-gray-400">
             <div>
-              <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">
-                ⭐ <span className="text-accent">Points (Leaderboard)</span>
+              <p className="font-medium text-gray-700 dark:text-gray-300 mb-0.5 sm:mb-1">
+                ⭐ <span className="text-accent">Points</span>
               </p>
-              <ul className="ml-5 list-disc space-y-0.5">
+              <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
                 <li>✅ Correct winner: +30 pts</li>
-                <li>✅ Correct scorer: +10 pts each</li>
-                <li>❌ Wrong scorer: -5 pts each</li>
+                <li>✅ Correct scorer: +10 pts</li>
+                <li>❌ Wrong scorer: 0</li>
               </ul>
             </div>
             <div>
-              <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <p className="font-medium text-gray-700 dark:text-gray-300 mb-0.5 sm:mb-1">
                 💰 <span className="text-success">Money</span>
               </p>
-              <ul className="ml-5 list-disc space-y-0.5">
+              <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
                 <li>✅ Correct winner: +₹30</li>
                 <li>❌ Wrong winner: -₹30</li>
-                <li>✅ Correct scorer: +₹5 each</li>
-                <li>❌ Wrong scorer: -₹5 each</li>
+                <li>✅ Correct scorer: +₹5</li>
+                <li>❌ Wrong scorer: -₹5</li>
               </ul>
             </div>
-            <p className="text-[10px] text-gray-500 italic mt-2">
-              💡 Tip: You can win/lose money even if you don't gain/lose points (e.g., 0 scorers = 0 pts but still ±₹ per prediction)
+            <p className="text-[9px] sm:text-[10px] text-gray-500 italic mt-1 sm:mt-2">
+              💡 Points reward only. Money has penalties.
             </p>
           </div>
         </div>

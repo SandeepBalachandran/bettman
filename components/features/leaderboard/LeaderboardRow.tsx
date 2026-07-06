@@ -83,17 +83,17 @@ export function LeaderboardRow({
       layout
       layoutId={entry.userId}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className={`card card-interactive flex items-center gap-3 p-3 ${
+      className={`card card-interactive flex items-center gap-2 sm:gap-3 p-2 sm:p-3 ${
         isCurrentUser ? "border-highlight bg-highlight/10" : ""
       } ${rank <= 3 ? "ring-1 ring-inset ring-highlight/30" : ""}`}
     >
       <div className="flex shrink-0 flex-col items-center gap-0.5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-sm font-bold dark:bg-white/10">
+        <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-gray-100 text-xs sm:text-sm font-bold dark:bg-white/10">
           {medal ?? <span className="text-gray-500">#{rank}</span>}
         </div>
         {rankChange !== 0 && (
           <span
-            className={`text-[10px] font-bold ${rankChange > 0 ? "text-success" : "text-danger"}`}
+            className={`text-[8px] sm:text-[10px] font-bold ${rankChange > 0 ? "text-success" : "text-danger"}`}
           >
             {rankChange > 0 ? `▲${rankChange}` : `▼${Math.abs(rankChange)}`}
           </span>
@@ -103,40 +103,40 @@ export function LeaderboardRow({
       <CartoonAvatar userId={entry.userId} name={entry.name} avatarUrl={entry.avatarUrl} />
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold">
+        <p className="truncate text-xs sm:text-sm font-semibold">
           {entry.name}
           {isCurrentUser && (
-            <span className="ml-1 rounded-full bg-highlight/20 px-2 py-0.5 text-[10px] font-medium text-highlight-foreground dark:text-highlight">
+            <span className="ml-1 rounded-full bg-highlight/20 px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-medium text-highlight-foreground dark:text-highlight">
               you
             </span>
           )}
         </p>
-        <div className="mt-0.5 flex flex-wrap gap-1 text-[10px]">
-          <span className="rounded-full bg-accent/10 px-1.5 py-0.5 font-medium text-accent">
+        <div className="mt-0.5 flex flex-wrap gap-0.5 sm:gap-1 text-[8px] sm:text-[10px]">
+          <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
             W +{entry.winnerPoints}
           </span>
-          <span className="rounded-full bg-success/10 px-1.5 py-0.5 font-medium text-success">
+          <span className="rounded-full bg-success/10 px-1 sm:px-1.5 py-0.5 font-medium text-success">
             S +{scorerGains}
           </span>
           {penalty < 0 && (
-            <span className="rounded-full bg-danger/10 px-1.5 py-0.5 font-medium text-danger">
+            <span className="rounded-full bg-danger/10 px-1 sm:px-1.5 py-0.5 font-medium text-danger">
               P {penalty}
             </span>
           )}
           {streak >= 2 && (
-            <span className="rounded-full bg-highlight/15 px-1.5 py-0.5 font-medium text-highlight-foreground dark:text-highlight">
+            <span className="rounded-full bg-highlight/15 px-1 sm:px-1.5 py-0.5 font-medium text-highlight-foreground dark:text-highlight">
               🔥 {streak}
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col items-end gap-1">
+      <div className="flex flex-col items-end gap-0.5 sm:gap-1">
         <div>
-          <p className="gradient-text text-xl font-extrabold">{entry.total}</p>
-          <p className="text-[10px] text-gray-400">pts</p>
+          <p className="gradient-text text-lg sm:text-xl font-extrabold">{entry.total}</p>
+          <p className="text-[8px] sm:text-[10px] text-gray-400">pts</p>
         </div>
-        <div className={`text-right text-[10px] font-semibold ${
+        <div className={`text-right text-[8px] sm:text-[10px] font-semibold ${
           moneyBalance >= 0 ? "text-success" : "text-danger"
         }`}>
           <p>{formatMoney(moneyBalance)}</p>
