@@ -108,7 +108,7 @@ export default async function UserPredictionsPage({
       <div className="space-y-3 pb-2">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold gradient-text">
-            {user.name}'s Predictions
+            {user.name}&apos;s Predictions
           </h1>
           <Link
             href="/leaderboard"
@@ -232,7 +232,7 @@ export default async function UserPredictionsPage({
                       {/* User's Prediction */}
                       <div className="space-y-3 rounded-lg bg-white/50 p-4 dark:bg-gray-900/30">
                         <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                          Your Prediction
+                         {user.name}&apos;s Predictions
                         </p>
 
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
