@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
+import { syncLiveMatchResults } from "@/lib/sync-matches";
 import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { isMatchLocked } from "@/lib/match-lock";
@@ -29,6 +30,9 @@ const ROUND_BADGE_STYLES: Record<Round, string> = {
 
 export default async function MyPredictionsPage() {
   const user = await requireAuth();
+
+  // Sync live match results from Football Data API
+  await syncLiveMatchResults(prisma);
 
   const predictions = await prisma.prediction.findMany({
     where: { userId: user.id },

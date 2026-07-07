@@ -22,7 +22,25 @@ export type FootballDataMatch = {
   awayTeam: FootballDataTeam;
   score: {
     winner: "HOME_TEAM" | "AWAY_TEAM" | "DRAW" | null;
+    fullTime?: {
+      home: number | null;
+      away: number | null;
+    };
+    halfTime?: {
+      home: number | null;
+      away: number | null;
+    };
   };
+  scorers?: Array<{
+    minute: number;
+    type: string;
+    inMinute: number | null;
+    team: FootballDataTeam;
+    player: {
+      id: number;
+      name: string;
+    };
+  }>;
 };
 
 type CompetitionMatchesResponse = {
@@ -167,4 +185,40 @@ export async function fetchTeamSquad(
   await writeCache(cacheKey, data);
 
   return data.squad ?? [];
+}
+
+export async function fetchLiveMatchResults(
+  competitionCode: string,
+  options: { revalidateSeconds?: number } = {}
+): Promise<FootballDataMatch[]> {
+  const revalidate = options.revalidateSeconds ?? 60;
+
+  const token = process.env.FOOTBALL_DATA_API_TOKEN;
+  if (!token) {
+    throw new Error("FOOTBALL_DATA_API_TOKEN is not set in the environment.");
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_URL}/competitions/${competitionCode}/matches?status=FINISHED,LIVE`,
+      {
+        headers: { "X-Auth-Token": token },
+        next: { revalidate, tags: [`live-results-${competitionCode}`] },
+      }
+    );
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      throw new Error(
+        `football-data.org request failed: ${response.status} ${response.statusText}` +
+          (body ? ` — ${body.slice(0, 300)}` : "")
+      );
+    }
+
+    const data = (await response.json()) as CompetitionMatchesResponse;
+    return data.matches;
+  } catch (error) {
+    console.error("Error fetching live match results:", error);
+    return [];
+  }
 }

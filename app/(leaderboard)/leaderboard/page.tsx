@@ -3,6 +3,8 @@ import { requireAuth } from "@/lib/authz";
 import { getLeaderboard, getPreviousLeaderboard } from "@/lib/leaderboard";
 import { getUserMoney } from "@/lib/leaderboard-money";
 import { getRoundMvps, getUserWinnerStreak } from "@/lib/round-mvp";
+import { syncLiveMatchResults } from "@/lib/sync-matches";
+import { prisma } from "@/lib/prisma";
 import { LeaderboardList } from "@/components/features/leaderboard/LeaderboardList";
 import { ShareToWhatsApp } from "@/components/ShareToWhatsApp";
 import { formatMoney } from "@/lib/format-money";
@@ -19,6 +21,10 @@ const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "F
 
 export default async function LeaderboardPage() {
   const user = await requireAuth();
+
+  // Sync live match results from Football Data API
+  await syncLiveMatchResults(prisma);
+
   const [leaderboard, previousLeaderboard, roundMvps] = await Promise.all([
     getLeaderboard(),
     getPreviousLeaderboard(),

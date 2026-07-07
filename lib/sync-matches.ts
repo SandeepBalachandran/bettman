@@ -1,5 +1,5 @@
 import { Round, type PrismaClient } from "@prisma/client";
-import { fetchCompetitionMatches, type FootballDataTeam } from "@/lib/football-data";
+import { fetchCompetitionMatches, fetchLiveMatchResults, type FootballDataTeam, type FootballDataMatch } from "@/lib/football-data";
 
 const STAGE_TO_ROUND: Record<string, Round> = {
   LAST_16: Round.ROUND_OF_16,
@@ -108,4 +108,108 @@ export async function syncMatchesFromLiveApi(
     placeholderCount,
     totalMatches,
   };
+}
+
+async function mapWinnerToTeam(
+  prisma: PrismaClient,
+  winner: string | null | undefined,
+  homeTeamExternalId: number,
+  awayTeamExternalId: number
+): Promise<string | null> {
+  if (!winner || winner === "DRAW") {
+    return null;
+  }
+
+  const targetExternalId =
+    winner === "HOME_TEAM" ? homeTeamExternalId : awayTeamExternalId;
+
+  const team = await prisma.team.findUnique({
+    where: { externalId: targetExternalId },
+    select: { id: true },
+  });
+
+  return team?.id || null;
+}
+
+export async function syncLiveMatchResults(
+  prisma: PrismaClient,
+  competitionCode = "WC"
+): Promise<void> {
+  try {
+    const liveMatches = await fetchLiveMatchResults(competitionCode, {
+      revalidateSeconds: 0,
+    });
+
+    for (const liveMatch of liveMatches) {
+      if (!liveMatch.id || !liveMatch.score) {
+        continue;
+      }
+
+      const dbMatch = await prisma.match.findUnique({
+        where: { externalId: liveMatch.id },
+        include: { scorers: true },
+      });
+
+      if (!dbMatch) {
+        continue;
+      }
+
+      // Update to FINISHED when live API shows finished
+      if (liveMatch.status === "FINISHED" && dbMatch.status !== "FINISHED") {
+        const winnerTeamId = await mapWinnerToTeam(
+          prisma,
+          liveMatch.score.winner,
+          liveMatch.homeTeam.id,
+          liveMatch.awayTeam.id
+        );
+
+        await prisma.match.update({
+          where: { id: dbMatch.id },
+          data: {
+            status: "FINISHED",
+            winnerTeamId,
+          },
+        });
+
+        // Clear existing scorers and add new ones from API
+        await prisma.matchScorer.deleteMany({
+          where: { matchId: dbMatch.id },
+        });
+
+        if (liveMatch.scorers && liveMatch.scorers.length > 0) {
+          for (const scorer of liveMatch.scorers) {
+            if (scorer.type === "GOAL") {
+              const player = await prisma.player.findFirst({
+                where: {
+                  name: scorer.player.name,
+                  team: {
+                    externalId: scorer.team.id,
+                  },
+                },
+                select: { id: true },
+              });
+
+              if (player) {
+                await prisma.matchScorer.create({
+                  data: {
+                    matchId: dbMatch.id,
+                    playerId: player.id,
+                  },
+                });
+              }
+            }
+          }
+        }
+      } else if (liveMatch.status === "LIVE" && dbMatch.status === "UPCOMING") {
+        await prisma.match.update({
+          where: { id: dbMatch.id },
+          data: { status: "LIVE" },
+        });
+      }
+    }
+
+    console.log(`✓ Synced live match results from Football Data API`);
+  } catch (error) {
+    console.error("Error syncing live match results:", error);
+  }
 }
