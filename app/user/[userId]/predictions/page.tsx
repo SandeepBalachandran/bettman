@@ -6,6 +6,7 @@ import { calculateMatchPoints } from "@/lib/scoring";
 import { calculateMatchMoney } from "@/lib/money";
 import { moneyConfig } from "@/lib/money-config";
 import { formatMoney } from "@/lib/format-money";
+import { PenaltyBadge } from "@/components/PenaltyBadge";
 import type { Round } from "@prisma/client";
 import Link from "next/link";
 
@@ -60,7 +61,18 @@ export default async function UserPredictionsPage({
     },
     include: {
       match: {
-        include: { homeTeam: true, awayTeam: true, winnerTeam: true, scorers: { include: { player: true } } },
+        select: {
+          id: true,
+          status: true,
+          round: true,
+          kickoffTime: true,
+          winnerTeamId: true,
+          wonOnPenalties: true,
+          homeTeam: true,
+          awayTeam: true,
+          winnerTeam: true,
+          scorers: { include: { player: true } },
+        },
       },
       winnerTeam: true,
       scorers: { include: { player: true } },
@@ -87,7 +99,7 @@ export default async function UserPredictionsPage({
         winnerTeamId: prediction.winnerTeamId,
         scorerPlayerIds: prediction.scorers.map(s => s.playerId),
       },
-      { winnerTeamId: prediction.match.winnerTeamId },
+      { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
       actualScorerPlayerIds
     );
     const moneyData = calculateMatchMoney(
@@ -95,7 +107,7 @@ export default async function UserPredictionsPage({
         winnerTeamId: prediction.winnerTeamId,
         scorerPlayerIds: prediction.scorers.map(s => s.playerId),
       },
-      { winnerTeamId: prediction.match.winnerTeamId },
+      { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
       actualScorerPlayerIds,
       moneyConfig
     );
@@ -175,7 +187,7 @@ export default async function UserPredictionsPage({
                     winnerTeamId: prediction.winnerTeamId,
                     scorerPlayerIds: prediction.scorers.map(s => s.playerId),
                   },
-                  { winnerTeamId: prediction.match.winnerTeamId },
+                  { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
                   actualScorerPlayerIds
                 );
                 const moneyData = calculateMatchMoney(
@@ -183,7 +195,7 @@ export default async function UserPredictionsPage({
                     winnerTeamId: prediction.winnerTeamId,
                     scorerPlayerIds: prediction.scorers.map(s => s.playerId),
                   },
-                  { winnerTeamId: prediction.match.winnerTeamId },
+                  { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
                   actualScorerPlayerIds,
                   moneyConfig
                 );
@@ -318,6 +330,7 @@ export default async function UserPredictionsPage({
                             <span className="text-sm text-gray-500">None</span>
                           )}
                         </div>
+                        {prediction.match.wonOnPenalties && <PenaltyBadge />}
                       </div>
                     </div>
 

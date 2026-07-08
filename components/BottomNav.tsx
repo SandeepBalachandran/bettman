@@ -10,7 +10,7 @@ const NAV_ITEMS: BottomNavItem[] = [
   { href: "/fixtures", label: "Fixtures", icon: "⚽" },
   { href: "/my-predictions", label: "My Picks", icon: "📝" },
   { href: "/leaderboard", label: "Ranks", icon: "🏆" },
-  { href: "/money", label: "Money", icon: "💰" },
+  { href: "/rewards", label: "Rewards", icon: "🎁" },
 ];
 
 export function BottomNav({ isAdmin }: { readonly isAdmin: boolean }) {

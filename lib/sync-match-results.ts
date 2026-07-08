@@ -253,10 +253,12 @@ export async function syncFinishedMatchResultsWithScorers(
       }
     }
 
+    const wonOnPenalties = fixture.fixture.status.short === "PEN";
+
     await prisma.$transaction(async (tx) => {
       await tx.match.update({
         where: { id: match.id },
-        data: { status: "FINISHED", winnerTeamId, locked: true },
+        data: { status: "FINISHED", winnerTeamId, wonOnPenalties, locked: true },
       });
       await tx.matchScorer.deleteMany({ where: { matchId: match.id } });
       if (scorerIds.size > 0) {

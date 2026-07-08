@@ -8,6 +8,7 @@ import { PerfectPredictionConfetti } from "@/components/features/match/PerfectPr
 import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { LocalDateTime } from "@/components/LocalDateTime";
+import { PenaltyBadge } from "@/components/PenaltyBadge";
 
 const AVATAR_COLORS = ["bg-accent", "bg-secondary", "bg-highlight", "bg-success", "bg-danger"];
 
@@ -53,7 +54,7 @@ export default async function MatchDetailsPage({
             winnerTeamId: myPrediction.winnerTeamId,
             scorerPlayerIds: myPrediction.scorers.map((s) => s.playerId),
           },
-          { winnerTeamId: match.winnerTeamId },
+          { winnerTeamId: match.winnerTeamId, wonOnPenalties: match.wonOnPenalties },
           match.scorers.map((s) => s.playerId)
         )
       : null;
@@ -77,7 +78,7 @@ export default async function MatchDetailsPage({
       </div>
 
       {isFinished && (
-        <section className="card space-y-1 border-l-4 border-success p-4 text-sm">
+        <section className="card space-y-2 border-l-4 border-success p-4 text-sm">
           <p className="font-semibold text-success">
             Winner: {match.winnerTeam?.name ?? "—"}
           </p>
@@ -94,6 +95,7 @@ export default async function MatchDetailsPage({
               <span>None</span>
             )}
           </div>
+          {match.wonOnPenalties && <PenaltyBadge />}
         </section>
       )}
 

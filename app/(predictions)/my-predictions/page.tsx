@@ -9,6 +9,7 @@ import { calculateMatchPoints } from "@/lib/scoring";
 import { calculateMatchMoney } from "@/lib/money";
 import { moneyConfig } from "@/lib/money-config";
 import { formatMoney } from "@/lib/format-money";
+import { PenaltyBadge } from "@/components/PenaltyBadge";
 import type { Round } from "@prisma/client";
 
 const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
@@ -94,7 +95,7 @@ export default async function MyPredictionsPage() {
                       winnerTeamId: prediction.winnerTeamId,
                       scorerPlayerIds: prediction.scorers.map(s => s.playerId),
                     },
-                    { winnerTeamId: prediction.match.winnerTeamId },
+                    { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
                     actualScorerPlayerIds
                   );
                   const moneyData = calculateMatchMoney(
@@ -102,7 +103,7 @@ export default async function MyPredictionsPage() {
                       winnerTeamId: prediction.winnerTeamId,
                       scorerPlayerIds: prediction.scorers.map(s => s.playerId),
                     },
-                    { winnerTeamId: prediction.match.winnerTeamId },
+                    { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
                     actualScorerPlayerIds,
                     moneyConfig
                   );
@@ -179,6 +180,12 @@ export default async function MyPredictionsPage() {
                         <span className="text-gray-400">None</span>
                       )}
                     </div>
+
+                    {isFinished && prediction.match.wonOnPenalties && (
+                      <div className="pt-1">
+                        <PenaltyBadge />
+                      </div>
+                    )}
                   </Link>
                 );
               })}

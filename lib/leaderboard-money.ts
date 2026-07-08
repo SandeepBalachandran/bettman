@@ -49,6 +49,7 @@ export async function getUserMoney(userId: string): Promise<UserMoney> {
         },
         {
           winnerTeamId: match.winnerTeamId,
+          wonOnPenalties: match.wonOnPenalties,
         },
         actualScorerIds,
         moneyConfig

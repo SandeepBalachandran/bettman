@@ -1,5 +1,6 @@
 import { Round, type PrismaClient } from "@prisma/client";
 import { fetchCompetitionMatches, fetchLiveMatchResults, fetchCompetitionScorersList, type FootballDataTeam, type FootballDataMatch } from "@/lib/football-data";
+import { searchApiFootballTeam, fetchHeadToHeadFixtures, FINISHED_FIXTURE_STATUSES } from "@/lib/api-football";
 
 const STAGE_TO_ROUND: Record<string, Round> = {
   LAST_16: Round.ROUND_OF_16,
@@ -168,11 +169,35 @@ export async function syncLiveMatchResults(
           liveMatch.awayTeam.id
         );
 
+        // Check if match was decided by penalties
+        let wonOnPenalties = false;
+        try {
+          const [apiHomeTeam, apiAwayTeam] = await Promise.all([
+            searchApiFootballTeam(dbMatch.homeTeam.name),
+            searchApiFootballTeam(dbMatch.awayTeam.name),
+          ]);
+
+          if (apiHomeTeam && apiAwayTeam) {
+            const fixtures = await fetchHeadToHeadFixtures(apiHomeTeam.id, apiAwayTeam.id);
+            const matchedFixture = fixtures.find(
+              (f) =>
+                FINISHED_FIXTURE_STATUSES.has(f.fixture.status.short) &&
+                Math.abs(new Date(f.fixture.date).getTime() - dbMatch.kickoffTime.getTime()) < 3 * 24 * 60 * 60 * 1000
+            );
+            if (matchedFixture) {
+              wonOnPenalties = matchedFixture.fixture.status.short === "PEN";
+            }
+          }
+        } catch (error) {
+          console.warn(`Could not check penalty status for match ${dbMatch.id}:`, error);
+        }
+
         await prisma.match.update({
           where: { id: dbMatch.id },
           data: {
             status: "FINISHED",
             winnerTeamId,
+            wonOnPenalties,
           },
         });
 

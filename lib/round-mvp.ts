@@ -32,7 +32,7 @@ export async function getRoundMvps(): Promise<RoundMvp[]> {
           winnerTeamId: prediction.winnerTeamId,
           scorerPlayerIds: prediction.scorers.map((s) => s.playerId),
         },
-        { winnerTeamId: match.winnerTeamId },
+        { winnerTeamId: match.winnerTeamId, wonOnPenalties: match.wonOnPenalties },
         actualScorerIds
       );
 

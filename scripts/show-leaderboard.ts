@@ -61,7 +61,7 @@ async function main() {
           winnerTeamId: prediction.winnerTeamId,
           scorerPlayerIds: prediction.scorers.map((s) => s.playerId),
         },
-        { winnerTeamId: match.winnerTeamId },
+        { winnerTeamId: match.winnerTeamId, wonOnPenalties: match.wonOnPenalties },
         actualScorerPlayerIds
       );
 
@@ -70,7 +70,7 @@ async function main() {
           winnerTeamId: prediction.winnerTeamId,
           scorerPlayerIds: prediction.scorers.map((s) => s.playerId),
         },
-        { winnerTeamId: match.winnerTeamId },
+        { winnerTeamId: match.winnerTeamId, wonOnPenalties: match.wonOnPenalties },
         actualScorerPlayerIds,
         moneyConfig
       );

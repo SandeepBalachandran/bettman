@@ -12,6 +12,7 @@ export type LeaderboardEntry = {
 
 type FinishedMatchWithPredictions = {
   winnerTeamId: string | null;
+  wonOnPenalties: boolean;
   scorers: { playerId: string }[];
   predictions: {
     userId: string;
@@ -52,7 +53,7 @@ function computeLeaderboardEntries(
           winnerTeamId: prediction.winnerTeamId,
           scorerPlayerIds: prediction.scorers.map((s) => s.playerId),
         },
-        { winnerTeamId: match.winnerTeamId },
+        { winnerTeamId: match.winnerTeamId, wonOnPenalties: match.wonOnPenalties },
         actualScorerPlayerIds
       );
 
@@ -73,7 +74,9 @@ async function getUsersAndFinishedMatches() {
     }),
     prisma.match.findMany({
       where: { status: "FINISHED" },
-      include: {
+      select: {
+        winnerTeamId: true,
+        wonOnPenalties: true,
         scorers: true,
         predictions: { include: { scorers: true } },
       },

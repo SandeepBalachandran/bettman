@@ -6,6 +6,7 @@ import { TeamFlag } from "@/components/TeamFlag";
 import { MoneyRulesCard } from "@/components/MoneyRulesCard";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
+import { getUserCoinBalance, canUnlockScorer } from "@/lib/coin-rewards";
 
 export default async function PredictPage({
   params,
@@ -34,6 +35,10 @@ export default async function PredictPage({
   const isLocked = isMatchLocked(match);
   const isTbd = match.homeTeam.fifaCode === "TBD" || match.awayTeam.fifaCode === "TBD";
   const existingPrediction = match.predictions[0] ?? null;
+
+  const coinBalance = await getUserCoinBalance(user.id);
+  const canUse3rdScorer = canUnlockScorer(coinBalance, 3);
+  const canUse4thScorer = canUnlockScorer(coinBalance, 4);
 
   return (
     <main className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
@@ -93,6 +98,9 @@ export default async function PredictPage({
             }}
             initialWinnerTeamId={existingPrediction?.winnerTeamId ?? null}
             initialScorerPlayerIds={existingPrediction?.scorers.map((s) => s.playerId) ?? []}
+            coinBalance={coinBalance}
+            canUse3rdScorer={canUse3rdScorer}
+            canUse4thScorer={canUse4thScorer}
           />
         </>
       )}

@@ -14,6 +14,7 @@ export function calculateMatchMoney(
   },
   match: {
     winnerTeamId: string | null;
+    wonOnPenalties?: boolean;
   },
   actualScorerPlayerIds: string[],
   config: MoneyConfig
@@ -26,13 +27,23 @@ export function calculateMatchMoney(
         : config.moneyPerIncorrectWinner;
   }
 
-  const scorerMoney = prediction.scorerPlayerIds.reduce((sum, playerId) => {
-    const goalCount = actualScorerPlayerIds.filter(id => id === playerId).length;
-    if (goalCount > 0) {
-      return sum + goalCount * config.moneyPerCorrectScorer;
-    }
-    return sum + config.moneyPerIncorrectScorer;
-  }, 0);
+  const winnerCorrect = match.winnerTeamId && prediction.winnerTeamId === match.winnerTeamId;
+  let scorerMoney = 0;
+
+  // If match was won on penalties and user predicted the correct winner,
+  // award full money for their scorer picks (they got the outcome right)
+  if (winnerCorrect && match.wonOnPenalties) {
+    scorerMoney = prediction.scorerPlayerIds.length * config.moneyPerCorrectScorer;
+  } else {
+    // Otherwise, award money only for actual goal scorers
+    scorerMoney = prediction.scorerPlayerIds.reduce((sum, playerId) => {
+      const goalCount = actualScorerPlayerIds.filter(id => id === playerId).length;
+      if (goalCount > 0) {
+        return sum + goalCount * config.moneyPerCorrectScorer;
+      }
+      return sum + config.moneyPerIncorrectScorer;
+    }, 0);
+  }
 
   return { winnerMoney, scorerMoney, total: winnerMoney + scorerMoney };
 }

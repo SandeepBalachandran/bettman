@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { BottomNav } from "@/components/BottomNav";
+import { DailyRewardClaim } from "@/components/DailyRewardClaim";
 
 export async function SiteHeader() {
   const session = await auth();
@@ -32,10 +33,10 @@ export async function SiteHeader() {
               Leaderboard
             </Link>
             <Link
-              href="/money"
+              href="/rewards"
               className="rounded-full px-3 py-1 transition hover:bg-white/20"
             >
-              Money
+              Rewards
             </Link>
             {session.user.role === "ADMIN" && (
               <Link
@@ -48,7 +49,8 @@ export async function SiteHeader() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <DailyRewardClaim />
           <ProfileMenu name={session.user.name ?? "?"} avatarUrl={session.user.avatarUrl} />
         </div>
       </header>
