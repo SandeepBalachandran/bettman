@@ -9,6 +9,7 @@ import { calculateMatchMoney } from "@/lib/money";
 import { moneyConfig } from "@/lib/money-config";
 import { formatMoney } from "@/lib/format-money";
 import { PenaltyBadge } from "@/components/PenaltyBadge";
+import { BoosterButton } from "@/components/BoosterButton";
 import type { Round } from "@prisma/client";
 
 const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
@@ -30,6 +31,10 @@ const ROUND_BADGE_STYLES: Record<Round, string> = {
 
 export default async function MyPredictionsPage() {
   const user = await requireAuth();
+
+  const coinBalance = await prisma.coinBalance.findUnique({
+    where: { userId: user.id },
+  });
 
   const predictions = await prisma.prediction.findMany({
     where: { userId: user.id },
@@ -92,7 +97,8 @@ export default async function MyPredictionsPage() {
                       scorerPlayerIds: prediction.scorers.map(s => s.playerId),
                     },
                     { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
-                    actualScorerPlayerIds
+                    actualScorerPlayerIds,
+                    prediction.usedPointsBooster
                   );
                   const moneyData = calculateMatchMoney(
                     {
@@ -101,7 +107,8 @@ export default async function MyPredictionsPage() {
                     },
                     { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
                     actualScorerPlayerIds,
-                    moneyConfig
+                    moneyConfig,
+                    prediction.usedPointsBooster
                   );
                   points = pointsData.total;
                   money = moneyData.total;
@@ -180,6 +187,16 @@ export default async function MyPredictionsPage() {
                     {isFinished && prediction.match.wonOnPenalties && (
                       <div className="pt-1">
                         <PenaltyBadge />
+                      </div>
+                    )}
+
+                    {!isFinished && !isLocked && (
+                      <div className="border-t border-gray-200 pt-3 dark:border-gray-800">
+                        <BoosterButton
+                          predictionId={prediction.id}
+                          isUsed={prediction.usedPointsBooster}
+                          userCoins={coinBalance?.balance ?? 0}
+                        />
                       </div>
                     )}
                   </Link>

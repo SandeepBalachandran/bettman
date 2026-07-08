@@ -100,7 +100,8 @@ export default async function UserPredictionsPage({
         scorerPlayerIds: prediction.scorers.map(s => s.playerId),
       },
       { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
-      actualScorerPlayerIds
+      actualScorerPlayerIds,
+      prediction.usedPointsBooster
     );
     const moneyData = calculateMatchMoney(
       {
@@ -109,7 +110,8 @@ export default async function UserPredictionsPage({
       },
       { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
       actualScorerPlayerIds,
-      moneyConfig
+      moneyConfig,
+      prediction.usedPointsBooster
     );
     totalPoints += pointsData.total;
     totalMoney += moneyData.total;
@@ -188,7 +190,8 @@ export default async function UserPredictionsPage({
                     scorerPlayerIds: prediction.scorers.map(s => s.playerId),
                   },
                   { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
-                  actualScorerPlayerIds
+                  actualScorerPlayerIds,
+                  prediction.usedPointsBooster
                 );
                 const moneyData = calculateMatchMoney(
                   {
@@ -197,7 +200,8 @@ export default async function UserPredictionsPage({
                   },
                   { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
                   actualScorerPlayerIds,
-                  moneyConfig
+                  moneyConfig,
+                  prediction.usedPointsBooster
                 );
                 const points = pointsData.total;
                 const money = moneyData.total;

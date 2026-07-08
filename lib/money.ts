@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { MoneyConfig, moneyConfig } from "./money-config";
+import { applyPointsBoosterMultiplier } from "@/lib/points-booster";
 
 export type MatchMoney = {
   winnerMoney: number;
@@ -17,7 +18,8 @@ export function calculateMatchMoney(
     wonOnPenalties?: boolean;
   },
   actualScorerPlayerIds: string[],
-  config: MoneyConfig
+  config: MoneyConfig,
+  hasPointsBooster: boolean = false
 ): MatchMoney {
   let winnerMoney = 0;
   if (match.winnerTeamId) {
@@ -44,6 +46,10 @@ export function calculateMatchMoney(
       return sum + config.moneyPerIncorrectScorer;
     }, 0);
   }
+
+  // Apply booster multiplier (only to positive money, not penalties)
+  winnerMoney = applyPointsBoosterMultiplier(winnerMoney, hasPointsBooster);
+  scorerMoney = applyPointsBoosterMultiplier(scorerMoney, hasPointsBooster);
 
   return { winnerMoney, scorerMoney, total: winnerMoney + scorerMoney };
 }
@@ -86,7 +92,8 @@ export async function getSettlementLog(): Promise<SettlementLogEntry[]> {
         },
         { winnerTeamId: match.winnerTeamId },
         actualScorerPlayerIds,
-        moneyConfig
+        moneyConfig,
+        prediction.usedPointsBooster
       );
 
       log.push({
