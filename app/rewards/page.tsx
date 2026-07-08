@@ -3,10 +3,10 @@ import { requireAuth } from "@/lib/authz";
 import {
   getRewardProgress,
   getUserCoinBalance,
-  canUnlockScorer,
-  getUnlockCost,
   COIN_CONFIG,
 } from "@/lib/coin-rewards";
+import { RewardUnlockCard } from "@/components/RewardUnlockCard";
+import { ClaimRewardButton } from "@/components/ClaimRewardButton";
 import Link from "next/link";
 
 export default async function RewardsPage() {
@@ -83,18 +83,18 @@ export default async function RewardsPage() {
             </div>
           </div>
 
-          {!progress.claimed && (
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                Come back daily to claim your reward!
-              </p>
-            </div>
-          )}
-          {progress.claimed && (
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-              <p className="text-xs text-success font-semibold">✅ Already claimed today</p>
-            </div>
-          )}
+          <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
+            {!progress.claimed ? (
+              <ClaimRewardButton
+                alreadyClaimed={false}
+                todaysReward={progress.todaysReward}
+              />
+            ) : (
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 border border-success rounded-lg text-success font-semibold text-sm">
+                ✅ Already claimed today
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -104,78 +104,20 @@ export default async function RewardsPage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           {/* 3rd Scorer */}
-          <div
-            className={`card space-y-3 border-l-4 p-5 sm:p-6 ${
-              canUnlockScorer(balance, 3)
-                ? "border-success bg-success/5"
-                : "border-gray-300 dark:border-gray-700"
-            }`}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-semibold">3rd Scorer Slot</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  Unlock the ability to predict a third goal scorer
-                </p>
-              </div>
-              {canUnlockScorer(balance, 3) && (
-                <span className="rounded-full bg-success/20 px-2 py-1 text-xs font-bold text-success">
-                  ✅ Unlocked
-                </span>
-              )}
-            </div>
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold">
-                  {getUnlockCost(3)} coins needed
-                </span>
-                <span className="text-sm text-accent font-bold">{balance}/{getUnlockCost(3)}</span>
-              </div>
-              <div className="mt-2 w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                <div
-                  className="bg-accent h-2 rounded-full transition-all"
-                  style={{ width: `${Math.min((balance / getUnlockCost(3)) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
-          </div>
+          <RewardUnlockCard
+            slot={3}
+            balance={balance}
+            title="3rd Scorer Slot"
+            description="Unlock the ability to predict a third goal scorer"
+          />
 
           {/* 4th Scorer */}
-          <div
-            className={`card space-y-3 border-l-4 p-5 sm:p-6 ${
-              canUnlockScorer(balance, 4)
-                ? "border-success bg-success/5"
-                : "border-gray-300 dark:border-gray-700"
-            }`}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-semibold">4th Scorer Slot</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  Unlock the ability to predict a fourth goal scorer
-                </p>
-              </div>
-              {canUnlockScorer(balance, 4) && (
-                <span className="rounded-full bg-success/20 px-2 py-1 text-xs font-bold text-success">
-                  ✅ Unlocked
-                </span>
-              )}
-            </div>
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold">
-                  {getUnlockCost(4)} coins needed
-                </span>
-                <span className="text-sm text-accent font-bold">{balance}/{getUnlockCost(4)}</span>
-              </div>
-              <div className="mt-2 w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                <div
-                  className="bg-accent h-2 rounded-full transition-all"
-                  style={{ width: `${Math.min((balance / getUnlockCost(4)) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
-          </div>
+          <RewardUnlockCard
+            slot={4}
+            balance={balance}
+            title="4th Scorer Slot"
+            description="Unlock the ability to predict a fourth goal scorer"
+          />
         </div>
       </div>
 

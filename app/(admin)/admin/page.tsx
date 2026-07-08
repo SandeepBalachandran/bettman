@@ -9,7 +9,7 @@ import { SendNotificationForm } from "@/components/features/admin/SendNotificati
 export default async function AdminDashboardPage() {
   await requireAdmin();
 
-  const [userCount, matchCount, finishedCount, predictionCount, leaderboard, playersMoney, players] =
+  const [userCount, matchCount, finishedCount, predictionCount, leaderboard, playersMoney, players, usersWithCoins, dailyRewardStats] =
     await Promise.all([
       prisma.user.count(),
       prisma.match.count(),
@@ -22,9 +22,25 @@ export default async function AdminDashboardPage() {
         select: { id: true, name: true },
         orderBy: { name: "asc" },
       }),
+      prisma.user.findMany({
+        where: { role: "USER", active: true },
+        select: { id: true, name: true, coinBalance: true, dailyRewards: true },
+        orderBy: { coinBalance: { balance: "desc" } },
+      }),
+      prisma.dailyReward.groupBy({
+        by: ["userId"],
+        _sum: { coins: true },
+        _count: true,
+      }),
     ]);
 
   const tournamentNet = playersMoney.reduce((sum, p) => sum + p.currentBalance, 0);
+
+  // Calculate coin stats
+  const totalCoinsInSystem = usersWithCoins.reduce((sum, u) => sum + (u.coinBalance?.balance ?? 0), 0);
+  const usersWithCoins_ = usersWithCoins.filter(u => (u.coinBalance?.balance ?? 0) > 0).length;
+  const usersWhoCollectedCoins = new Set(dailyRewardStats.map(stat => stat.userId)).size;
+  const avgCoinsPerUser = userCount > 0 ? Math.round(totalCoinsInSystem / userCount) : 0;
 
   const maxPossiblePredictions = userCount * matchCount;
   const predictionPercentage =
@@ -51,6 +67,9 @@ export default async function AdminDashboardPage() {
           </Link>
           <Link href="/admin/money" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
             View finances
+          </Link>
+          <Link href="/admin/rewards" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
+            Manage rewards
           </Link>
         </div>
       </div>
@@ -85,6 +104,63 @@ export default async function AdminDashboardPage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className="card space-y-4 p-4">
+        <h2 className="text-lg font-medium">💰 Coins System</h2>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 bg-accent/10 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400">Total Coins</p>
+            <p className="text-lg font-bold text-accent">{totalCoinsInSystem}</p>
+          </div>
+          <div className="p-3 bg-success/10 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400">Users Active</p>
+            <p className="text-lg font-bold text-success">{usersWithCoins_} / {userCount}</p>
+          </div>
+          <div className="p-3 bg-highlight/10 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400">Collected Coins</p>
+            <p className="text-lg font-bold text-highlight-foreground dark:text-highlight">{usersWhoCollectedCoins}</p>
+          </div>
+          <div className="p-3 bg-secondary/10 rounded-lg">
+            <p className="text-xs text-gray-600 dark:text-gray-400">Avg per User</p>
+            <p className="text-lg font-bold text-secondary">{avgCoinsPerUser}</p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[color-mix(in_srgb,var(--foreground)_8%,transparent)]">
+                <th className="text-left py-2 px-2">Player</th>
+                <th className="text-right py-2 px-2">💰 Balance</th>
+                <th className="text-center py-2 px-2">Status</th>
+                <th className="text-right py-2 px-2">Days</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usersWithCoins.map((user) => {
+                const balance = user.coinBalance?.balance ?? 0;
+                const rewardCount = user.dailyRewards?.length ?? 0;
+                const hasCollected = rewardCount > 0;
+                return (
+                  <tr key={user.id} className="border-b border-[color-mix(in_srgb,var(--foreground)_4%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_2%,transparent)]">
+                    <td className="py-2 px-2">{user.name}</td>
+                    <td className="text-right py-2 px-2 font-semibold">{balance}</td>
+                    <td className="text-center py-2 px-2">
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                        hasCollected ? "bg-success/20 text-success" : "bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                      }`}>
+                        {hasCollected ? "✓ Collected" : "No coins"}
+                      </span>
+                    </td>
+                    <td className="text-right py-2 px-2 text-gray-600 dark:text-gray-400">{rewardCount}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   );

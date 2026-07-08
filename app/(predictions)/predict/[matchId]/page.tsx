@@ -37,8 +37,8 @@ export default async function PredictPage({
   const existingPrediction = match.predictions[0] ?? null;
 
   const coinBalance = await getUserCoinBalance(user.id);
-  const canUse3rdScorer = canUnlockScorer(coinBalance, 3);
-  const canUse4thScorer = canUnlockScorer(coinBalance, 4);
+  const canUse3rdScorer = await canUnlockScorer(coinBalance, 3);
+  const canUse4thScorer = await canUnlockScorer(coinBalance, 4);
 
   return (
     <main className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">

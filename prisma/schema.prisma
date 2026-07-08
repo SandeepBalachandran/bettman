@@ -159,3 +159,11 @@ model DailyReward {
 
   @@unique([userId, day])
 }
+
+model RewardConfig {
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  boosterCost            Int      @default(100)
+  thirdScorerCost        Int      @default(50)
+  fourthScorerCost       Int      @default(150)
+  updatedAt              DateTime @updatedAt
+}

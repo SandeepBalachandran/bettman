@@ -8,10 +8,47 @@ const DAILY_REWARDS = [
   100, 100, 100, 100, 100, 100, // Days 7-12: 100 coins
 ];
 
-const UNLOCK_TIERS = {
-  thirdScorer: 100,
-  fourthScorer: 300,
+// Default unlock tiers (will be overridden by database config)
+const DEFAULT_UNLOCK_TIERS = {
+  thirdScorer: 50,
+  fourthScorer: 150,
 };
+
+let cachedUnlockTiers = { ...DEFAULT_UNLOCK_TIERS };
+let cacheTimestamp = 0;
+const CACHE_DURATION = 60000; // 1 minute cache
+
+async function getUnlockTiers() {
+  const now = Date.now();
+  if (now - cacheTimestamp < CACHE_DURATION) {
+    return cachedUnlockTiers;
+  }
+
+  try {
+    let config = await prisma.rewardConfig.findFirst();
+
+    if (!config) {
+      config = await prisma.rewardConfig.create({
+        data: {
+          boosterCost: 100,
+          thirdScorerCost: 50,
+          fourthScorerCost: 150,
+        },
+      });
+    }
+
+    cachedUnlockTiers = {
+      thirdScorer: config.thirdScorerCost,
+      fourthScorer: config.fourthScorerCost,
+    };
+    cacheTimestamp = now;
+  } catch (error) {
+    console.error("Error fetching unlock tiers from DB:", error);
+    cachedUnlockTiers = { ...DEFAULT_UNLOCK_TIERS };
+  }
+
+  return cachedUnlockTiers;
+}
 
 function getDayNumber(date: Date): number {
   const start = new Date(REWARD_CAMPAIGN_START);
@@ -103,19 +140,21 @@ export async function spendCoins(userId: string, amount: number): Promise<boolea
   return true;
 }
 
-export function canUnlockScorer(balance: number, scorerPosition: 3 | 4): boolean {
+export async function canUnlockScorer(balance: number, scorerPosition: 3 | 4): Promise<boolean> {
+  const tiers = await getUnlockTiers();
   if (scorerPosition === 3) {
-    return balance >= UNLOCK_TIERS.thirdScorer;
+    return balance >= tiers.thirdScorer;
   }
   if (scorerPosition === 4) {
-    return balance >= UNLOCK_TIERS.fourthScorer;
+    return balance >= tiers.fourthScorer;
   }
   return false;
 }
 
-export function getUnlockCost(scorerPosition: 3 | 4): number {
-  if (scorerPosition === 3) return UNLOCK_TIERS.thirdScorer;
-  if (scorerPosition === 4) return UNLOCK_TIERS.fourthScorer;
+export async function getUnlockCost(scorerPosition: 3 | 4): Promise<number> {
+  const tiers = await getUnlockTiers();
+  if (scorerPosition === 3) return tiers.thirdScorer;
+  if (scorerPosition === 4) return tiers.fourthScorer;
   return 0;
 }
 
@@ -155,7 +194,7 @@ export async function getRewardProgress(userId: string) {
 
 export const COIN_CONFIG = {
   rewards: DAILY_REWARDS,
-  unlocks: UNLOCK_TIERS,
+  unlocks: DEFAULT_UNLOCK_TIERS,
   campaignStart: REWARD_CAMPAIGN_START,
   campaignEnd: REWARD_CAMPAIGN_END,
 };
