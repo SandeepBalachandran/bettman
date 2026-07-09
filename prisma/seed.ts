@@ -66,7 +66,7 @@ async function seedPlayers() {
   const raw = await readFile(filePath, "utf-8");
   const playersByFifaCode = JSON.parse(raw) as Record<string, PlayerFixture[]>;
 
-  let linked = 0;
+  let linked = 0; 
   let skipped = 0;
 
   for (const [fifaCode, players] of Object.entries(playersByFifaCode)) {
