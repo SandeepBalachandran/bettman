@@ -12,7 +12,7 @@ import { PenaltyBadge } from "@/components/PenaltyBadge";
 import { BoosterButton } from "@/components/BoosterButton";
 import type { Round } from "@prisma/client";
 
-const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
+const ROUND_ORDER: Round[] = ["FINAL", "SEMI_FINALS", "QUARTER_FINALS", "ROUND_OF_16"];
 
 const ROUND_LABELS: Record<Round, string> = {
   ROUND_OF_16: "Round of 16",

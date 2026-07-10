@@ -10,7 +10,7 @@ import { PenaltyBadge } from "@/components/PenaltyBadge";
 import type { Round } from "@prisma/client";
 import Link from "next/link";
 
-const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"];
+const ROUND_ORDER: Round[] = ["FINAL", "SEMI_FINALS", "QUARTER_FINALS", "ROUND_OF_16"];
 
 const ROUND_LABELS: Record<Round, string> = {
   ROUND_OF_16: "Round of 16",
@@ -339,15 +339,56 @@ export default async function UserPredictionsPage({
                     </div>
 
                     {/* Score Breakdown */}
-                    <div className="space-y-2 border-t border-gray-200 pt-3 dark:border-gray-800">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        <span className="font-semibold">Winner:</span>{" "}
-                        {pointsData.winnerPoints > 0 ? "✅" : "❌"} {pointsData.winnerPoints} pts
-                      </p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        <span className="font-semibold">Scorers:</span>{" "}
-                        {pointsData.scorerPoints > 0 ? "✅" : "❌"} {pointsData.scorerPoints} pts
-                      </p>
+                    <div className="border-t border-gray-200 pt-4 dark:border-gray-800">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {/* Points Breakdown */}
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Points</p>
+                          <div className="space-y-1.5">
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              <span>Winner:</span>{" "}
+                              <span className={pointsData.winnerPoints > 0 ? "text-success font-semibold" : "text-danger"}>
+                                {pointsData.winnerPoints > 0 ? "✅" : "❌"} {pointsData.winnerPoints} pts
+                              </span>
+                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              <span>Scorers:</span>{" "}
+                              <span className={pointsData.scorerPoints > 0 ? "text-success font-semibold" : "text-danger"}>
+                                {pointsData.scorerPoints > 0 ? "✅" : "❌"} {pointsData.scorerPoints} pts
+                              </span>
+                            </p>
+                            <div className="border-t border-gray-200 pt-1.5 dark:border-gray-700 mt-1.5">
+                              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                Total: <span className="text-accent">{pointsData.total} pts</span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Money Breakdown */}
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Money</p>
+                          <div className="space-y-1.5">
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              <span>Winner:</span>{" "}
+                              <span className={moneyData.winnerMoney > 0 ? "text-success font-semibold" : "text-danger"}>
+                                {moneyData.winnerMoney > 0 ? "+" : ""}{formatMoney(moneyData.winnerMoney)}
+                              </span>
+                            </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              <span>Scorers:</span>{" "}
+                              <span className={moneyData.scorerMoney > 0 ? "text-success font-semibold" : "text-danger"}>
+                                {moneyData.scorerMoney > 0 ? "+" : ""}{formatMoney(moneyData.scorerMoney)}
+                              </span>
+                            </p>
+                            <div className="border-t border-gray-200 pt-1.5 dark:border-gray-700 mt-1.5">
+                              <p className={`text-xs font-semibold ${moneyData.total > 0 ? "text-success" : "text-danger"}`}>
+                                Total: {moneyData.total > 0 ? "+" : ""}{formatMoney(moneyData.total)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );
