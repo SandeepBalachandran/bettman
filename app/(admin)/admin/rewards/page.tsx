@@ -128,14 +128,14 @@ export default function AdminRewardsPage() {
       </div>
 
       <div className="card space-y-6 p-6">
-        {/* 1.5x Points Booster */}
+        {/* 2x Points Booster */}
         <div className="space-y-3 border-b border-gray-200 pb-6 dark:border-gray-800">
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              ⚡ 1.5x Points Booster Cost
+              ⚡ 2x Points Booster Cost
             </label>
             <p className="text-xs text-gray-500 mb-3">
-              Price users pay to activate 1.5x points multiplier
+              Price users pay to activate 2x points multiplier
             </p>
             <div className="flex items-center gap-2">
               <input

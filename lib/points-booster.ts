@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 const BOOSTER_COST = 100; // coins
-const BOOSTER_MULTIPLIER = 1.5;
+const BOOSTER_MULTIPLIER = 2;
 
 export async function canActivateBooster(userId: string): Promise<boolean> {
   const coinBalance = await prisma.coinBalance.findUnique({

@@ -61,7 +61,7 @@ export function BoosterButton({
       <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-sm dark:bg-amber-900/20">
         <span className="text-lg">⚡</span>
         <span className="font-semibold text-amber-700 dark:text-amber-400">
-          1.5x Active
+          2x Active
         </span>
       </div>
     );
@@ -80,7 +80,7 @@ export function BoosterButton({
       >
         <span className="text-lg">⚡</span>
         <span>
-          {loading ? "Activating..." : `1.5x Booster (100 💰)`}
+          {loading ? "Activating..." : `2x Booster (100 💰)`}
         </span>
       </button>
       {error && (
