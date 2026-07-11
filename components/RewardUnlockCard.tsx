@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 
 interface RewardUnlockCardProps {
-  slot: 3 | 4;
+  slot: "booster" | 3 | 4;
   balance: number;
   title: string;
   description: string;
@@ -25,14 +25,19 @@ export function RewardUnlockCard({
         if (response.ok) {
           const config = await response.json();
           const slotCost =
-            slot === 3 ? config.thirdScorerCost : config.fourthScorerCost;
+            slot === "booster"
+              ? config.boosterCost
+              : slot === 3
+                ? config.thirdScorerCost
+                : config.fourthScorerCost;
           setCost(slotCost);
           setCanUnlock(balance >= slotCost);
         }
       } catch (error) {
         console.error("Error fetching cost:", error);
         // Fallback to defaults
-        const defaultCost = slot === 3 ? 50 : 150;
+        const defaultCost =
+          slot === "booster" ? 100 : slot === 3 ? 50 : 150;
         setCost(defaultCost);
         setCanUnlock(balance >= defaultCost);
       }

@@ -102,6 +102,14 @@ export default async function RewardsPage() {
       <div className="space-y-3 sm:space-y-4">
         <h2 className="text-lg sm:text-xl font-bold">Feature Unlocks</h2>
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
+          {/* Booster */}
+          <RewardUnlockCard
+            slot="booster"
+            balance={balance}
+            title="Points Booster"
+            description="Double your points on a single prediction"
+          />
+
           {/* 3rd Scorer */}
           <RewardUnlockCard
             slot={3}
