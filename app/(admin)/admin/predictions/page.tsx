@@ -54,12 +54,13 @@ export default async function AdminPredictionsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl space-y-8 p-4 sm:p-6">
-      <h1 className="text-2xl font-bold gradient-text">All Predictions</h1>
-      <p className="text-sm text-gray-500">
-        {allUsers.length} player{allUsers.length === 1 ? "" : "s"} · every prediction across
-        every match, visible only to admins.
-      </p>
+    <main className="mx-auto max-w-4xl space-y-6 sm:space-y-8 p-3 sm:p-4 md:p-6">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold gradient-text">All Predictions</h1>
+        <p className="text-xs sm:text-sm text-gray-500">
+          {allUsers.length} player{allUsers.length === 1 ? "" : "s"} · every prediction across every match
+        </p>
+      </div>
 
       {ROUND_ORDER.map((round) => {
         const roundMatches = matchesByRound.get(round);
@@ -84,12 +85,16 @@ export default async function AdminPredictionsPage() {
                 const locked = isMatchLocked(match);
 
                 return (
-                  <div key={match.id} className="card p-3">
-                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-                      <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={18} />
-                      {match.homeTeam.name} vs {match.awayTeam.name}
-                      <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={18} />
-                      <span className="ml-auto text-xs font-normal text-gray-400">
+                  <div key={match.id} className="card p-3 sm:p-4 space-y-2 sm:space-y-3">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold">
+                        <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={16} />
+                        <span className="line-clamp-1">{match.homeTeam.name}</span>
+                        <span className="text-gray-400">vs</span>
+                        <span className="line-clamp-1">{match.awayTeam.name}</span>
+                        <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={16} />
+                      </div>
+                      <span className="text-xs font-normal text-gray-400 whitespace-nowrap">
                         <LocalDateTime date={match.kickoffTime.toISOString()} />
                       </span>
                     </div>
@@ -97,31 +102,36 @@ export default async function AdminPredictionsPage() {
                     {match.predictions.length === 0 ? (
                       <p className="text-xs text-gray-500">No predictions submitted yet.</p>
                     ) : (
-                      <ul className="space-y-1 text-xs">
+                      <ul className="space-y-1.5 text-xs">
                         {match.predictions.map((prediction) => (
                           <li
                             key={prediction.id}
-                            className="flex flex-wrap items-center gap-2 rounded bg-gray-50 px-2 py-1 dark:bg-white/5"
+                            className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1 sm:gap-2 rounded bg-gray-50 dark:bg-white/5 p-2 sm:p-2.5"
                           >
-                            <span className="font-semibold text-secondary">
+                            <span className="font-semibold text-secondary line-clamp-1">
                               {prediction.user.name}
                             </span>
-                            <span>→ winner: {prediction.winnerTeam.name}</span>
-                            <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-500">
-                              scorers:
+                            <span className="text-gray-500 hidden sm:inline">→</span>
+                            <span className="line-clamp-1">
+                              Winner: <span className="font-medium text-accent">{prediction.winnerTeam.name}</span>
+                            </span>
+                            <span className="w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-gray-200 dark:border-gray-700 pt-1 sm:pt-0 sm:pl-2 text-gray-500">
+                              Scorers:
                               {prediction.scorers.length > 0 ? (
-                                prediction.scorers.map((s) => (
-                                  <span key={s.id} className="inline-flex items-center gap-1">
-                                    <PlayerAvatar
-                                      name={s.player.name}
-                                      photoUrl={s.player.photoUrl}
-                                      size={14}
-                                    />
-                                    {s.player.name}
-                                  </span>
-                                ))
+                                <span className="inline-flex flex-wrap gap-1 ml-1">
+                                  {prediction.scorers.map((s) => (
+                                    <span key={s.id} className="inline-flex items-center gap-0.5">
+                                      <PlayerAvatar
+                                        name={s.player.name}
+                                        photoUrl={s.player.photoUrl}
+                                        size={14}
+                                      />
+                                      <span className="line-clamp-1">{s.player.name}</span>
+                                    </span>
+                                  ))}
+                                </span>
                               ) : (
-                                <span>none</span>
+                                <span className="ml-1 text-gray-400">—</span>
                               )}
                             </span>
                           </li>

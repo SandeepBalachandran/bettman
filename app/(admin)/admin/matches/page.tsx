@@ -16,10 +16,10 @@ export default async function AdminMatchesPage() {
   });
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold gradient-text">Manage Matches</h1>
-        <div className="flex flex-wrap gap-2">
+    <main className="mx-auto max-w-5xl space-y-6 p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Manage Matches</h1>
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <SyncMatchResultsButton />
           <SyncMatchesButton />
         </div>

@@ -47,46 +47,46 @@ export default async function AdminMoneyPage() {
       {sortedPlayers.length === 0 ? (
         <p className="text-sm text-gray-500">No players yet.</p>
       ) : (
-        <div className="table-card overflow-x-auto">
-          <table className="responsive-table w-full min-w-180 text-sm">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
+          <table className="w-full text-xs sm:text-sm">
             <thead>
-              <tr className="text-left">
-                <th className="py-2.5 pr-2 pl-3">Player</th>
-                <th className="py-2.5 pr-2">Money Won</th>
-                <th className="py-2.5 pr-2">Money Lost</th>
-                <th className="py-2.5 pr-2">Current Balance</th>
-                <th className="py-2.5 pr-2">Pending Max Win</th>
-                <th className="py-2.5 pr-2">Pending Max Loss</th>
-                <th className="py-2.5 pr-3">Settle</th>
+              <tr className="text-left bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
+                <th className="py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Player</th>
+                <th className="py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Won</th>
+                <th className="py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Lost</th>
+                <th className="py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Balance</th>
+                <th className="hidden lg:table-cell py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Max Win</th>
+                <th className="hidden lg:table-cell py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Max Loss</th>
+                <th className="py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Settle</th>
               </tr>
             </thead>
             <tbody>
               {sortedPlayers.map((player) => (
-                <tr key={player.userId}>
-                  <td className="py-2 pr-2 pl-3 font-medium" data-label="Player">
-                    {player.name}
+                <tr key={player.userId} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5">
+                  <td className="py-2 px-2 sm:py-2.5 sm:px-3 font-medium" data-label="Player">
+                    <span className="line-clamp-2">{player.name}</span>
                   </td>
-                  <td className="py-2 pr-2 text-success" data-label="Money Won">
+                  <td className="py-2 px-2 sm:py-2.5 sm:px-3 text-success text-right sm:text-left font-medium" data-label="Won">
                     {formatMoney(player.moneyWon)}
                   </td>
-                  <td className="py-2 pr-2 text-danger" data-label="Money Lost">
+                  <td className="py-2 px-2 sm:py-2.5 sm:px-3 text-danger text-right sm:text-left font-medium" data-label="Lost">
                     {formatMoney(player.moneyLost)}
                   </td>
                   <td
-                    className={`py-2 pr-2 font-bold ${
+                    className={`py-2 px-2 sm:py-2.5 sm:px-3 font-bold text-right sm:text-left ${
                       player.currentBalance >= 0 ? "text-success" : "text-danger"
                     }`}
-                    data-label="Current Balance"
+                    data-label="Balance"
                   >
                     {formatMoney(player.currentBalance)}
                   </td>
-                  <td className="py-2 pr-2" data-label="Pending Max Win">
+                  <td className="hidden lg:table-cell py-2 px-2 sm:py-2.5 sm:px-3" data-label="Max Win">
                     {formatMoney(player.pendingExposure.maxWin)}
                   </td>
-                  <td className="py-2 pr-2" data-label="Pending Max Loss">
+                  <td className="hidden lg:table-cell py-2 px-2 sm:py-2.5 sm:px-3" data-label="Max Loss">
                     {formatMoney(player.pendingExposure.maxLoss)}
                   </td>
-                  <td className="py-2 pr-3" data-label="Settle">
+                  <td className="py-2 px-2 sm:py-2.5 sm:px-3 text-right sm:text-left" data-label="Settle">
                     {player.currentBalance > 0 && player.upiId ? (
                       <a
                         href={buildUpiPayLink({
@@ -95,12 +95,12 @@ export default async function AdminMoneyPage() {
                           amount: player.currentBalance,
                           note: "Bettman settlement",
                         })}
-                        className="btn btn-primary"
+                        className="btn btn-primary text-xs sm:text-sm whitespace-nowrap"
                       >
-                        Pay {formatMoney(player.currentBalance)}
+                        Pay
                       </a>
                     ) : player.currentBalance > 0 ? (
-                      <span className="text-xs text-gray-400">No UPI ID on file</span>
+                      <span className="text-xs text-gray-400">No UPI</span>
                     ) : (
                       <span className="text-xs text-gray-400">—</span>
                     )}

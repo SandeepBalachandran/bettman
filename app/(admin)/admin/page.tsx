@@ -50,32 +50,32 @@ export default async function AdminDashboardPage() {
 
   return (
     <main className="mx-auto max-w-3xl space-y-8 p-4 sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <h1 className="text-2xl font-bold gradient-text">Admin Dashboard</h1>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <Link href="/admin/sync" className="rounded-full bg-success/10 px-3 py-1 text-success">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap text-xs sm:text-sm">
+          <Link href="/admin/sync" className="rounded-full bg-success/10 px-3 py-1.5 text-center text-success hover:bg-success/15 transition-colors">
             Sync results
           </Link>
-          <Link href="/admin/matches" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
+          <Link href="/admin/matches" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
             Manage matches
           </Link>
-          <Link href="/admin/users" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
+          <Link href="/admin/users" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
             Manage players
           </Link>
           <Link
             href="/admin/predictions"
-            className="rounded-full bg-accent/10 px-3 py-1 text-accent"
+            className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors"
           >
-            View all predictions
+            View predictions
           </Link>
-          <Link href="/admin/money" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
+          <Link href="/admin/money" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
             View finances
           </Link>
-          <Link href="/admin/rewards" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
+          <Link href="/admin/rewards" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
             Manage rewards
           </Link>
-          <Link href="/admin/coins" className="rounded-full bg-accent/10 px-3 py-1 text-accent">
-            View coin history
+          <Link href="/admin/coins" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
+            Coin history
           </Link>
         </div>
       </div>

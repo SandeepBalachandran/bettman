@@ -51,25 +51,27 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
   }
 
   return (
-    <div className="card relative space-y-3 p-4">
+    <div className="card relative space-y-3 p-3 sm:p-4">
       <LoadingOverlay show={isPending} />
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
             {match.round}
           </span>
-          <span className="text-xs text-gray-500">
-            {new Date(match.kickoffTime).toLocaleString()}
+          <span className="text-xs text-gray-500 whitespace-nowrap">
+            {new Date(match.kickoffTime).toLocaleDateString()} {new Date(match.kickoffTime).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
           </span>
         </div>
-        <span className="text-xs font-medium text-gray-500">{match.status}</span>
+        <span className="text-xs font-medium text-gray-500 self-start sm:self-auto">{match.status}</span>
       </div>
 
-      <div className="flex items-center gap-2 text-sm font-medium">
-        <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={18} />
-        {match.homeTeam.name} vs {match.awayTeam.name}
-        <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={18} />
+      <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-sm font-medium">
+        <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={16} />
+        <span className="line-clamp-1">{match.homeTeam.name}</span>
+        <span className="text-gray-400">vs</span>
+        <span className="line-clamp-1">{match.awayTeam.name}</span>
+        <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={16} />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -77,7 +79,7 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
           type="button"
           disabled={isPending}
           onClick={() => run(() => setMatchLocked(match.id, !match.locked), "Lock state updated")}
-          className="btn btn-outline"
+          className="btn btn-outline text-xs sm:text-sm flex-1 sm:flex-none"
         >
           {match.locked ? "Unlock" : "Lock"}
         </button>
@@ -85,16 +87,16 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
           type="button"
           disabled={isPending}
           onClick={() => run(() => deleteMatch(match.id), "Match deleted")}
-          className="btn btn-danger"
+          className="btn btn-danger text-xs sm:text-sm flex-1 sm:flex-none"
         >
           Delete
         </button>
       </div>
 
       {match.status === "FINISHED" ? (
-        <p className="text-xs text-gray-500">Finished</p>
+        <p className="text-xs text-gray-500">✓ Finished</p>
       ) : (
-        <div className="grid grid-cols-1 gap-2 border-t border-[color-mix(in_srgb,var(--foreground)_8%,transparent)] pt-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 sm:gap-3 border-t border-[color-mix(in_srgb,var(--foreground)_8%,transparent)] pt-3 sm:grid-cols-2">
           <select
             value={winnerTeamId}
             onChange={(e) => setWinnerTeamId(e.target.value)}
