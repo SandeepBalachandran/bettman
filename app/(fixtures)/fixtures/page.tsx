@@ -21,8 +21,6 @@ async function getLiveStatusByExternalId(): Promise<Map<number, FootballDataMatc
   }
 }
 
-const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "THIRD_PLACE", "FINAL"];
-
 const ROUND_LABELS: Record<Round, string> = {
   ROUND_OF_16: "Round of 16",
   QUARTER_FINALS: "Quarter Finals",
@@ -64,6 +62,15 @@ export default async function FixturesPage() {
     matchesByRound.set(match.round, existing);
   }
 
+  // Sort rounds by their earliest match time
+  const roundsInOrder = Array.from(matchesByRound.entries())
+    .sort(([, matchesA], [, matchesB]) => {
+      const earliestA = matchesA[0].kickoffTime;
+      const earliestB = matchesB[0].kickoffTime;
+      return earliestA.getTime() - earliestB.getTime();
+    })
+    .map(([round]) => round);
+
   const nextMatch = matches
     .filter((m) => m.status !== "FINISHED")
     .reduce<(typeof matches)[number] | null>(
@@ -71,13 +78,7 @@ export default async function FixturesPage() {
       null
     );
 
-  const roundOf16Matches = matchesByRound.get("ROUND_OF_16");
-  const firstMatchKickoff = roundOf16Matches?.length
-    ? roundOf16Matches.reduce(
-        (earliest, m) => (m.kickoffTime < earliest ? m.kickoffTime : earliest),
-        roundOf16Matches[0].kickoffTime
-      )
-    : null;
+  const firstMatchKickoff = matches.length > 0 ? matches[0].kickoffTime : null;
 
   return (
     <main className="mx-auto max-w-4xl space-y-8 p-4 sm:space-y-10 sm:p-6">
@@ -100,7 +101,7 @@ export default async function FixturesPage() {
         </p>
       )}
 
-      {ROUND_ORDER.map((round) => {
+      {roundsInOrder.map((round) => {
         const roundMatches = matchesByRound.get(round);
         if (!roundMatches || roundMatches.length === 0) {
           return null;

@@ -23,8 +23,11 @@ export default async function PredictPage({
       homeTeam: { include: { players: true } },
       awayTeam: { include: { players: true } },
       predictions: {
-        where: { userId: user.id },
-        include: { scorers: true },
+        include: {
+          user: true,
+          winnerTeam: true,
+          scorers: { include: { player: true } },
+        },
       },
     },
   });
@@ -61,19 +64,89 @@ export default async function PredictPage({
           earlier round finishes.
         </div>
       ) : isLocked ? (
-        <div className="card border-danger/30 bg-danger/10 p-4 text-sm text-danger">
-          Predictions are locked for this match.
-          <p className="mt-1 text-xs text-danger/80">
-            Predictions lock automatically {AUTO_LOCK_MINUTES_BEFORE_KICKOFF} minutes before
-            kickoff.
-          </p>
+        <div className="space-y-4">
           {existingPrediction && (
-            <p className="mt-2">
-              Your prediction: winner{" "}
-              {existingPrediction.winnerTeamId === match.homeTeamId
-                ? match.homeTeam.name
-                : match.awayTeam.name}
-            </p>
+            <div className="card p-4">
+              <h3 className="text-sm font-semibold text-accent mb-3">My prediction</h3>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-xs text-gray-500">Winner</p>
+                  <p className="text-sm font-medium">
+                    {existingPrediction.winnerTeamId === match.homeTeamId
+                      ? match.homeTeam.name
+                      : match.awayTeam.name}
+                  </p>
+                </div>
+                {existingPrediction.scorers.length > 0 && (
+                  <div>
+                    <p className="text-xs text-gray-500">Scorers</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {existingPrediction.scorers.map((s) => (
+                        <div key={s.id} className="flex items-center gap-1">
+                          {s.player.photoUrl && (
+                            <img
+                              src={s.player.photoUrl}
+                              alt={s.player.name}
+                              width={20}
+                              height={20}
+                              className="rounded-full"
+                            />
+                          )}
+                          <span className="text-xs text-gray-600 line-clamp-1">
+                            {s.player.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {match.predictions.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-secondary">📊 Everyone&apos;s predictions</h3>
+              {match.predictions.map((prediction) => (
+                <div key={prediction.id} className="card p-3 sm:p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-xs font-semibold text-secondary">
+                      {prediction.user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="font-medium text-sm">{prediction.user.name}</span>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-xs text-gray-500">Winner</p>
+                      <p className="font-medium text-accent">{prediction.winnerTeam.name}</p>
+                    </div>
+                    {prediction.scorers.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-500">Scorers</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {prediction.scorers.map((s) => (
+                            <div key={s.id} className="flex items-center gap-0.5">
+                              {s.player.photoUrl && (
+                                <img
+                                  src={s.player.photoUrl}
+                                  alt={s.player.name}
+                                  width={16}
+                                  height={16}
+                                  className="rounded-full"
+                                />
+                              )}
+                              <span className="text-xs text-gray-600 line-clamp-1">
+                                {s.player.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       ) : (
