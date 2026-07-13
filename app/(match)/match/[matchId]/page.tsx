@@ -99,104 +99,98 @@ export default async function MatchDetailsPage({
         </section>
       )}
 
-      <section className="card space-y-1 border-l-4 border-secondary p-4 text-sm">
-        <p className="font-semibold text-secondary">My prediction</p>
-        {myPrediction ? (
-          <>
-            <p>
-              Winner:{" "}
-              {myPrediction.winnerTeamId === match.homeTeamId
-                ? match.homeTeam.name
-                : match.awayTeam.name}
-            </p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span>Scorers:</span>
-              {myPrediction.scorers.length > 0 ? (
-                myPrediction.scorers.map((s) => (
-                  <span key={s.id} className="inline-flex items-center gap-1">
-                    <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={22} />
-                    {s.player.name}
-                  </span>
-                ))
-              ) : (
-                <span>None</span>
-              )}
-            </div>
-            {points && (
-              <p className="font-bold text-highlight-foreground dark:text-highlight">
-                Points earned: {points.total} (winner {points.winnerPoints}, scorers{" "}
-                {points.scorerPoints})
+      {myPrediction && (
+        <div className="card p-4">
+          <h3 className="text-sm font-semibold text-accent mb-3">My prediction</h3>
+          <div className="space-y-2">
+            <div>
+              <p className="text-xs text-gray-500">Winner</p>
+              <p className="text-sm font-medium">
+                {myPrediction.winnerTeamId === match.homeTeamId
+                  ? match.homeTeam.name
+                  : match.awayTeam.name}
               </p>
-            )}
-          </>
-        ) : (
-          <p className="text-gray-500">No prediction submitted.</p>
-        )}
-      </section>
-
-      {isLocked ? (
-        <section className="card space-y-3 p-4 text-sm">
-          <p className="font-semibold">🔓 Everyone&apos;s predictions</p>
-          {otherPredictions.length === 0 ? (
-            <p className="text-gray-500">No one else predicted this match.</p>
-          ) : (
-            <div className="space-y-3">
-              {otherPredictions.map((prediction) => (
-                <div
-                  key={prediction.id}
-                  className="card-interactive space-y-2 rounded-xl border border-[color-mix(in_srgb,var(--foreground)_8%,transparent)] bg-black/2 p-3 dark:bg-white/5"
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${nameColor(
-                        prediction.userId
-                      )}`}
-                    >
-                      {prediction.user.name.slice(0, 1).toUpperCase()}
-                    </span>
-                    <p className="font-medium">{prediction.user.name}</p>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                    <span className="w-14 shrink-0 text-xs font-semibold text-gray-400">
-                      Winner
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
-                      <TeamFlag
-                        flag={prediction.winnerTeam.flag}
-                        name={prediction.winnerTeam.name}
-                        size={16}
-                      />
-                      {prediction.winnerTeam.name}
-                    </span>
-                  </div>
-
-                  <div className="flex items-start gap-2 text-gray-600 dark:text-gray-300">
-                    <span className="mt-1 w-14 shrink-0 text-xs font-semibold text-gray-400">
-                      Scorers
-                    </span>
-                    {prediction.scorers.length > 0 ? (
-                      <div className="flex flex-wrap gap-3">
-                        {prediction.scorers.map((s) => (
-                          <span
-                            key={s.id}
-                            className="flex flex-col items-center gap-1 text-center text-xs"
-                          >
-                            <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={40} />
-                            <span className="max-w-16 truncate">{s.player.name}</span>
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="mt-1 text-gray-400">None</span>
-                    )}
-                  </div>
-                </div>
-              ))}
             </div>
-          )}
-        </section>
-      ) : (
+            {myPrediction.scorers.length > 0 && (
+              <div>
+                <p className="text-xs text-gray-500">Scorers</p>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {myPrediction.scorers.map((s) => (
+                    <div key={s.id} className="flex items-center gap-1">
+                      {s.player.photoUrl && (
+                        <img
+                          src={s.player.photoUrl}
+                          alt={s.player.name}
+                          width={20}
+                          height={20}
+                          className="rounded-full"
+                        />
+                      )}
+                      <span className="text-xs text-gray-600 line-clamp-1">
+                        {s.player.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {points && (
+              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-xs font-semibold text-highlight-foreground dark:text-highlight">
+                  Points: {points.total} (winner {points.winnerPoints}, scorers {points.scorerPoints})
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {isLocked && otherPredictions.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-secondary">📊 Everyone&apos;s predictions</h3>
+          {otherPredictions.map((prediction) => (
+            <div key={prediction.id} className="card p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-xs font-semibold text-secondary">
+                  {prediction.user.name.charAt(0).toUpperCase()}
+                </div>
+                <span className="font-medium text-sm">{prediction.user.name}</span>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <p className="text-xs text-gray-500">Winner</p>
+                  <p className="font-medium text-accent">{prediction.winnerTeam.name}</p>
+                </div>
+                {prediction.scorers.length > 0 && (
+                  <div>
+                    <p className="text-xs text-gray-500">Scorers</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {prediction.scorers.map((s) => (
+                        <div key={s.id} className="flex items-center gap-0.5">
+                          {s.player.photoUrl && (
+                            <img
+                              src={s.player.photoUrl}
+                              alt={s.player.name}
+                              width={16}
+                              height={16}
+                              className="rounded-full"
+                            />
+                          )}
+                          <span className="text-xs text-gray-600 line-clamp-1">
+                            {s.player.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!isLocked && (
         <p className="text-center text-xs text-gray-500">
           Other players&apos; predictions unlock once this match locks (30 minutes before
           kickoff).

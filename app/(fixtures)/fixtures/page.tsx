@@ -62,12 +62,12 @@ export default async function FixturesPage() {
     matchesByRound.set(match.round, existing);
   }
 
-  // Sort rounds by their earliest match time
+  // Sort rounds by their earliest match time (latest first)
   const roundsInOrder = Array.from(matchesByRound.entries())
     .sort(([, matchesA], [, matchesB]) => {
       const earliestA = matchesA[0].kickoffTime;
       const earliestB = matchesB[0].kickoffTime;
-      return earliestA.getTime() - earliestB.getTime();
+      return earliestB.getTime() - earliestA.getTime();
     })
     .map(([round]) => round);
 
