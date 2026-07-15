@@ -23,27 +23,142 @@ export async function sendVerificationEmail(email: string, token: string) {
       to: email,
       subject: "Verify your email — FIFU",
       html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 8px 8px 0 0; text-align: center;">
-            <h2 style="margin: 0; font-size: 24px;">🏆 Welcome to FIFU</h2>
-          </div>
-          <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 8px 8px;">
-            <p style="margin: 0 0 16px 0; color: #374151; font-size: 16px;">
-              Thanks for signing up! Please verify your email to get started.
+        <!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Verify Your Email</title>
+</head>
+
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;">
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6;padding:40px 20px;">
+<tr>
+<td align="center">
+
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.08);">
+
+    <!-- Header -->
+    <tr>
+        <td align="center"
+            style="background:linear-gradient(135deg,#4F46E5,#7C3AED);padding:40px 20px;color:white;">
+            <div style="font-size:52px;">🏆</div>
+
+            <h1 style="margin:15px 0 5px;font-size:30px;font-weight:bold;">
+                Welcome to Bettman
+            </h1>
+
+            <p style="margin:0;font-size:16px;opacity:.9;">
+                Your betting journey starts here.
             </p>
-            <div style="margin: 24px 0;">
-              <a href="${verificationLink}" style="display: inline-block; background: #667eea; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 16px;">
-                Verify Email
-              </a>
+        </td>
+    </tr>
+
+    <!-- Content -->
+    <tr>
+        <td style="padding:45px 40px;">
+
+            <h2 style="margin-top:0;color:#111827;font-size:24px;">
+                Verify your email address
+            </h2>
+
+            <p style="font-size:16px;color:#4B5563;line-height:1.7;">
+                Thank you for joining <strong>Bettman</strong>.
+                To activate your account and start using the platform,
+                please verify your email address by clicking the button below.
+            </p>
+
+            <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:35px auto;">
+                <tr>
+                    <td bgcolor="#4F46E5" style="border-radius:8px;">
+                        <a href="${verificationLink}"
+                           style="
+                           display:inline-block;
+                           padding:16px 34px;
+                           color:#ffffff;
+                           text-decoration:none;
+                           font-size:16px;
+                           font-weight:bold;">
+                            Verify Email
+                        </a>
+                    </td>
+                </tr>
+            </table>
+
+            <p style="color:#6B7280;font-size:15px;line-height:1.6;">
+                If the button doesn't work, copy and paste the following link
+                into your browser:
+            </p>
+
+            <div style="
+                background:#F9FAFB;
+                border:1px solid #E5E7EB;
+                padding:14px;
+                border-radius:8px;
+                word-break:break-all;
+                font-size:14px;
+                color:#374151;">
+                ${verificationLink}
             </div>
-            <p style="margin: 16px 0; color: #6b7280; font-size: 14px;">
-              Or copy this link: <code style="background: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${verificationLink}</code>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
+                <tr>
+                    <td style="border-top:1px solid #E5E7EB;padding-top:25px;">
+
+                        <table width="100%">
+                            <tr>
+                                <td width="40" valign="top" style="font-size:22px;">
+                                    ⏳
+                                </td>
+                                <td style="font-size:14px;color:#6B7280;">
+                                    This verification link expires in
+                                    <strong>24 hours</strong>.
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td width="40" valign="top" style="font-size:22px;padding-top:12px;">
+                                    🔒
+                                </td>
+                                <td style="font-size:14px;color:#6B7280;padding-top:12px;">
+                                    If you didn't create a Bettman account,
+                                    you can safely ignore this email.
+                                </td>
+                            </tr>
+                        </table>
+
+                    </td>
+                </tr>
+            </table>
+
+        </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+        <td align="center"
+            style="background:#F9FAFB;padding:24px;border-top:1px solid #E5E7EB;">
+
+            <p style="margin:0;font-size:15px;font-weight:bold;color:#111827;">
+                Bettman
             </p>
-            <p style="margin: 24px 0 0 0; padding-top: 16px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 12px;">
-              This link expires in 24 hours. If you didn't sign up for FIFU, please ignore this email.
+
+            <p style="margin:8px 0 0;font-size:13px;color:#9CA3AF;">
+                Thanks for choosing Bettman.
+                We're excited to have you onboard.
             </p>
-          </div>
-        </div>
+
+        </td>
+    </tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
       `,
     });
 

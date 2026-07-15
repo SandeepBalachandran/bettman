@@ -44,13 +44,20 @@ export function PredictionForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [winnerTeamId, setWinnerTeamId] = useState(initialWinnerTeamId ?? "");
-  const [scorers, setScorers] = useState<string[]>([
-    initialScorerPlayerIds[0] ?? "",
-    initialScorerPlayerIds[1] ?? "",
-    initialScorerPlayerIds[2] ?? "",
-    initialScorerPlayerIds[3] ?? "",
-  ]);
+  const [winnerTeamId, setWinnerTeamId] = useState(() => {
+    return initialWinnerTeamId || "";
+  });
+  const [scorers, setScorers] = useState<string[]>(() => {
+    if (initialWinnerTeamId) {
+      return [
+        initialScorerPlayerIds[0] ?? "",
+        initialScorerPlayerIds[1] ?? "",
+        initialScorerPlayerIds[2] ?? "",
+        initialScorerPlayerIds[3] ?? "",
+      ];
+    }
+    return ["", "", "", ""];
+  });
   const [costFor3rdScorer, setCostFor3rdScorer] = useState(50);
   const [costFor4thScorer, setCostFor4thScorer] = useState(150);
 
