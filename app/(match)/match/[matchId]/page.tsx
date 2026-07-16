@@ -78,34 +78,55 @@ export default async function MatchDetailsPage({
       </div>
 
       {isFinished && (
-        <section className="card space-y-2 border-l-4 border-success p-4 text-sm">
-          <p className="font-semibold text-success">
-            Winner: {match.winnerTeam?.name ?? "—"}
-          </p>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span>Scorers:</span>
-            {match.scorers.length > 0 ? (
-              match.scorers.map((s) => (
-                <span key={s.id} className="inline-flex items-center gap-1">
-                  <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={22} />
-                  {s.player.name}
-                </span>
-              ))
-            ) : (
-              <span>None</span>
+        <section className="card border-0 bg-gradient-to-br from-success/10 to-success/5 p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">✓</span>
+            <h2 className="text-lg font-bold text-success">Match Result</h2>
+          </div>
+
+          <div className="rounded-lg bg-white dark:bg-white/5 p-4 space-y-3">
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Winner</p>
+              <p className="text-base font-bold text-success mt-1">
+                {match.winnerTeam?.name ?? "—"}
+              </p>
+            </div>
+
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Goal Scorers</p>
+              {match.scorers.length > 0 ? (
+                <div className="space-y-2">
+                  {match.scorers.map((s) => (
+                    <div key={s.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-md bg-gray-50 dark:bg-white/5">
+                      <PlayerAvatar name={s.player.name} photoUrl={s.player.photoUrl} size={24} />
+                      <span className="font-medium text-sm">{s.player.name}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 italic">No scorers recorded</p>
+              )}
+            </div>
+
+            {match.wonOnPenalties && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                <PenaltyBadge />
+              </div>
             )}
           </div>
-          {match.wonOnPenalties && <PenaltyBadge />}
         </section>
       )}
 
       {myPrediction && (
-        <div className="card p-4">
-          <h3 className="text-sm font-semibold text-accent mb-3">My prediction</h3>
-          <div className="space-y-2">
+        <div className="card border-l-4 border-accent p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">🎯</span>
+            <h3 className="text-sm font-semibold text-accent">My Prediction</h3>
+          </div>
+          <div className="space-y-3">
             <div>
-              <p className="text-xs text-gray-500">Winner</p>
-              <p className="text-sm font-medium">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Your Winner Pick</p>
+              <p className="text-sm font-medium mt-1">
                 {myPrediction.winnerTeamId === match.homeTeamId
                   ? match.homeTeam.name
                   : match.awayTeam.name}
@@ -113,20 +134,20 @@ export default async function MatchDetailsPage({
             </div>
             {myPrediction.scorers.length > 0 && (
               <div>
-                <p className="text-xs text-gray-500">Scorers</p>
-                <div className="flex flex-wrap gap-2 mt-1">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Your Scorer Picks</p>
+                <div className="flex flex-wrap gap-2">
                   {myPrediction.scorers.map((s) => (
-                    <div key={s.id} className="flex items-center gap-1">
+                    <div key={s.id} className="flex items-center gap-1 px-2 py-1 rounded-full bg-accent/10">
                       {s.player.photoUrl && (
                         <img
                           src={s.player.photoUrl}
                           alt={s.player.name}
-                          width={20}
-                          height={20}
+                          width={18}
+                          height={18}
                           className="rounded-full"
                         />
                       )}
-                      <span className="text-xs text-gray-600 line-clamp-1">
+                      <span className="text-xs font-medium text-accent line-clamp-1">
                         {s.player.name}
                       </span>
                     </div>
@@ -137,7 +158,7 @@ export default async function MatchDetailsPage({
             {points && (
               <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-xs font-semibold text-highlight-foreground dark:text-highlight">
-                  Points: {points.total} (winner {points.winnerPoints}, scorers {points.scorerPoints})
+                  ⭐ Points: {points.total} (winner {points.winnerPoints}, scorers {points.scorerPoints})
                 </p>
               </div>
             )}
@@ -147,9 +168,9 @@ export default async function MatchDetailsPage({
 
       {isLocked && otherPredictions.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-secondary">📊 Everyone&apos;s predictions</h3>
+          <h3 className="text-sm font-semibold text-secondary">📊 Everyone&apos;s Predictions</h3>
           {otherPredictions.map((prediction) => (
-            <div key={prediction.id} className="card p-3 sm:p-4">
+            <div key={prediction.id} className="card border-l-4 border-secondary/50 p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-xs font-semibold text-secondary">
                   {prediction.user.name.charAt(0).toUpperCase()}
@@ -158,15 +179,15 @@ export default async function MatchDetailsPage({
               </div>
               <div className="space-y-2 text-sm">
                 <div>
-                  <p className="text-xs text-gray-500">Winner</p>
-                  <p className="font-medium text-accent">{prediction.winnerTeam.name}</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Winner Pick</p>
+                  <p className="font-medium text-accent mt-0.5">{prediction.winnerTeam.name}</p>
                 </div>
                 {prediction.scorers.length > 0 && (
                   <div>
-                    <p className="text-xs text-gray-500">Scorers</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Scorer Picks</p>
+                    <div className="flex flex-wrap gap-1">
                       {prediction.scorers.map((s) => (
-                        <div key={s.id} className="flex items-center gap-0.5">
+                        <div key={s.id} className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-secondary/10">
                           {s.player.photoUrl && (
                             <img
                               src={s.player.photoUrl}
@@ -176,7 +197,7 @@ export default async function MatchDetailsPage({
                               className="rounded-full"
                             />
                           )}
-                          <span className="text-xs text-gray-600 line-clamp-1">
+                          <span className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
                             {s.player.name}
                           </span>
                         </div>

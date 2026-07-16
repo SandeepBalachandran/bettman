@@ -5,6 +5,7 @@ export type MatchCardData = {
   id: string;
   kickoffTime: Date;
   locked: boolean;
+  status: string;
   homeTeam: { name: string; flag: string | null };
   awayTeam: { name: string; flag: string | null };
   hasPrediction: boolean;
@@ -20,10 +21,11 @@ const LIVE_STATUS_LABELS: Record<string, string> = {
 
 export function MatchCard({ match }: { readonly match: MatchCardData }) {
   const liveLabel = match.liveStatus ? LIVE_STATUS_LABELS[match.liveStatus] : undefined;
+  const href = match.status === "FINISHED" ? `/match/${match.id}` : `/predict/${match.id}`;
 
   return (
     <Link
-      href={`/predict/${match.id}`}
+      href={href}
       className={`card card-interactive block border-l-4 border-accent p-3 sm:p-4 ${
         match.isNext ? "animate-pulse-border" : ""
       }`}

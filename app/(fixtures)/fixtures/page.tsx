@@ -125,6 +125,7 @@ export default async function FixturesPage() {
                   id: match.id,
                   kickoffTime: match.kickoffTime,
                   locked: isMatchLocked(match),
+                  status: match.status,
                   homeTeam: { name: match.homeTeam.name, flag: match.homeTeam.flag },
                   awayTeam: { name: match.awayTeam.name, flag: match.awayTeam.flag },
                   hasPrediction: match.predictions.length > 0,

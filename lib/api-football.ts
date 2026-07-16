@@ -6,7 +6,7 @@ const CACHE_DIR = path.join(process.cwd(), ".cache", "api-football");
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000; // 1 day — squads/photos rarely change mid-tournament
 
 export type ApiFootballTeam = {
-  id: number;
+  id: number; 
   name: string;
   code: string | null;
   logo: string;
