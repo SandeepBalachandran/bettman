@@ -18,23 +18,33 @@ interface QuizConfig {
   coinsPerCorrect: number;
 }
 
+interface QuizAnswer {
+  questionId: string;
+  question: string;
+  options: string[];
+  selectedIndex: number | null;
+  correctIndex: number;
+  isCorrect: boolean;
+}
+
 interface QuizModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialConfig?: QuizConfig | null;
 }
 
 type QuizState = "preview" | "loading" | "quiz" | "results" | "error";
 
-export function QuizModal({ isOpen, onClose }: QuizModalProps) {
+export function QuizModal({ isOpen, onClose, initialConfig }: QuizModalProps) {
   const [state, setState] = useState<QuizState>("preview");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [config, setConfig] = useState<QuizConfig | null>(null);
+  const [config, setConfig] = useState<QuizConfig | null>(initialConfig || null);
   const [secondsPerQuestion, setSecondsPerQuestion] = useState(10);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number | null>>({});
   const [answeredInTime, setAnsweredInTime] = useState<Record<string, boolean>>({});
-  const [results, setResults] = useState<{ correctCount: number; coinsAwarded: number; newBalance: number } | null>(null);
+  const [results, setResults] = useState<{ correctCount: number; coinsAwarded: number; newBalance: number; answers: QuizAnswer[] } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
 
@@ -51,39 +61,11 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
     };
   }, [isOpen]);
 
-  // Load quiz config on mount
+  // Show preview immediately when modal opens (config already fetched)
   useEffect(() => {
-    if (!isOpen) return;
-
-    const loadQuizConfig = async () => {
-      try {
-        setState("preview");
-        setError("");
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-        const response = await fetch("/api/quiz/config", { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Failed to load quiz (${response.status})`);
-        }
-
-        const data = await response.json();
-        console.log("Quiz config received:", data);
-
-        setConfig(data);
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : "Failed to load quiz";
-        console.error("Error loading quiz config:", errorMsg);
-        setError(errorMsg);
-        setState("error");
-      }
-    };
-
-    loadQuizConfig();
+    if (isOpen) {
+      setState("preview");
+    }
   }, [isOpen]);
 
   // Load actual quiz when user clicks "Start Quiz"
@@ -222,10 +204,22 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
       if (!response.ok) throw new Error("Failed to submit quiz");
 
       const data = await response.json();
+
+      // Build detailed answer breakdown with questions
+      const detailedAnswers: QuizAnswer[] = questions.map(q => ({
+        questionId: q.id,
+        question: q.question,
+        options: q.options,
+        selectedIndex: answers[q.id] ?? null,
+        correctIndex: 0, // Will be filled by API data if needed
+        isCorrect: answers[q.id] === data.correctAnswers[q.id],
+      }));
+
       setResults({
         correctCount: data.correctCount,
         coinsAwarded: data.coinsAwarded,
         newBalance: data.newBalance,
+        answers: data.detailedAnswers || detailedAnswers,
       });
       setState("results");
     } catch (error) {
@@ -245,7 +239,7 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-600/40 backdrop-blur-sm p-4 sm:p-0">
-        <div className="card rounded-2xl p-4 sm:p-6 w-full max-w-md space-y-6">
+        <div className="card rounded-2xl p-4 sm:p-6 w-full max-w-md space-y-6 max-h-[90vh] overflow-y-auto">
           <div className="text-center">
             <p className="text-4xl sm:text-5xl mb-3">⚽</p>
             <h3 className="text-xl sm:text-2xl font-bold mb-2">Daily Football Quiz</h3>
@@ -277,14 +271,39 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
               <div className="flex items-center justify-between p-3 sm:p-4 bg-success/10 rounded-lg">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">💰</span>
-                  <span className="text-sm font-medium">Max coins</span>
+                  <span className="text-sm font-medium">Per correct answer</span>
+                </div>
+                <span className="text-lg font-bold text-success">+{config.coinsPerCorrect}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-success/10 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🎁</span>
+                  <span className="text-sm font-medium">Completion bonus</span>
+                </div>
+                <span className="text-lg font-bold text-success">+{config.completionCoins}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-success/10 rounded-lg border-2 border-success">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🏆</span>
+                  <span className="text-sm font-medium">Max coins possible</span>
                 </div>
                 <span className="text-lg font-bold text-success">{totalCoins}</span>
               </div>
             </div>
           )}
 
-          <div className="space-y-2 pt-4">
+          <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1.5">
+              <p className="flex items-start gap-2">
+                <span className="text-sm mt-0.5">ℹ️</span>
+                <span>You can close and restart the quiz at anytime. Once completed, you can only retake the quiz next day.</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
             <button
               onClick={startQuiz}
               className="w-full py-3 rounded-lg bg-accent text-white text-sm sm:text-base font-medium hover:bg-accent/90 transition-colors active:scale-95"
@@ -428,6 +447,7 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
   if (state === "results" && results) {
     const totalCorrect = results.correctCount;
     const totalQuestions = questions.length;
+    const totalWrong = totalQuestions - totalCorrect;
     const percentage = Math.round((totalCorrect / totalQuestions) * 100);
 
     return (
@@ -437,13 +457,25 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
             <p className="text-3xl sm:text-5xl mb-2">
               {percentage >= 80 ? '🎉' : percentage >= 60 ? '👍' : '💪'}
             </p>
-            <h3 className="text-xl sm:text-2xl font-bold mb-2">Quiz Complete!</h3>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-              You got <span className="font-bold text-success">{totalCorrect}</span> out of <span className="font-bold">{totalQuestions}</span> correct
-            </p>
+            <h3 className="text-xl sm:text-2xl font-bold mb-4">Quiz Complete!</h3>
+
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <div className="p-2 bg-success/10 rounded-lg">
+                <p className="text-xs text-gray-600 dark:text-gray-400">Correct</p>
+                <p className="text-lg font-bold text-success">{totalCorrect}</p>
+              </div>
+              <div className="p-2 bg-danger/10 rounded-lg">
+                <p className="text-xs text-gray-600 dark:text-gray-400">Wrong</p>
+                <p className="text-lg font-bold text-danger">{totalWrong}</p>
+              </div>
+              <div className="p-2 bg-accent/10 rounded-lg">
+                <p className="text-xs text-gray-600 dark:text-gray-400">Score</p>
+                <p className="text-lg font-bold text-accent">{percentage}%</p>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-2 sm:space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4">
             <div className="flex justify-between items-center p-3 sm:p-4 bg-success/10 rounded-lg">
               <p className="text-xs sm:text-sm font-medium">Coins Earned</p>
               <p className="text-lg sm:text-xl font-bold text-success">+{results.coinsAwarded}</p>
@@ -454,7 +486,44 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
+          {results.answers && results.answers.length > 0 && (
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
+              <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Answer Breakdown</p>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {results.answers.map((answer, idx) => (
+                  <div
+                    key={answer.questionId}
+                    className={`p-2 rounded border-l-4 text-xs ${
+                      answer.isCorrect
+                        ? "bg-success/10 border-success"
+                        : "bg-danger/10 border-danger"
+                    }`}
+                  >
+                    <p className="font-semibold text-xs mb-1">Q{idx + 1}. {answer.isCorrect ? "✓" : "✗"}</p>
+                    <p className="text-xs text-gray-700 dark:text-gray-300 mb-1">{answer.question}</p>
+                    <div className="space-y-0.5 text-xs">
+                      {answer.selectedIndex !== null && (
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Your answer: <span className={answer.isCorrect ? "text-success font-semibold" : "text-danger font-semibold"}>
+                            {answer.options[answer.selectedIndex]}
+                          </span>
+                        </p>
+                      )}
+                      {!answer.isCorrect && (
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Correct: <span className="text-success font-semibold">
+                            {answer.options[answer.correctIndex]}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-4">
             <button
               onClick={() => {
                 onClose();

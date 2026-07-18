@@ -3,28 +3,46 @@
 import { useEffect, useState } from "react";
 import { QuizModal } from "@/components/features/quiz/QuizModal";
 
+interface QuizConfig {
+  questionsPerQuiz: number;
+  secondsPerQuestion: number;
+  completionCoins: number;
+  coinsPerCorrect: number;
+}
+
 export function QuizFab() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasPlayedToday, setHasPlayedToday] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [quizConfig, setQuizConfig] = useState<QuizConfig | null>(null);
 
   useEffect(() => {
-    const checkIfPlayedToday = async () => {
+    const initializeQuiz = async () => {
       try {
-        const response = await fetch("/api/quiz/status");
-        if (response.ok) {
-          const data = await response.json();
-          setHasPlayedToday(data.hasPlayedToday);
+        // Fetch both quiz status and config in parallel
+        const [statusRes, configRes] = await Promise.all([
+          fetch("/api/quiz/status"),
+          fetch("/api/quiz/config"),
+        ]);
+
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          setHasPlayedToday(statusData.hasPlayedToday);
+        }
+
+        if (configRes.ok) {
+          const configData = await configRes.json();
+          setQuizConfig(configData);
         }
       } catch (error) {
-        console.error("Error checking quiz status:", error);
+        console.error("Error initializing quiz:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    checkIfPlayedToday();
-  }, [isOpen]);
+    initializeQuiz();
+  }, []);
 
   if (loading) return null;
 
@@ -62,10 +80,14 @@ export function QuizFab() {
         <span className="quiz-fab-icon inline-block">⚽</span>
       </button>
 
-      <QuizModal isOpen={isOpen} onClose={() => {
-        setIsOpen(false);
-        setHasPlayedToday(true);
-      }} />
+      <QuizModal
+        isOpen={isOpen}
+        onClose={() => {
+          setIsOpen(false);
+          setHasPlayedToday(true);
+        }}
+        initialConfig={quizConfig}
+      />
     </>
   );
 }
