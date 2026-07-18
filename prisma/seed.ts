@@ -190,7 +190,7 @@ async function seedQuizQuestions() {
 
 async function main() {
   await seedAdmin();
-  await seedBettor();
+  // Removed: seedBettor() - demo user should not be created
   await seedPlayers();
   await seedQuizQuestions();
 }

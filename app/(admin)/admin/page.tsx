@@ -5,6 +5,7 @@ import { getLeaderboard } from "@/lib/leaderboard";
 import { getAllUsersMoney } from "@/lib/leaderboard-money";
 import { formatMoney } from "@/lib/format-money";
 import { SendNotificationForm } from "@/components/features/admin/SendNotificationForm";
+import { RecentQuizAttemptsTable } from "@/components/features/admin/RecentQuizAttemptsTable";
 
 export default async function AdminDashboardPage() {
   await requireAdmin();
@@ -171,6 +172,8 @@ export default async function AdminDashboardPage() {
           </table>
         </div>
       </section>
+
+      <RecentQuizAttemptsTable />
     </main>
   );
 }

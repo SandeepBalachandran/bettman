@@ -11,16 +11,24 @@ interface QuizQuestion {
   difficulty: string;
 }
 
+interface QuizConfig {
+  questionsPerQuiz: number;
+  secondsPerQuestion: number;
+  completionCoins: number;
+  coinsPerCorrect: number;
+}
+
 interface QuizModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type QuizState = "loading" | "quiz" | "results" | "error";
+type QuizState = "preview" | "loading" | "quiz" | "results" | "error";
 
 export function QuizModal({ isOpen, onClose }: QuizModalProps) {
-  const [state, setState] = useState<QuizState>("loading");
+  const [state, setState] = useState<QuizState>("preview");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [config, setConfig] = useState<QuizConfig | null>(null);
   const [secondsPerQuestion, setSecondsPerQuestion] = useState(10);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -43,19 +51,19 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
     };
   }, [isOpen]);
 
-  // Load quiz on mount
+  // Load quiz config on mount
   useEffect(() => {
     if (!isOpen) return;
 
-    const loadQuiz = async () => {
+    const loadQuizConfig = async () => {
       try {
-        setState("loading");
+        setState("preview");
         setError("");
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        const response = await fetch("/api/quiz/today", { signal: controller.signal });
+        const response = await fetch("/api/quiz/config", { signal: controller.signal });
         clearTimeout(timeoutId);
 
         if (!response.ok) {
@@ -64,38 +72,67 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
         }
 
         const data = await response.json();
-        console.log("Quiz data received:", data);
+        console.log("Quiz config received:", data);
 
-        if (!data.questions || data.questions.length === 0) {
-          throw new Error("No quiz questions available");
-        }
-
-        setQuestions(data.questions);
-        setSecondsPerQuestion(data.secondsPerQuestion);
-        setTimeRemaining(data.secondsPerQuestion);
-
-        // Initialize answers
-        const initialAnswers: Record<string, number | null> = {};
-        const initialTiming: Record<string, boolean> = {};
-        data.questions.forEach((q: QuizQuestion) => {
-          initialAnswers[q.id] = null;
-          initialTiming[q.id] = false;
-        });
-        setAnswers(initialAnswers);
-        setAnsweredInTime(initialTiming);
-
-        setCurrentQuestionIndex(0);
-        setState("quiz");
+        setConfig(data);
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "Failed to load quiz";
-        console.error("Error loading quiz:", errorMsg);
+        console.error("Error loading quiz config:", errorMsg);
         setError(errorMsg);
         setState("error");
       }
     };
 
-    loadQuiz();
+    loadQuizConfig();
   }, [isOpen]);
+
+  // Load actual quiz when user clicks "Start Quiz"
+  const startQuiz = async () => {
+    try {
+      setState("loading");
+      setError("");
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const response = await fetch("/api/quiz/today", { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to load quiz (${response.status})`);
+      }
+
+      const data = await response.json();
+      console.log("Quiz data received:", data);
+
+      if (!data.questions || data.questions.length === 0) {
+        throw new Error("No quiz questions available");
+      }
+
+      setQuestions(data.questions);
+      setSecondsPerQuestion(data.secondsPerQuestion);
+      setTimeRemaining(data.secondsPerQuestion);
+
+      // Initialize answers
+      const initialAnswers: Record<string, number | null> = {};
+      const initialTiming: Record<string, boolean> = {};
+      data.questions.forEach((q: QuizQuestion) => {
+        initialAnswers[q.id] = null;
+        initialTiming[q.id] = false;
+      });
+      setAnswers(initialAnswers);
+      setAnsweredInTime(initialTiming);
+
+      setCurrentQuestionIndex(0);
+      setState("quiz");
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Failed to load quiz";
+      console.error("Error loading quiz:", errorMsg);
+      setError(errorMsg);
+      setState("error");
+    }
+  };
 
   // Timer effect
   useEffect(() => {
@@ -199,6 +236,75 @@ export function QuizModal({ isOpen, onClose }: QuizModalProps) {
   };
 
   if (!isOpen) return null;
+
+  // Preview screen - show quiz details before starting
+  if (state === "preview") {
+    const totalCoins = config
+      ? config.completionCoins + config.questionsPerQuiz * config.coinsPerCorrect
+      : 0;
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-600/40 backdrop-blur-sm p-4 sm:p-0">
+        <div className="card rounded-2xl p-4 sm:p-6 w-full max-w-md space-y-6">
+          <div className="text-center">
+            <p className="text-4xl sm:text-5xl mb-3">⚽</p>
+            <h3 className="text-xl sm:text-2xl font-bold mb-2">Daily Football Quiz</h3>
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              Test your football knowledge and earn coins!
+            </p>
+          </div>
+
+          {config && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-accent/10 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">❓</span>
+                  <span className="text-sm font-medium">Questions</span>
+                </div>
+                <span className="text-lg font-bold text-accent">{config.questionsPerQuiz}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-highlight/10 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">⏱️</span>
+                  <span className="text-sm font-medium">Time per question</span>
+                </div>
+                <span className="text-lg font-bold text-highlight-foreground dark:text-highlight">
+                  {config.secondsPerQuestion}s
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-success/10 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">💰</span>
+                  <span className="text-sm font-medium">Max coins</span>
+                </div>
+                <span className="text-lg font-bold text-success">{totalCoins}</span>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2 pt-4">
+            <button
+              onClick={startQuiz}
+              className="w-full py-3 rounded-lg bg-accent text-white text-sm sm:text-base font-medium hover:bg-accent/90 transition-colors active:scale-95"
+            >
+              Start Quiz
+            </button>
+            <button
+              onClick={() => {
+                onClose();
+                setState("preview");
+              }}
+              className="w-full py-2 sm:py-2.5 text-xs sm:text-sm text-gray-500 hover:text-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (state === "error") {
     return (
