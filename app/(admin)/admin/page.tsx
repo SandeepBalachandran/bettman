@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { getLeaderboard } from "@/lib/leaderboard";
