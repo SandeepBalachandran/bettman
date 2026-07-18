@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { getLeaderboard } from "@/lib/leaderboard";
@@ -50,39 +49,7 @@ export default async function AdminDashboardPage() {
       : 0;
 
   return (
-    <main className="mx-auto max-w-3xl space-y-4 sm:space-y-6 p-2 sm:p-4">
-      <div className="flex flex-col gap-2 sm:gap-3">
-        <h1 className="text-lg sm:text-2xl font-bold gradient-text">Admin Dashboard</h1>
-        <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 sm:gap-2 md:flex md:flex-wrap text-xs">
-          <Link href="/admin/sync" className="rounded-full bg-success/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-success hover:bg-success/15 transition-colors line-clamp-1">
-            Sync
-          </Link>
-          <Link href="/admin/matches" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-            Matches
-          </Link>
-          <Link href="/admin/users" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-            Players
-          </Link>
-          <Link
-            href="/admin/predictions"
-            className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1"
-          >
-            Predict
-          </Link>
-          <Link href="/admin/money" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-            Finance
-          </Link>
-          <Link href="/admin/rewards" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-            Rewards
-          </Link>
-          <Link href="/admin/quiz" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-            Quiz
-          </Link>
-          <Link href="/admin/coins" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-            Coins
-          </Link>
-        </div>
-      </div>
+    <>
 
       <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:gap-3 md:grid-cols-4">
         <StatCard label="Players" value={userCount} color="accent" />
@@ -172,7 +139,7 @@ export default async function AdminDashboardPage() {
       </section>
 
       <RecentQuizAttemptsTable />
-    </main>
+    </>
   );
 }
 

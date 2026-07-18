@@ -30,7 +30,7 @@ interface QuizAnswer {
 interface QuizModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onQuizCompleted?: () => void;
+  onQuizCompleted?: (results: { correctCount: number; coinsAwarded: number; newBalance: number }) => void;
   initialConfig?: QuizConfig | null;
 }
 
@@ -216,14 +216,19 @@ export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: Q
         isCorrect: answers[q.id] === data.correctAnswers[q.id],
       }));
 
-      setResults({
+      const quizResults = {
         correctCount: data.correctCount,
         coinsAwarded: data.coinsAwarded,
         newBalance: data.newBalance,
         answers: data.detailedAnswers || detailedAnswers,
-      });
+      };
+      setResults(quizResults);
       setState("results");
-      onQuizCompleted?.();
+      onQuizCompleted?.({
+        correctCount: data.correctCount,
+        coinsAwarded: data.coinsAwarded,
+        newBalance: data.newBalance,
+      });
     } catch (error) {
       console.error("Error submitting quiz:", error);
     } finally {
