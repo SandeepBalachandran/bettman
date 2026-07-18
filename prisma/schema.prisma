@@ -26,6 +26,12 @@ enum Round {
   FINAL
 }
 
+enum QuizDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
@@ -49,6 +55,7 @@ model User {
   coinBalance       CoinBalance?
   dailyRewards      DailyReward[]
   coinTransactions  CoinTransaction[]
+  quizAttempts      QuizAttempt[]
 }
 
 model PushSubscription {
@@ -191,4 +198,44 @@ model CoinTransaction {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+model QuizQuestion {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  question      String
+  options       String[]
+  correctIndex  Int
+  difficulty    QuizDifficulty
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model DailyQuiz {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  date         String   @unique
+  questionIds  String[] @db.ObjectId
+  createdAt    DateTime @default(now())
+}
+
+model QuizConfig {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  questionsPerQuiz    Int      @default(7)
+  secondsPerQuestion  Int      @default(10)
+  completionCoins     Int      @default(20)
+  coinsPerCorrect     Int      @default(10)
+  updatedAt           DateTime @updatedAt
+}
+
+model QuizAttempt {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  date         String
+  answers      Json
+  correctCount Int
+  coinsAwarded Int
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, date])
 }

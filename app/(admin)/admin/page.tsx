@@ -74,6 +74,9 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/rewards" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
             Manage rewards
           </Link>
+          <Link href="/admin/quiz" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
+            Manage quiz
+          </Link>
           <Link href="/admin/coins" className="rounded-full bg-accent/10 px-3 py-1.5 text-center text-accent hover:bg-accent/15 transition-colors">
             Coin history
           </Link>

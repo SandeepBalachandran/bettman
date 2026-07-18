@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface DailyCoinsModalProps {
@@ -19,6 +19,19 @@ export function DailyCoinsModal({
   onCollected,
 }: DailyCoinsModalProps) {
   const [loading, setLoading] = useState(false);
+
+  // Hide background when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -46,7 +59,7 @@ export function DailyCoinsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-600/40 backdrop-blur-sm p-4 sm:p-6">
       <div className="card relative w-full max-w-sm space-y-4 sm:space-y-6 p-6 sm:p-8">
         {/* Close Button */}
         <button
