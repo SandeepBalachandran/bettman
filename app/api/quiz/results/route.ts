@@ -28,10 +28,39 @@ export async function GET(req: NextRequest) {
       where: { userId },
     });
 
+    // Rebuild the detailed answer breakdown from the stored attempt
+    const storedAnswers = ((attempt.answers ?? []) as unknown) as {
+      questionId: string;
+      selectedIndex: number;
+      correct: boolean;
+      answeredInTime: boolean;
+    }[];
+
+    const questions = await prisma.quizQuestion.findMany({
+      where: { id: { in: storedAnswers.map((a) => a.questionId) } },
+    });
+    const questionsById = new Map(questions.map((q) => [q.id, q]));
+
+    const detailedAnswers = storedAnswers
+      .map((answer) => {
+        const question = questionsById.get(answer.questionId);
+        if (!question) return null;
+        return {
+          questionId: answer.questionId,
+          question: question.question,
+          options: question.options,
+          selectedIndex: answer.selectedIndex >= 0 ? answer.selectedIndex : null,
+          correctIndex: question.correctIndex,
+          isCorrect: answer.correct,
+        };
+      })
+      .filter(Boolean);
+
     return NextResponse.json({
       correctCount: attempt.correctCount,
       coinsAwarded: attempt.coinsAwarded,
       newBalance: coinBalance?.balance || 0,
+      detailedAnswers,
     });
   } catch (error) {
     console.error("Error fetching quiz results:", error);

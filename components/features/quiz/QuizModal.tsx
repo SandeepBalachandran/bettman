@@ -30,7 +30,7 @@ interface QuizAnswer {
 interface QuizModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onQuizCompleted?: (results: { correctCount: number; coinsAwarded: number; newBalance: number }) => void;
+  onQuizCompleted?: (results: { correctCount: number; coinsAwarded: number; newBalance: number; answers?: QuizAnswer[] }) => void;
   initialConfig?: QuizConfig | null;
 }
 
@@ -221,6 +221,7 @@ export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: Q
         correctCount: data.correctCount,
         coinsAwarded: data.coinsAwarded,
         newBalance: data.newBalance,
+        answers: data.detailedAnswers,
       });
     } catch (error) {
       console.error("Error submitting quiz:", error);

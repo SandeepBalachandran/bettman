@@ -11,10 +11,20 @@ interface QuizConfig {
   coinsPerCorrect: number;
 }
 
+interface QuizAnswer {
+  questionId: string;
+  question: string;
+  options: string[];
+  selectedIndex: number | null;
+  correctIndex: number;
+  isCorrect: boolean;
+}
+
 interface QuizResults {
   correctCount: number;
   coinsAwarded: number;
   newBalance: number;
+  detailedAnswers?: QuizAnswer[];
 }
 
 export function QuizFab() {
@@ -131,7 +141,12 @@ export function QuizFab() {
         }}
         onQuizCompleted={(results) => {
           setHasPlayedToday(true);
-          setLastResults(results);
+          setLastResults({
+            correctCount: results.correctCount,
+            coinsAwarded: results.coinsAwarded,
+            newBalance: results.newBalance,
+            detailedAnswers: results.answers,
+          });
           setIsOpen(false);
           setShowResults(true);
         }}
@@ -144,7 +159,7 @@ export function QuizFab() {
 function ResultsSummary({ results, onClose }: { readonly results: QuizResults; readonly onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-600/40 backdrop-blur-sm p-4 sm:p-0">
-      <div className="card rounded-2xl p-4 sm:p-6 w-full max-w-md space-y-4 sm:space-y-6">
+      <div className="card rounded-2xl p-4 sm:p-6 w-full max-w-md space-y-4 sm:space-y-6 max-h-[95vh] overflow-y-auto">
         <div className="text-center">
           <p className="text-3xl sm:text-5xl mb-2">✓</p>
           <h3 className="text-lg sm:text-xl font-bold mb-2">Quiz Completed Today</h3>
@@ -167,6 +182,49 @@ function ResultsSummary({ results, onClose }: { readonly results: QuizResults; r
             <p className="text-base sm:text-lg font-bold text-highlight-foreground dark:text-highlight">{results.correctCount}</p>
           </div>
         </div>
+
+        {results.detailedAnswers && results.detailedAnswers.length > 0 && (
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
+            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Answer Breakdown</p>
+            <div className="space-y-2 max-h-52 overflow-y-auto">
+              {results.detailedAnswers.map((answer, idx) => (
+                <div
+                  key={answer.questionId}
+                  className={`p-2 rounded border-l-4 text-xs ${
+                    answer.isCorrect
+                      ? "bg-success/10 border-success"
+                      : "bg-danger/10 border-danger"
+                  }`}
+                >
+                  <p className="font-semibold text-xs mb-1">Q{idx + 1}. {answer.isCorrect ? "✓" : "✗"}</p>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 mb-1">{answer.question}</p>
+                  <div className="space-y-0.5 text-xs">
+                    {answer.selectedIndex !== null && answer.selectedIndex >= 0 ? (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Your answer:{" "}
+                        <span className={answer.isCorrect ? "text-success font-semibold" : "text-danger font-semibold"}>
+                          {answer.options[answer.selectedIndex]}
+                        </span>
+                      </p>
+                    ) : (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Your answer: <span className="text-danger font-semibold">Not answered</span>
+                      </p>
+                    )}
+                    {!answer.isCorrect && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Correct:{" "}
+                        <span className="text-success font-semibold">
+                          {answer.options[answer.correctIndex]}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-4">
           <p className="text-xs sm:text-sm text-center text-gray-600 dark:text-gray-400 leading-relaxed">
