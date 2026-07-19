@@ -159,46 +159,45 @@ export function QuizFab() {
 function ResultsSummary({ results, onClose }: { readonly results: QuizResults; readonly onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-600/40 backdrop-blur-sm p-4 sm:p-0">
-      <div className="card rounded-2xl p-4 sm:p-6 w-full max-w-md space-y-4 sm:space-y-6 max-h-[95vh] overflow-y-auto">
+      <div className="card rounded-2xl p-3 sm:p-5 w-full max-w-sm sm:max-w-md space-y-2.5 sm:space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="text-center">
-          <p className="text-3xl sm:text-5xl mb-2">✓</p>
-          <h3 className="text-lg sm:text-xl font-bold mb-2">Quiz Completed Today</h3>
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-2xl sm:text-4xl mb-1">✓</p>
+          <h3 className="text-base sm:text-lg font-bold mb-1">Quiz Completed Today</h3>
+          <p className="text-[11px] sm:text-sm text-gray-600 dark:text-gray-400">
             Great job! Here's your summary.
           </p>
         </div>
 
-        <div className="space-y-2 sm:space-y-3">
-          <div className="flex justify-between items-center p-3 sm:p-4 bg-success/10 rounded-lg">
-            <p className="text-xs sm:text-sm font-medium">Coins Earned</p>
-            <p className="text-lg sm:text-xl font-bold text-success">+{results.coinsAwarded}</p>
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <div className="p-2 sm:p-3 bg-success/10 rounded-lg text-center">
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">Coins</p>
+            <p className="text-sm sm:text-lg font-bold text-success">+{results.coinsAwarded}</p>
           </div>
-          <div className="flex justify-between items-center p-3 sm:p-4 bg-accent/10 rounded-lg">
-            <p className="text-xs sm:text-sm font-medium">Current Balance</p>
-            <p className="text-base sm:text-lg font-bold text-accent">{results.newBalance}</p>
+          <div className="p-2 sm:p-3 bg-accent/10 rounded-lg text-center">
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">Balance</p>
+            <p className="text-sm sm:text-lg font-bold text-accent">{results.newBalance}</p>
           </div>
-          <div className="flex justify-between items-center p-3 sm:p-4 bg-highlight/10 rounded-lg">
-            <p className="text-xs sm:text-sm font-medium">Correct Answers</p>
-            <p className="text-base sm:text-lg font-bold text-highlight-foreground dark:text-highlight">{results.correctCount}</p>
+          <div className="p-2 sm:p-3 bg-highlight/10 rounded-lg text-center">
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">Correct</p>
+            <p className="text-sm sm:text-lg font-bold text-highlight-foreground dark:text-highlight">{results.correctCount}</p>
           </div>
         </div>
 
         {results.detailedAnswers && results.detailedAnswers.length > 0 && (
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2">
-            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Answer Breakdown</p>
-            <div className="space-y-2 max-h-52 overflow-y-auto">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-2.5 space-y-1.5">
+            <p className="text-[10px] sm:text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Answer Breakdown</p>
+            <div className="space-y-1.5 max-h-44 sm:max-h-52 overflow-y-auto">
               {results.detailedAnswers.map((answer, idx) => (
                 <div
                   key={answer.questionId}
-                  className={`p-2 rounded border-l-4 text-xs ${
+                  className={`p-1.5 sm:p-2 rounded border-l-4 ${
                     answer.isCorrect
                       ? "bg-success/10 border-success"
                       : "bg-danger/10 border-danger"
                   }`}
                 >
-                  <p className="font-semibold text-xs mb-1">Q{idx + 1}. {answer.isCorrect ? "✓" : "✗"}</p>
-                  <p className="text-xs text-gray-700 dark:text-gray-300 mb-1">{answer.question}</p>
-                  <div className="space-y-0.5 text-xs">
+                  <p className="font-semibold text-[11px] sm:text-xs mb-0.5">Q{idx + 1}. {answer.isCorrect ? "✓" : "✗"} <span className="font-normal text-gray-700 dark:text-gray-300">{answer.question}</span></p>
+                  <div className="space-y-0.5 text-[10px] sm:text-xs">
                     {answer.selectedIndex !== null && answer.selectedIndex >= 0 ? (
                       <p className="text-gray-600 dark:text-gray-400">
                         Your answer:{" "}
@@ -226,13 +225,13 @@ function ResultsSummary({ results, onClose }: { readonly results: QuizResults; r
           </div>
         )}
 
-        <div className="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-4">
-          <p className="text-xs sm:text-sm text-center text-gray-600 dark:text-gray-400 leading-relaxed">
+        <div className="space-y-1.5 border-t border-gray-200 dark:border-gray-700 pt-2.5">
+          <p className="text-[10px] sm:text-xs text-center text-gray-600 dark:text-gray-400 leading-relaxed">
             📅 Next quiz will be available tomorrow at midnight UTC
           </p>
           <button
             onClick={onClose}
-            className="w-full py-2 sm:py-3 rounded-lg bg-accent text-white text-xs sm:text-sm font-medium hover:bg-accent/90 transition-colors active:scale-95"
+            className="w-full py-2 sm:py-2.5 rounded-lg bg-accent text-white text-xs sm:text-sm font-medium hover:bg-accent/90 transition-colors active:scale-95"
           >
             Close
           </button>
