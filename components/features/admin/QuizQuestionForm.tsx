@@ -71,8 +71,8 @@ export function QuizQuestionForm({ onQuestionAdded }: QuizQuestionFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="card space-y-4 p-4">
-      <h3 className="font-semibold">Add New Question</h3>
+    <form onSubmit={handleSubmit} className="card space-y-3 sm:space-y-4 p-3 sm:p-4">
+      <h3 className="text-sm sm:text-base font-semibold">Add New Question</h3>
 
       <div>
         <label className="text-sm font-medium">Question</label>
@@ -80,7 +80,7 @@ export function QuizQuestionForm({ onQuestionAdded }: QuizQuestionFormProps) {
           value={question}
           onChange={e => setQuestion(e.target.value)}
           placeholder="Enter question text"
-          className="mt-1 w-full rounded border border-gray-300 dark:border-gray-600 px-2 py-1 bg-white dark:bg-white/5 min-h-20"
+          className="mt-1 w-full rounded border border-gray-300 dark:border-gray-600 px-2.5 py-2 text-sm bg-white dark:bg-white/5 min-h-20"
         />
       </div>
 
@@ -101,7 +101,7 @@ export function QuizQuestionForm({ onQuestionAdded }: QuizQuestionFormProps) {
                 value={option}
                 onChange={e => handleOptionChange(idx, e.target.value)}
                 placeholder={`Option ${idx + 1}`}
-                className="flex-1 rounded border border-gray-300 dark:border-gray-600 px-2 py-1 bg-white dark:bg-white/5"
+                className="flex-1 min-w-0 rounded border border-gray-300 dark:border-gray-600 px-2.5 py-2 text-sm bg-white dark:bg-white/5"
               />
             </div>
           ))}
@@ -113,7 +113,7 @@ export function QuizQuestionForm({ onQuestionAdded }: QuizQuestionFormProps) {
         <select
           value={difficulty}
           onChange={e => setDifficulty(e.target.value)}
-          className="mt-1 w-full rounded border border-gray-300 dark:border-gray-600 px-2 py-1 bg-white dark:bg-white/5"
+          className="mt-1 w-full rounded border border-gray-300 dark:border-gray-600 px-2.5 py-2 text-sm bg-white dark:bg-white/5"
         >
           <option value="EASY">Easy</option>
           <option value="MEDIUM">Medium</option>

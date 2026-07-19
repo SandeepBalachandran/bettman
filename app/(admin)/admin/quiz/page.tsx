@@ -51,19 +51,19 @@ export default async function QuizAdminPage() {
   );
 
   return (
-    <main className="mx-auto max-w-4xl space-y-8 p-4 sm:p-6">
-      <h1 className="text-2xl font-bold gradient-text">Quiz Management</h1>
+    <main className="mx-auto max-w-4xl space-y-4 sm:space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6">
+      <h1 className="text-xl sm:text-2xl font-bold gradient-text">Quiz Management</h1>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         <QuizConfigForm initialConfig={config} />
         <QuizQuestionForm />
       </div>
 
       {/* Questions list */}
-      <section className="card p-4">
-        <h2 className="text-lg font-semibold mb-4">Questions ({questions.length})</h2>
+      <section className="card p-3 sm:p-4">
+        <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Questions ({questions.length})</h2>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs sm:text-sm">
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700">
                 <th className="text-left py-2 px-2">Question</th>
@@ -99,8 +99,8 @@ export default async function QuizAdminPage() {
       </section>
 
       {/* Quiz history */}
-      <section className="card p-4">
-        <h2 className="text-lg font-semibold mb-4">Recent Quizzes (7 days)</h2>
+      <section className="card p-3 sm:p-4">
+        <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Recent Quizzes (7 days)</h2>
         <div className="space-y-2">
           {quizAttemptCounts.length === 0 ? (
             <p className="text-sm text-gray-500">No quizzes created yet</p>

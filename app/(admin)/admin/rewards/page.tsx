@@ -129,15 +129,15 @@ export default function AdminRewardsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6 sm:space-y-8 p-3 sm:p-4 md:p-6">
+    <main className="mx-auto max-w-2xl space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
       <div className="space-y-1 sm:space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Manage Rewards</h1>
+        <h1 className="text-xl sm:text-2xl font-bold gradient-text">Manage Rewards</h1>
         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
           Configure pricing for all reward items
         </p>
       </div>
 
-      <div className="card space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <div className="card space-y-3 sm:space-y-5 p-3 sm:p-5">
         {/* 2x Points Booster */}
         <div className="space-y-2 sm:space-y-3 border-b border-gray-200 pb-4 sm:pb-6 dark:border-gray-800">
           <label className="block text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300">
@@ -200,7 +200,7 @@ export default function AdminRewardsPage() {
       </div>
 
       {/* Summary */}
-      <div className="card bg-accent/5 border-l-4 border-accent p-4 sm:p-6 space-y-2 sm:space-y-3">
+      <div className="card bg-accent/5 border-l-4 border-accent p-3 sm:p-5 space-y-2 sm:space-y-3">
         <p className="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300">
           Current Configuration
         </p>
