@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
+import { requireFeaturePage, getFeatureFlags, effectiveFlags } from "@/lib/feature-flags";
 import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { isMatchLocked } from "@/lib/match-lock";
@@ -33,6 +34,8 @@ const ROUND_BADGE_STYLES: Record<Round, string> = {
 
 export default async function MyPredictionsPage() {
   const user = await requireAuth();
+  await requireFeaturePage("navMyPredictions", user.role);
+  const flags = effectiveFlags(await getFeatureFlags(), user.role);
 
   const coinBalance = await prisma.coinBalance.findUnique({
     where: { userId: user.id },
@@ -192,7 +195,7 @@ export default async function MyPredictionsPage() {
                       </div>
                     )}
 
-                    {!isFinished && !isLocked && (
+                    {!isFinished && !isLocked && flags.booster && (
                       <div className="border-t border-gray-200 pt-3 dark:border-gray-800">
                         <BoosterButton
                           predictionId={prediction.id}

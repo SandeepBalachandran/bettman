@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/authz";
+import { isFeatureEnabledForCurrentUser } from "@/lib/feature-flags";
 import { activateBooster, canActivateBooster } from "@/lib/points-booster";
 
 export async function POST(request: Request) {
   try {
     const user = await requireAuth();
+    if (!(await isFeatureEnabledForCurrentUser("booster"))) {
+      return NextResponse.json({ error: "Feature disabled" }, { status: 403 });
+    }
     const { predictionId } = await request.json();
 
     if (!predictionId) {

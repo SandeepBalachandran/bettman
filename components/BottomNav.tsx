@@ -6,15 +6,33 @@ export type BottomNavItem = {
   icon: string;
 };
 
-const NAV_ITEMS: BottomNavItem[] = [
-  { href: "/fixtures", label: "Fixtures", icon: "⚽" },
-  { href: "/my-predictions", label: "My Picks", icon: "📝" },
-  { href: "/leaderboard", label: "Ranks", icon: "🏆" },
-  { href: "/rewards", label: "Rewards", icon: "🎁" },
-];
+export type BottomNavVisibility = {
+  fixtures: boolean;
+  myPredictions: boolean;
+  leaderboard: boolean;
+  rewards: boolean;
+};
 
-export function BottomNav({ isAdmin }: { readonly isAdmin: boolean }) {
-  const items = isAdmin ? [...NAV_ITEMS, { href: "/admin", label: "Admin", icon: "⚙️" }] : NAV_ITEMS;
+const ALL_VISIBLE: BottomNavVisibility = {
+  fixtures: true,
+  myPredictions: true,
+  leaderboard: true,
+  rewards: true,
+};
+
+export function BottomNav({
+  isAdmin,
+  visible = ALL_VISIBLE,
+}: {
+  readonly isAdmin: boolean;
+  readonly visible?: BottomNavVisibility;
+}) {
+  const items: BottomNavItem[] = [];
+  if (visible.fixtures) items.push({ href: "/fixtures", label: "Fixtures", icon: "⚽" });
+  if (visible.myPredictions) items.push({ href: "/my-predictions", label: "My Picks", icon: "📝" });
+  if (visible.leaderboard) items.push({ href: "/leaderboard", label: "Ranks", icon: "🏆" });
+  if (visible.rewards) items.push({ href: "/rewards", label: "Rewards", icon: "🎁" });
+  if (isAdmin) items.push({ href: "/admin", label: "Admin", icon: "⚙️" });
 
   return (
     <nav

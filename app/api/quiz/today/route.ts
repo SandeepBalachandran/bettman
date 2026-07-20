@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/authz";
+import { isFeatureEnabledForCurrentUser } from "@/lib/feature-flags";
 import { getOrCreateTodaysQuiz, getQuizConfig } from "@/lib/quiz";
 
 export async function GET(req: NextRequest) {
   try {
     await requireAuth();
+    if (!(await isFeatureEnabledForCurrentUser("quiz"))) {
+      return NextResponse.json({ error: "Feature disabled" }, { status: 403 });
+    }
 
     console.log("[Quiz API] Fetching quiz...");
     const { questions, date } = await getOrCreateTodaysQuiz();

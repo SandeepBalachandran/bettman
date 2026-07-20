@@ -180,7 +180,9 @@ export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: Q
     // Auto-advance after brief delay, unless it's the last question
     setTimeout(() => {
       if (isLastQuestion) {
-        submitQuiz();
+        // Pass the just-selected answer directly — React state won't have
+        // flushed yet, so submitQuiz would otherwise miss the last answer
+        submitQuiz({ [currentQuestion.id]: optionIndex });
       } else {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setTimeRemaining(secondsPerQuestion);
@@ -188,15 +190,23 @@ export function QuizModal({ isOpen, onClose, onQuizCompleted, initialConfig }: Q
     }, isLastQuestion ? 0 : 300);
   };
 
-  const submitQuiz = async () => {
+  const submitQuiz = async (finalAnswer?: Record<string, number>) => {
     if (submitting || questions.length === 0) return;
     setSubmitting(true);
 
     try {
+      const mergedAnswers = { ...answers, ...finalAnswer };
+      const mergedTiming = finalAnswer
+        ? {
+            ...answeredInTime,
+            ...Object.fromEntries(Object.keys(finalAnswer).map((k) => [k, true])),
+          }
+        : answeredInTime;
+
       const quizAnswers = questions.map(q => ({
         questionId: q.id,
-        selectedIndex: answers[q.id] ?? -1,
-        answeredInTime: answeredInTime[q.id] ?? false,
+        selectedIndex: mergedAnswers[q.id] ?? -1,
+        answeredInTime: mergedTiming[q.id] ?? false,
       }));
 
       const response = await fetch("/api/quiz/submit", {

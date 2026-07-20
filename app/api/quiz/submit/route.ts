@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/authz";
+import { isFeatureEnabledForCurrentUser } from "@/lib/feature-flags";
 import { submitQuizAttempt, todayDateString, getOrCreateTodaysQuiz } from "@/lib/quiz";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
     const user = await requireAuth();
+    if (!(await isFeatureEnabledForCurrentUser("quiz"))) {
+      return NextResponse.json({ error: "Feature disabled" }, { status: 403 });
+    }
     const body = await req.json();
     const { answers } = body;
 

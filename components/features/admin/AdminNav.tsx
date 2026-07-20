@@ -26,6 +26,9 @@ export function AdminNav() {
         <Link href="/admin/coins" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
           Coins
         </Link>
+        <Link href="/admin/features" className="rounded-full bg-highlight/15 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-highlight-foreground dark:text-highlight hover:bg-highlight/25 transition-colors line-clamp-1">
+          Features
+        </Link>
       </div>
     </div>
   );

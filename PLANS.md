@@ -883,3 +883,81 @@ Added `User.avatarUrl String?` to `prisma/schema.prisma` (MongoDB is schemaless,
 - Not yet visually checked in a browser: the pulsing "up next" border, the leaderboard legend layout on mobile, and the admin avatar-URL input/save flow end-to-end with a real DiceBear URL.
 
 **Status:** ✅ Implemented; type-checked, linted, and built clean. Recommend a quick visual pass in-browser.
+
+---
+
+## Milestone 16: Coin Economy — Daily Rewards, Daily Quiz, 2x Booster, Extra Scorer Slots
+
+### Context
+
+(Documented retroactively — built across sessions that predate this entry.) A full coin economy was added on top of the prediction game to drive daily engagement: users earn coins (daily login rewards, daily quiz) and spend them on gameplay advantages (2x points booster, unlocking 3rd/4th scorer slots).
+
+### What exists
+
+- **Schema** (`prisma/schema.prisma`): `CoinBalance` (one per user), `CoinTransaction` (append-only audit log: `type` award/spend, `reason` — `daily_reward`/`daily_quiz`/`booster`/`3rd_scorer`/`4th_scorer` — with `balanceBefore`/`balanceAfter` and optional `relatedId`), `DailyReward` (one row per user per campaign day), `RewardConfig` (singleton: `boosterCost`/`thirdScorerCost`/`fourthScorerCost`), `QuizQuestion`/`DailyQuiz`/`QuizConfig`/`QuizAttempt`, and `Prediction.usedPointsBooster Boolean`.
+- **Daily coins popup**: `components/PopupManager.tsx` (mounted in `app/layout.tsx`) fetches `/api/rewards/progress` on load and shows `DailyCoinsModal` when the campaign is active and today's reward is unclaimed; claim goes through `/api/rewards/claim-daily`. After the coins modal closes it sequences into `PushNotificationBanner` (localStorage eligibility in `lib/notification-eligibility.ts`).
+- **Daily quiz**: `components/QuizFab.tsx` — floating ⚽ button; `components/features/quiz/QuizModal.tsx` runs a timed multi-question quiz (config-driven: questions per quiz, seconds per question, completion + per-correct coins). Server-side scoring in `lib/quiz.ts` (`submitQuizAttempt` — never trusts client correctness), daily question sampling stratified by difficulty into `DailyQuiz`. Admin management at `/admin/quiz` (config form, add-question form, question list, 7-day attempt history) + `/api/admin/quiz-*` routes. After playing, the FAB becomes a ✓ that reopens a results summary.
+- **2x points booster**: `lib/points-booster.ts` (`activateBooster` — checks balance, marks `usedPointsBooster`, writes transaction; `applyPointsBoosterMultiplier` — doubles positive points/money only, never penalties), `components/BoosterButton.tsx` on `/my-predictions`, `/api/booster/activate`. Both `lib/scoring.ts` and `lib/money.ts` accept a `hasPointsBooster` flag.
+- **Extra scorer slots**: 3rd/4th scorer picks unlockable via coin spends (reasons `3rd_scorer`/`4th_scorer`); user prediction pages show "unlocked features" badges.
+- **Admin**: `/admin/rewards` (RewardConfig pricing editor), `/admin/coins` (balances/transactions).
+
+**Status:** ✅ In production. This entry is a summary; per-feature verification predates the log.
+
+---
+
+## Milestone 17: Correctness Fixes — Booster in Leaderboard Totals, Quiz Last-Answer Loss, Quiz Results Breakdown
+
+### Context
+
+Users reported the leaderboard showing lower totals than a user's own detail page (e.g. 400 vs 510 pts, ₹15 vs ₹95), and the last quiz question never scoring.
+
+### Fixes
+
+1. **Leaderboard ignored the 2x booster (points)** — `lib/leaderboard.ts` called `calculateMatchPoints` without passing `prediction.usedPointsBooster`, while `app/user/[userId]/predictions/page.tsx` passed it — so boosted matches counted double on the detail page but single on the leaderboard. Fixed by selecting `usedPointsBooster` in the leaderboard query and passing it through.
+2. **Same bug for money** — `lib/leaderboard-money.ts`'s `getUserMoney` now passes `prediction.usedPointsBooster` to `calculateMatchMoney`.
+3. **Quiz last answer never registered** — classic React stale-closure: `QuizModal.handleSelectOption` queued `setAnswers(...)` then immediately called `submitQuiz()`, which read the *pre-tap* `answers` snapshot, so the final question always submitted as `selectedIndex: -1, answeredInTime: false` (scored wrong, coins lost). Fixed: the last-question tap now passes its answer directly — `submitQuiz({ [questionId]: optionIndex })` — and `submitQuiz` merges it (and marks it answered-in-time) over state before building the payload. Timeout path unchanged (a real timeout should submit as unanswered).
+4. **Quiz results breakdown everywhere** — `/api/quiz/results` now rebuilds a per-question breakdown (question text, options, user's answer, correct answer, right/wrong) from the stored `QuizAttempt.answers` + `QuizQuestion` rows; the ✓-button `ResultsSummary` popup in `QuizFab.tsx` renders it (wrong answers show the correct one in green; skipped show "Not answered"), and `QuizModal.onQuizCompleted` passes `detailedAnswers` through so it's available immediately after finishing. Works retroactively for already-played attempts.
+5. **Mobile sizing pass** — `ResultsSummary` popup compacted for phones (3-column stat grid, smaller paddings/text, scrollable breakdown); `/admin/rewards` and `/admin/quiz` (+ both quiz admin forms) brought in line with the responsive pattern used by other admin pages; admin menu de-cluttered (removed Sync and Matches links from `AdminNav` — pages still reachable by URL).
+
+**Verification:** `npm run build` clean after each change. Leaderboard totals now match user detail pages.
+
+---
+
+## Milestone 18: Feature Flags — Admin "Features" Screen (Show/Hide Any Feature)
+
+### Context
+
+Admin needed an in-app way to show/hide user-facing features (quiz icon, popups, whole pages/menus) without deploying. Decisions: **global flags** (not per-user — no current need for that complexity), **admins bypass all flags** (a disabled feature stays visible to ADMIN for verification), **Save-button UX** (not instant-save), **hidden pages redirect** to the first still-enabled page, and **APIs are blocked server-side** (403 for USER when off), not just hidden in the UI.
+
+### Implementation
+
+- **`prisma/schema.prisma`** — singleton `FeatureFlags` model, one Boolean per feature (all `@default(true)`): `quiz`, `dailyCoins`, `pushBanner`, `finalDayBanner`, `rewardsPage`, `booster`, `dailyRewardClaim`, `navFixtures`, `navMyPredictions`, `navLeaderboard`, `navMoney`.
+- **`lib/feature-flags.ts`** — `getFeatureFlags()` (60s in-memory cache, creates defaults if missing, all-true fallback on error — same pattern as `lib/quiz.ts`'s config cache), `invalidateFeatureFlagsCache()`, `effectiveFlags(flags, role)` (ADMIN → all true), `isFeatureEnabledForCurrentUser(key)` (API guard), `requireFeaturePage(key, role)` (server-component guard; redirects to the first enabled page among fixtures → my-predictions → leaderboard → rewards, avoiding a loop with `/` → `/fixtures`).
+- **APIs** — `/api/feature-flags` (GET, any authed user, returns *effective* flags so clients need no role logic) and `/api/admin/feature-flags` (GET/PUT, `requireAdmin`, boolean-validated manual upsert + cache invalidation).
+- **Admin screen** — `app/(admin)/admin/features/page.tsx`: one row per feature (icon/name/description/switch), Save Changes + Reset (disabled until dirty), modeled on `/admin/rewards`. "Features" link added to `AdminNav`.
+- **Gating** — client: `QuizFab` and `PopupManager` fetch `/api/feature-flags` during init and skip disabled features. Server: `SiteHeader` filters desktop nav links + `DailyRewardClaim` and passes a `visible` map to `BottomNav` (rewritten to build its item list from it); page guards added to fixtures/my-predictions/leaderboard/rewards pages; `BoosterButton` on `/my-predictions` hidden by flag. API enforcement (403) on `/api/quiz/today`, `/api/quiz/submit`, `/api/booster/activate`, `/api/rewards/claim-daily`.
+
+### Notes
+
+- `finalDayBanner` flag exists in schema/UI but its feature (a one-day Final Day popup with confetti/countdown, built earlier the same day) was subsequently reverted from the codebase — the toggle currently controls nothing. Remove the row, or re-add the banner wired to the flag, whichever is wanted later.
+- Prisma client regeneration hit the recurring Windows `EPERM` DLL lock; resolved by killing the running `node` processes (user-approved) — dev server needs a manual restart after.
+
+**Verification:** `npm run build` clean; `/admin/features`, `/api/feature-flags`, `/api/admin/feature-flags` all registered. Runtime toggle behavior (admin sees all, user loses hidden features, 403s on direct API calls) verified by code path; recommend a two-browser (admin + user) pass.
+
+---
+
+## Milestone 19: Tournament Finale — Champion Celebration on the Leaderboard
+
+### Context
+
+The final (Argentina vs Spain — Spain won, sole scorer Enzo Fernández; result recorded in production) ends the tournament; the leaderboard should crown the winners.
+
+### Implementation
+
+- **`app/(leaderboard)/leaderboard/page.tsx`** — checks server-side whether the FINAL-round match is `FINISHED` and passes `tournamentComplete` to the list.
+- **`components/features/leaderboard/LeaderboardList.tsx`** — when complete: fires a multi-burst confetti celebration on page open (center explosion → side cannons → top burst), gated to once per browser session via `sessionStorage("winnerConfettiSeen")`; computes a winner tag for ranks 1–2 in whichever sort view is active — Points view: "🏆 Points Champion" / "🥈 Runner-up"; Money view: "💰 Money Champion" / "🥈 Runner-up" — so different leaders get crowned in their own metric.
+- **`components/features/leaderboard/LeaderboardRow.tsx`** — renders the tag next to the name (gold gradient badge for #1, silver-gray for #2).
+
+Everything keys off the match status — resetting the final to UPCOMING removes all of it.
+
+**Verification:** `npm run build` clean. Confetti/tags render once deployed since the final result is already FINISHED in production.

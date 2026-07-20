@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
+import { requireFeaturePage } from "@/lib/feature-flags";
 import { MatchCard, type MatchCardData } from "@/components/features/matches/MatchCard";
 import { fetchLiveCompetitionMatches, type FootballDataMatch } from "@/lib/football-data";
 import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
@@ -38,6 +39,7 @@ const ROUND_BADGE_STYLES: Record<Round, string> = {
 
 export default async function FixturesPage() {
   const user = await requireAuth();
+  await requireFeaturePage("navFixtures", user.role);
 
   const [matches, liveStatusByExternalId] = await Promise.all([
     prisma.match.findMany({

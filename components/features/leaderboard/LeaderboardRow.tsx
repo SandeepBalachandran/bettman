@@ -67,6 +67,7 @@ export function LeaderboardRow({
   streak = 0,
   rankChange = 0,
   highlightedMetric = "points",
+  winnerTag = null,
 }: {
   readonly entry: LeaderboardEntry;
   readonly rank: number;
@@ -76,6 +77,8 @@ export function LeaderboardRow({
   /** Positive = moved up this many spots since the last finished match, negative = moved down. */
   readonly rankChange?: number;
   readonly highlightedMetric?: "points" | "money";
+  /** Final-standings badge (e.g. "🏆 Points Champion") shown when the tournament is over. */
+  readonly winnerTag?: string | null;
 }) {
   const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
   const scorerGains = entry.scorerPoints - penalty;
@@ -112,6 +115,17 @@ export function LeaderboardRow({
           {isCurrentUser && (
             <span className="ml-1 rounded-full bg-highlight/20 px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-medium text-highlight-foreground dark:text-highlight">
               you
+            </span>
+          )}
+          {winnerTag && (
+            <span
+              className={`ml-1 rounded-full px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] font-bold ${
+                rank === 1
+                  ? "bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-sm"
+                  : "bg-gray-200 text-gray-700 dark:bg-white/15 dark:text-gray-200"
+              }`}
+            >
+              {winnerTag}
             </span>
           )}
           </p>

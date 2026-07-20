@@ -16,28 +16,44 @@ export function PopupManager() {
     dayNumber: number;
   } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [pushBannerEnabled, setPushBannerEnabled] = useState(true);
 
   useEffect(() => {
     const initializePopups = async () => {
       try {
-        // Fetch reward data via API
-        const response = await fetch("/api/rewards/progress");
-        if (response.ok) {
-          const data = await response.json();
-          const {
-            campaignActive,
-            dayNumber,
-            todaysReward,
-            claimed,
-          } = data;
+        // Feature flags — decide which popups are allowed
+        let dailyCoinsEnabled = true;
+        try {
+          const flagsRes = await fetch("/api/feature-flags");
+          if (flagsRes.ok) {
+            const flags = await flagsRes.json();
+            dailyCoinsEnabled = flags.dailyCoins !== false;
+            setPushBannerEnabled(flags.pushBanner !== false);
+          }
+        } catch {
+          // On error keep defaults (all enabled)
+        }
 
-          // Show coins modal if available and not claimed
-          if (campaignActive && !claimed) {
-            setCoinsData({
-              coinsAmount: todaysReward,
+        if (dailyCoinsEnabled) {
+          // Fetch reward data via API
+          const response = await fetch("/api/rewards/progress");
+          if (response.ok) {
+            const data = await response.json();
+            const {
+              campaignActive,
               dayNumber,
-            });
-            setCoinsModalOpen(true);
+              todaysReward,
+              claimed,
+            } = data;
+
+            // Show coins modal if available and not claimed
+            if (campaignActive && !claimed) {
+              setCoinsData({
+                coinsAmount: todaysReward,
+                dayNumber,
+              });
+              setCoinsModalOpen(true);
+            }
           }
         }
 
@@ -59,7 +75,7 @@ export function PopupManager() {
 
     // After coins modal closes, check if push notification should show
     setTimeout(() => {
-      if (shouldShowPushNotificationBanner()) {
+      if (pushBannerEnabled && shouldShowPushNotificationBanner()) {
         setPushBannerOpen(true);
       }
     }, 500);
@@ -68,11 +84,11 @@ export function PopupManager() {
   // If coins modal wasn't shown, still check for push notification on init
   useEffect(() => {
     if (isInitialized && !coinsModalOpen && !pushBannerOpen && coinsData === null) {
-      if (shouldShowPushNotificationBanner()) {
+      if (pushBannerEnabled && shouldShowPushNotificationBanner()) {
         setPushBannerOpen(true);
       }
     }
-  }, [isInitialized, coinsModalOpen, pushBannerOpen, coinsData]);
+  }, [isInitialized, coinsModalOpen, pushBannerOpen, coinsData, pushBannerEnabled]);
 
   return (
     <>

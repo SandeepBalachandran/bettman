@@ -1,5 +1,7 @@
 import { headers } from "next/headers";
+import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
+import { requireFeaturePage } from "@/lib/feature-flags";
 import { getLeaderboard, getPreviousLeaderboard } from "@/lib/leaderboard";
 import { getUserMoney } from "@/lib/leaderboard-money";
 import { getRoundMvps, getUserWinnerStreak } from "@/lib/round-mvp";
@@ -20,12 +22,16 @@ const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "T
 
 export default async function LeaderboardPage() {
   const user = await requireAuth();
+  await requireFeaturePage("navLeaderboard", user.role);
 
-  const [leaderboard, previousLeaderboard, roundMvps] = await Promise.all([
+  const [leaderboard, previousLeaderboard, roundMvps, finalMatch] = await Promise.all([
     getLeaderboard(),
     getPreviousLeaderboard(),
     getRoundMvps(),
+    prisma.match.findFirst({ where: { round: "FINAL" }, select: { status: true } }),
   ]);
+
+  const tournamentComplete = finalMatch?.status === "FINISHED";
 
   const previousRankByUserId = new Map(
     previousLeaderboard.map((entry, index) => [entry.userId, index + 1])
@@ -121,6 +127,7 @@ export default async function LeaderboardPage() {
           previousRankByUserId={previousRankByUserId}
           moneyByUserId={moneyByUserId}
           streakByUserId={streakByUserId}
+          tournamentComplete={tournamentComplete}
         />
       )}
 

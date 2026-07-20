@@ -226,6 +226,22 @@ model QuizConfig {
   updatedAt           DateTime @updatedAt
 }
 
+model FeatureFlags {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  quiz             Boolean  @default(true)
+  dailyCoins       Boolean  @default(true)
+  pushBanner       Boolean  @default(true)
+  finalDayBanner   Boolean  @default(true)
+  rewardsPage      Boolean  @default(true)
+  booster          Boolean  @default(true)
+  dailyRewardClaim Boolean  @default(true)
+  navFixtures      Boolean  @default(true)
+  navMyPredictions Boolean  @default(true)
+  navLeaderboard   Boolean  @default(true)
+  navMoney         Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+}
+
 model QuizAttempt {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   userId       String   @db.ObjectId

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
+import { requireFeaturePage } from "@/lib/feature-flags";
 import {
   getRewardProgress,
   getUserCoinBalance,
@@ -11,6 +12,7 @@ import Link from "next/link";
 
 export default async function RewardsPage() {
   const user = await requireAuth();
+  await requireFeaturePage("rewardsPage", user.role);
   const progress = await getRewardProgress(user.id);
   const balance = await getUserCoinBalance(user.id);
 

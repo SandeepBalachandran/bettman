@@ -35,12 +35,24 @@ export function QuizFab() {
   const [quizConfig, setQuizConfig] = useState<QuizConfig | null>(null);
   const [lastResults, setLastResults] = useState<QuizResults | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [featureEnabled, setFeatureEnabled] = useState(true);
 
   useEffect(() => {
     if (!session) return;
 
     const initializeQuiz = async () => {
       try {
+        // Feature flag check — bail out early if quiz is disabled
+        const flagsRes = await fetch("/api/feature-flags");
+        if (flagsRes.ok) {
+          const flags = await flagsRes.json();
+          if (flags.quiz === false) {
+            setFeatureEnabled(false);
+            setLoading(false);
+            return;
+          }
+        }
+
         // Fetch quiz status and config in parallel
         const [statusRes, configRes] = await Promise.all([
           fetch("/api/quiz/status"),
@@ -75,7 +87,7 @@ export function QuizFab() {
     initializeQuiz();
   }, [session]);
 
-  if (!session || loading) return null;
+  if (!session || loading || !featureEnabled) return null;
 
   // Show checkmark after playing today
   if (hasPlayedToday) {
