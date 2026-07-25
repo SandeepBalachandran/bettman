@@ -15,9 +15,27 @@ const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
 });
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "Bettman",
-  description: "Private knockout-stage prediction game",
+  metadataBase: new URL(appUrl),
+  title: "Bettman — World Cup Prediction League",
+  description:
+    "Predict winners & scorers, climb the leaderboard, and win bragging rights. Join our private World Cup prediction game! ⚽🏆",
+  openGraph: {
+    title: "Bettman — World Cup Prediction League",
+    description:
+      "Predict winners & scorers, climb the leaderboard, and win bragging rights. Join our private World Cup prediction game! ⚽🏆",
+    url: appUrl,
+    siteName: "Bettman",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Bettman — World Cup Prediction League",
+    description:
+      "Predict winners & scorers, climb the leaderboard, and win bragging rights. ⚽🏆",
+  },
 };
 
 export default function RootLayout({
