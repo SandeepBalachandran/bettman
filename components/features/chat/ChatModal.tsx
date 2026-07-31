@@ -213,11 +213,11 @@ export function ChatModal({ isOpen, onClose }: { readonly isOpen: boolean; reado
           {chatMuted ? (
             <p className="text-center text-xs text-danger">You&apos;ve been muted by an admin.</p>
           ) : (
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
+            <div className="flex items-end gap-2">
+              <textarea
                 value={text}
                 maxLength={500}
+                rows={1}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -227,7 +227,7 @@ export function ChatModal({ isOpen, onClose }: { readonly isOpen: boolean; reado
                 }}
                 placeholder="Type a message…"
                 disabled={isPending}
-                className="input-pill flex-1"
+                className="input-pill min-w-0 flex-1 resize-none py-2 leading-snug"
               />
               <button
                 type="button"
