@@ -135,8 +135,8 @@ export function ChatModal({ isOpen, onClose }: { readonly isOpen: boolean; reado
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-600/40 backdrop-blur-sm sm:items-center">
-      <div className="card flex h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl sm:h-[80vh] sm:rounded-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-600/40 p-3 backdrop-blur-sm">
+      <div className="card flex h-[65vh] w-[90vw] max-w-lg flex-col overflow-hidden rounded-2xl sm:h-[80vh] sm:w-full">
         <div className="flex items-center justify-between border-b border-gray-200 p-3 dark:border-gray-700">
           <h2 className="text-base font-bold gradient-text">💬 Chat</h2>
           <div className="flex items-center gap-1">
