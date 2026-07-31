@@ -22,6 +22,8 @@ async function getLiveStatusByExternalId(): Promise<Map<number, FootballDataMatc
 }
 
 const ROUND_LABELS: Record<Round, string> = {
+  GROUP_STAGE: "Group Stage",
+  REGULAR_SEASON: "Regular Season",
   ROUND_OF_16: "Round of 16",
   QUARTER_FINALS: "Quarter Finals",
   SEMI_FINALS: "Semi Finals",
@@ -30,6 +32,8 @@ const ROUND_LABELS: Record<Round, string> = {
 };
 
 const ROUND_BADGE_STYLES: Record<Round, string> = {
+  GROUP_STAGE: "bg-primary/15 text-primary",
+  REGULAR_SEASON: "bg-primary/15 text-primary",
   ROUND_OF_16: "bg-accent/15 text-accent",
   QUARTER_FINALS: "bg-secondary/15 text-secondary",
   SEMI_FINALS: "bg-highlight/20 text-highlight-foreground dark:text-highlight",

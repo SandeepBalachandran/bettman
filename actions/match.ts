@@ -148,7 +148,7 @@ export async function finishMatch(
 }
 
 export async function syncMatchesFromLiveApiAction(
-  competitionCode = "WC"
+  competitionCode = process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC"
 ): Promise<SyncMatchesResult> {
   await requireAdmin();
   const result = await syncMatchesFromLiveApi(prisma, competitionCode);
@@ -157,7 +157,9 @@ export async function syncMatchesFromLiveApiAction(
   return result;
 }
 
-export async function syncMatchResultsAction(competitionCode = "WC") {
+export async function syncMatchResultsAction(
+  competitionCode = process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC"
+) {
   await requireAdmin();
   const result = await syncFinishedMatchResults(prisma, competitionCode);
 

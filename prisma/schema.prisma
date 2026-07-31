@@ -19,6 +19,8 @@ enum MatchStatus {
 }
 
 enum Round {
+  GROUP_STAGE
+  REGULAR_SEASON
   ROUND_OF_16
   QUARTER_FINALS
   SEMI_FINALS

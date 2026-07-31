@@ -3,6 +3,9 @@ import { fetchCompetitionMatches, fetchLiveMatchResults, fetchCompetitionScorers
 import { searchApiFootballTeam, fetchHeadToHeadFixtures, FINISHED_FIXTURE_STATUSES } from "@/lib/api-football";
 
 const STAGE_TO_ROUND: Record<string, Round> = {
+  GROUP_STAGE: Round.GROUP_STAGE,
+  LEAGUE_STAGE: Round.GROUP_STAGE,
+  REGULAR_SEASON: Round.REGULAR_SEASON,
   LAST_16: Round.ROUND_OF_16,
   QUARTER_FINALS: Round.QUARTER_FINALS,
   SEMI_FINALS: Round.SEMI_FINALS,

@@ -18,7 +18,13 @@ export default async function AdminMatchesPage() {
   return (
     <main className="mx-auto max-w-5xl space-y-6 p-3 sm:p-4 md:p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Manage Matches</h1>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Manage Matches</h1>
+          <p className="text-xs text-gray-500">
+            Active competition:{" "}
+            <code>{process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC"}</code>
+          </p>
+        </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <SyncMatchResultsButton />
           <SyncMatchesButton />

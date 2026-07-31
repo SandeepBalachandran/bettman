@@ -32,7 +32,10 @@ export async function POST(request: Request) {
     // Sync live match results (status updates)
     if (type === "all" || type === "live") {
       console.log("🔄 Syncing live match results...");
-      await syncLiveMatchResults(prisma, "WC");
+      await syncLiveMatchResults(
+        prisma,
+        process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC"
+      );
       results.synced.push("live-results");
     }
 

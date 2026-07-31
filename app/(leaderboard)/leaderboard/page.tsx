@@ -11,6 +11,8 @@ import { formatMoney } from "@/lib/format-money";
 import type { Round } from "@prisma/client";
 
 const ROUND_LABELS: Record<Round, string> = {
+  GROUP_STAGE: "Group Stage",
+  REGULAR_SEASON: "Regular Season",
   ROUND_OF_16: "Round of 16",
   QUARTER_FINALS: "Quarter Finals",
   SEMI_FINALS: "Semi Finals",

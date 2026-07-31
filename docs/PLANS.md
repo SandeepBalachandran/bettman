@@ -510,6 +510,14 @@ Introduce a daily engagement loop: players complete a 7-question football trivia
 | Variable | Example | Used By |
 |----------|---------|---------|
 | `FOOTBALL_DATA_COMPETITION_CODE` | `WC` | Fixture sync, live status |
+
+### Switching to a different competition
+
+The app supports **one active competition at a time** (not concurrent leagues — no per-tournament data model exists). To move from the World Cup to another football-data.org competition (e.g. `CL` for Champions League, `PL` for Premier League):
+
+1. Set `FOOTBALL_DATA_COMPETITION_CODE` to the new competition's code and redeploy. All sync entry points (`actions/match.ts`, `app/api/admin/sync-results/route.ts`) read this env var — no code changes needed for a same-format competition (knockout bracket).
+2. Re-run "Sync from live API" in `/admin/matches` (or `npx tsx scripts/sync-matches.ts <CODE>`) to pull the new competition's teams and matches. The `Round` enum includes `GROUP_STAGE`/`REGULAR_SEASON` in addition to knockout rounds, so group-stage and league-format competitions sync too.
+3. **Archive or reset prior-tournament data first.** `Team.externalId` and `Match.externalId` are globally unique (`prisma/schema.prisma`), so leftover teams/matches/predictions/standings from the previous competition will remain and can mix with the new one. Export/clear `Prediction`, `Match`, `Team`, `Player`, `CoinTransaction` (or move them to an archive) before syncing a new competition.
 | `FOOTBALL_DATA_API_TOKEN` | `abc123...` | football-data.org API |
 | `NEW_FOOTBALL_API_TOKEN` | `xyz789...` | api-football.com API |
 | `CURRENCY_SYMBOL` | `₹` | Money display (all dashboards) |
