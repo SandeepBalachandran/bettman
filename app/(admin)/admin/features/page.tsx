@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 type FlagKey =
+  | "chat"
   | "quiz"
   | "dailyCoins"
   | "pushBanner"
@@ -19,6 +20,7 @@ type FlagKey =
 type FlagValues = Record<FlagKey, boolean>;
 
 const FEATURES: { key: FlagKey; icon: string; name: string; description: string }[] = [
+  { key: "chat", icon: "💬", name: "Global Chat", description: "Floating chat icon and chat APIs" },
   { key: "quiz", icon: "⚽", name: "Daily Quiz", description: "Floating quiz icon and quiz APIs" },
   { key: "dailyCoins", icon: "🪙", name: "Daily Coins Popup", description: "Daily coin collect modal on app open" },
   { key: "pushBanner", icon: "🔔", name: "Push Notification Prompt", description: "Enable-notifications banner" },

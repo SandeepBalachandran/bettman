@@ -52,12 +52,16 @@ model User {
   resetToken                 String?
   resetTokenExpires          DateTime?
 
+  chatMuted      Boolean   @default(false)
+  chatLastReadAt DateTime?
+
   predictions       Prediction[]
   pushSubscriptions PushSubscription[]
   coinBalance       CoinBalance?
   dailyRewards      DailyReward[]
   coinTransactions  CoinTransaction[]
   quizAttempts      QuizAttempt[]
+  chatMessages      ChatMessage[]
 }
 
 model PushSubscription {
@@ -228,8 +232,20 @@ model QuizConfig {
   updatedAt           DateTime @updatedAt
 }
 
+model ChatMessage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  text      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+}
+
 model FeatureFlags {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  chat             Boolean  @default(true)
   quiz             Boolean  @default(true)
   dailyCoins       Boolean  @default(true)
   pushBanner       Boolean  @default(true)

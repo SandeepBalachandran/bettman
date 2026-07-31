@@ -6,6 +6,7 @@ import { SessionProvider } from "@/app/SessionProvider";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PopupManager } from "@/components/PopupManager";
 import { QuizFab } from "@/components/QuizFab";
+import { ChatFab } from "@/components/ChatFab";
 import { DevelopmentBanner } from "@/components/DevelopmentBanner";
 import "./globals.css";
 
@@ -55,6 +56,7 @@ export default function RootLayout({
             <DevelopmentBanner />
             <PopupManager />
             <QuizFab />
+            <ChatFab />
             <SiteHeader />
             {children}
             <Toaster richColors position="top-center" />

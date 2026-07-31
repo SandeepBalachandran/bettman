@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export type FeatureFlagKey =
+  | "chat"
   | "quiz"
   | "dailyCoins"
   | "pushBanner"
@@ -18,6 +19,7 @@ export type FeatureFlagKey =
 export type FeatureFlagValues = Record<FeatureFlagKey, boolean>;
 
 export const FEATURE_FLAG_KEYS: FeatureFlagKey[] = [
+  "chat",
   "quiz",
   "dailyCoins",
   "pushBanner",

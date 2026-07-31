@@ -38,6 +38,7 @@ export default async function AdminUsersPage() {
                   isSelf: user.id === admin.id,
                   upiId: user.upiId,
                   avatarUrl: user.avatarUrl,
+                  chatMuted: user.chatMuted,
                 }}
               />
             ))}

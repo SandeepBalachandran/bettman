@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Save, KeyRound, Ban, CheckCircle2, Trash2 } from "lucide-react";
+import { Save, KeyRound, Ban, CheckCircle2, Trash2, Mic, MicOff } from "lucide-react";
 import {
   deactivateUser,
   deleteUser,
@@ -12,6 +12,7 @@ import {
   setAvatarUrl,
   setUpiId,
 } from "@/actions/user";
+import { toggleUserChatMute } from "@/actions/chat";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export type AdminUserRowData = {
@@ -23,6 +24,7 @@ export type AdminUserRowData = {
   isSelf: boolean;
   upiId: string | null;
   avatarUrl: string | null;
+  chatMuted: boolean;
 };
 
 export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
@@ -132,6 +134,21 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
                 aria-label={user.active ? "Deactivate user" : "Reactivate user"}
               >
                 {user.active ? <Ban size={16} /> : <CheckCircle2 size={16} />}
+              </button>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() =>
+                  run(
+                    () => toggleUserChatMute(user.id, !user.chatMuted),
+                    user.chatMuted ? "User unmuted" : "User muted"
+                  )
+                }
+                className="btn btn-outline px-3 py-2"
+                title={user.chatMuted ? "Unmute from chat" : "Mute from chat"}
+                aria-label={user.chatMuted ? "Unmute from chat" : "Mute from chat"}
+              >
+                {user.chatMuted ? <MicOff size={16} /> : <Mic size={16} />}
               </button>
               <button
                 type="button"
