@@ -54,6 +54,10 @@ export async function logout() {
   await signOut({ redirectTo: "/login" });
 }
 
+export async function signInWithGoogle() {
+  await signIn("google", { redirectTo: "/" });
+}
+
 const signupSchema = z.object({
   name: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email"),
