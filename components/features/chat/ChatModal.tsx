@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Send, Trash2, RotateCw, X } from "lucide-react";
+import { Send, Trash2, RotateCw, X, Smile } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { sendChatMessage, deleteChatMessage } from "@/actions/chat";
 
@@ -19,6 +19,12 @@ type ChatMessage = {
 };
 
 const AVATAR_COLORS = ["bg-accent", "bg-secondary", "bg-highlight", "bg-success", "bg-danger"];
+
+const EMOJIS = [
+  "😀", "😂", "😍", "😊", "😉", "😎", "🤔", "😢",
+  "😡", "😱", "👍", "👎", "🙏", "👏", "💪", "🙌",
+  "❤️", "🔥", "🎉", "💯", "⚽", "🏆", "🥅", "😴",
+];
 
 function avatarColorFor(userId: string) {
   const hash = [...userId].reduce((sum, char) => sum + char.charCodeAt(0), 0);
@@ -67,6 +73,7 @@ export function ChatModal({ isOpen, onClose }: { readonly isOpen: boolean; reado
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isPending, startTransition] = useTransition();
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -90,12 +97,26 @@ export function ChatModal({ isOpen, onClose }: { readonly isOpen: boolean; reado
   useEffect(() => {
     if (!isOpen) return;
 
+    // overflow alone doesn't stop iOS Safari's rubber-band scroll from
+    // reaching the page behind the modal, so also pin the body in place.
+    const scrollY = window.scrollY;
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
     loadMessages();
     fetch("/api/chat/mark-read", { method: "POST" }).catch(() => {});
 
     return () => {
-      document.body.style.overflow = "unset";
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+      setShowEmojiPicker(false);
     };
   }, [isOpen]);
 
@@ -162,7 +183,7 @@ export function ChatModal({ isOpen, onClose }: { readonly isOpen: boolean; reado
           </div>
         </div>
 
-        <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-3">
+        <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto overscroll-contain p-3">
           <p className="text-center text-[11px] text-gray-400">Showing the last 50 messages</p>
           {loading && messages.length === 0 && (
             <p className="text-center text-sm text-gray-500">Loading…</p>
@@ -209,11 +230,43 @@ export function ChatModal({ isOpen, onClose }: { readonly isOpen: boolean; reado
           })}
         </div>
 
-        <div className="border-t border-gray-200 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] dark:border-gray-700">
+        <div className="relative border-t border-gray-200 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] dark:border-gray-700">
+          {showEmojiPicker && (
+            <>
+              <button
+                type="button"
+                className="fixed inset-0 z-10 cursor-default"
+                onClick={() => setShowEmojiPicker(false)}
+                aria-label="Close emoji picker"
+                tabIndex={-1}
+              />
+              <div className="absolute bottom-full left-3 z-20 mb-2 grid w-60 grid-cols-8 gap-0.5 rounded-xl border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                {EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setText((prev) => prev + emoji)}
+                    className="rounded p-1 text-lg hover:bg-gray-100 dark:hover:bg-white/10"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
           {chatMuted ? (
             <p className="text-center text-xs text-danger">You&apos;ve been muted by an admin.</p>
           ) : (
             <div className="flex items-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10"
+                title="Emoji"
+                aria-label="Emoji"
+              >
+                <Smile size={18} />
+              </button>
               <textarea
                 value={text}
                 maxLength={500}
