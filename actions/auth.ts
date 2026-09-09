@@ -51,7 +51,7 @@ export async function login(
 }
 
 export async function logout() {
-  await signOut({ redirectTo: "/login" });
+  await signOut({ redirectTo: "/" });
 }
 
 export async function signInWithGoogle() {
