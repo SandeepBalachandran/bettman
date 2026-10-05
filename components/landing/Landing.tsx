@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { InstallButton } from "@/components/InstallButton";
 import {
   Target,
   Goal,
@@ -89,6 +90,7 @@ export function Landing() {
           🏆 <span className="gradient-text">Bettman</span>
         </span>
         <div className="flex items-center gap-2 sm:gap-3">
+          <InstallButton className="btn btn-outline flex items-center gap-1.5 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm" />
           <Link
             href="/login"
             className="btn btn-outline px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
