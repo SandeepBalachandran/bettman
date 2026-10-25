@@ -10,6 +10,8 @@ export type MatchCardData = {
   awayTeam: { name: string; flag: string | null };
   hasPrediction: boolean;
   liveStatus?: string;
+  /** Live or final score, when known. */
+  score?: { home: number; away: number };
   isNext?: boolean;
 };
 
@@ -25,6 +27,7 @@ export function MatchCard({ match }: { readonly match: MatchCardData }) {
 
   return (
     <Link
+      id={`match-${match.id}`}
       href={href}
       className={`card card-interactive block border-l-4 border-accent p-3 sm:p-4 ${
         match.isNext ? "animate-pulse-border" : ""
@@ -53,8 +56,8 @@ export function MatchCard({ match }: { readonly match: MatchCardData }) {
 
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <TeamLabel name={match.homeTeam.name} flag={match.homeTeam.flag} />
-        <span className="rounded-full bg-secondary/10 px-2 py-0.5 text-xs font-bold text-secondary">
-          VS
+        <span className="rounded-full bg-secondary/10 px-2 py-0.5 text-xs font-bold text-secondary whitespace-nowrap">
+          {match.score ? `${match.score.home} – ${match.score.away}` : "VS"}
         </span>
         <TeamLabel name={match.awayTeam.name} flag={match.awayTeam.flag} align="right" />
       </div>

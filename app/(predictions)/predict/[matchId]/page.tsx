@@ -8,6 +8,8 @@ import { LocalDateTime } from "@/components/LocalDateTime";
 import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
 import { getUserCoinBalance } from "@/lib/coin-rewards";
 import { getMostPickedPlayers } from "@/lib/most-picked-players";
+import { refreshActiveCompetitionResults } from "@/lib/refresh-results";
+import { COMPETITIONS, DRAW_PICK, getActiveCompetition, type CompetitionCode } from "@/lib/competition";
 
 export default async function PredictPage({
   params,
@@ -16,6 +18,8 @@ export default async function PredictPage({
 }) {
   const { matchId } = await params;
   const user = await requireAuth();
+  // Also picks up players named in lineups published shortly before kickoff.
+  refreshActiveCompetitionResults();
 
   const match = await prisma.match.findUnique({
     where: { id: matchId },
@@ -32,9 +36,10 @@ export default async function PredictPage({
     },
   });
 
-  if (!match) {
+  if (!match || match.competition !== getActiveCompetition().code) {
     notFound();
   }
+  const allowDraw = COMPETITIONS[match.competition as CompetitionCode]?.allowsDraws ?? false;
 
   const isLocked = isMatchLocked(match);
   const isTbd = match.homeTeam.fifaCode === "TBD" || match.awayTeam.fifaCode === "TBD";
@@ -70,11 +75,13 @@ export default async function PredictPage({
               <h3 className="text-sm font-semibold text-accent mb-3">My prediction</h3>
               <div className="space-y-2">
                 <div>
-                  <p className="text-xs text-gray-500">Winner</p>
+                  <p className="text-xs text-gray-500">{allowDraw ? "Result" : "Winner"}</p>
                   <p className="text-sm font-medium">
-                    {existingPrediction.winnerTeamId === match.homeTeamId
-                      ? match.homeTeam.name
-                      : match.awayTeam.name}
+                    {existingPrediction.predictedDraw
+                      ? "Draw"
+                      : existingPrediction.winnerTeamId === match.homeTeamId
+                        ? match.homeTeam.name
+                        : match.awayTeam.name}
                   </p>
                 </div>
                 {existingPrediction.scorers.length > 0 && (
@@ -117,8 +124,10 @@ export default async function PredictPage({
                   </div>
                   <div className="space-y-2 text-sm">
                     <div>
-                      <p className="text-xs text-gray-500">Winner</p>
-                      <p className="font-medium text-accent">{prediction.winnerTeam.name}</p>
+                      <p className="text-xs text-gray-500">{allowDraw ? "Result" : "Winner"}</p>
+                      <p className="font-medium text-accent">
+                        {prediction.predictedDraw ? "Draw" : prediction.winnerTeam?.name ?? "—"}
+                      </p>
                     </div>
                     {prediction.scorers.length > 0 && (
                       <div>
@@ -169,7 +178,10 @@ export default async function PredictPage({
               flag: match.awayTeam.flag,
               players: match.awayTeam.players,
             }}
-            initialWinnerTeamId={existingPrediction?.winnerTeamId ?? null}
+            initialWinnerTeamId={
+              existingPrediction?.predictedDraw ? DRAW_PICK : (existingPrediction?.winnerTeamId ?? null)
+            }
+            allowDraw={allowDraw}
             initialScorerPlayerIds={existingPrediction?.scorers.map((s) => s.playerId) ?? []}
             coinBalance={coinBalance}
             mostPickedPlayers={mostPickedPlayers}

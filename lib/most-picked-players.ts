@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { activeMatchWhere } from "@/lib/competition";
 
 export type MostPickedPlayer = {
   id: string;
@@ -38,6 +39,7 @@ export async function getMostPickedPlayers(
       prediction: {
         match: {
           status: "FINISHED",
+          ...activeMatchWhere(),
         },
       },
       player: {

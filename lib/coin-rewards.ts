@@ -1,11 +1,37 @@
 import { prisma } from "@/lib/prisma";
 
-const REWARD_CAMPAIGN_START = new Date("2026-07-08"); // Campaign starts today
-const REWARD_CAMPAIGN_END = new Date("2026-07-19"); // Final day
+// DailyReward.day is unique per user, so stored day numbers count from one
+// fixed epoch across every campaign — a new campaign must never reuse an old
+// campaign's day numbers. Never change this date.
+const DAY_NUMBER_EPOCH = new Date("2026-07-08");
 
-const DAILY_REWARDS = [
+type RewardCampaign = {
+  name: string;
+  start: Date;
+  /** Last claimable day (inclusive). */
+  end: Date;
+  /** Coins for the Nth day of this campaign (1-indexed). */
+  rewardForDay: (campaignDay: number) => number;
+};
+
+const WORLD_CUP_REWARDS = [
   50, 50, 50, 50, 50, 50, // Days 1-6: 50 coins
   100, 100, 100, 100, 100, 100, // Days 7-12: 100 coins
+];
+
+const REWARD_CAMPAIGNS: RewardCampaign[] = [
+  {
+    name: "World Cup",
+    start: new Date("2026-07-08"),
+    end: new Date("2026-07-19"),
+    rewardForDay: (day) => WORLD_CUP_REWARDS[day - 1],
+  },
+  {
+    name: "ISL 2026–27",
+    start: new Date("2026-10-26"),
+    end: new Date("2027-01-17"),
+    rewardForDay: () => 20,
+  },
 ];
 
 // Default unlock tiers (will be overridden by database config)
@@ -54,26 +80,67 @@ async function getUnlockTiers() {
   return cachedUnlockTiers;
 }
 
+/** Days since DAY_NUMBER_EPOCH (UTC calendar days, 1-indexed) — the value stored in DailyReward.day. */
 function getDayNumber(date: Date): number {
-  const start = new Date(REWARD_CAMPAIGN_START);
-  const startUTC = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+  const toUtcDay = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  const days = Math.floor((toUtcDay(date) - toUtcDay(DAY_NUMBER_EPOCH)) / (1000 * 60 * 60 * 24));
+  return days + 1;
+}
 
-  const current = new Date(date);
-  const currentUTC = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate()));
+type ActiveCampaignDay = {
+  /** Absolute day number, as stored in DailyReward.day. */
+  dayNumber: number;
+  /** Day within the running campaign (1-indexed), for display. */
+  campaignDay: number;
+  /** DailyReward.day value of the campaign's first day. */
+  firstDayNumber: number;
+  totalDays: number;
+  rewards: number[];
+  name: string;
+  /** ISO date of the campaign's last claimable day. */
+  endDate: string;
+};
 
-  const diff = currentUTC.getTime() - startUTC.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  return days + 1; // 1-indexed
+function getActiveCampaignDay(date: Date): ActiveCampaignDay | null {
+  const dayNumber = getDayNumber(date);
+  for (const campaign of REWARD_CAMPAIGNS) {
+    const firstDayNumber = getDayNumber(campaign.start);
+    const totalDays = getDayNumber(campaign.end) - firstDayNumber + 1;
+    const campaignDay = dayNumber - firstDayNumber + 1;
+    if (campaignDay >= 1 && campaignDay <= totalDays) {
+      const rewards = Array.from({ length: totalDays }, (_, i) => campaign.rewardForDay(i + 1));
+      return {
+        dayNumber,
+        campaignDay,
+        firstDayNumber,
+        totalDays,
+        rewards,
+        name: campaign.name,
+        endDate: campaign.end.toISOString(),
+      };
+    }
+  }
+  return null;
+}
+
+/** The next campaign that hasn't started yet, if any — shown between campaigns. */
+function getNextCampaign(date: Date): { name: string; startDate: string; dailyReward: number } | null {
+  const dayNumber = getDayNumber(date);
+  const next = REWARD_CAMPAIGNS.filter((c) => getDayNumber(c.start) > dayNumber).sort(
+    (a, b) => a.start.getTime() - b.start.getTime()
+  )[0];
+  return next ? { name: next.name, startDate: next.start.toISOString(), dailyReward: next.rewardForDay(1) } : null;
 }
 
 export async function awardDailyCoins(userId: string) {
   const today = new Date();
-  const dayNumber = getDayNumber(today);
+  const campaign = getActiveCampaignDay(today);
 
   // Check if campaign is active
-  if (dayNumber < 1 || dayNumber > DAILY_REWARDS.length) {
+  if (!campaign) {
     return { awarded: 0, reason: "campaign_not_active" };
   }
+  const { dayNumber } = campaign;
 
   // Check if already claimed today
   const existingReward = await prisma.dailyReward.findUnique({
@@ -89,7 +156,7 @@ export async function awardDailyCoins(userId: string) {
     return { awarded: 0, reason: "already_claimed" };
   }
 
-  const coinsToAward = DAILY_REWARDS[dayNumber - 1];
+  const coinsToAward = campaign.rewards[campaign.campaignDay - 1];
 
   // Get or create coin balance
   let coinBalance = await prisma.coinBalance.findUnique({
@@ -197,14 +264,18 @@ export async function getUnlockCost(scorerPosition: 3 | 4): Promise<number> {
 }
 
 export async function getRewardProgress(userId: string) {
-  const today = new Date();
-  const dayNumber = getDayNumber(today);
+  const campaign = getActiveCampaignDay(new Date());
 
-  if (dayNumber < 1 || dayNumber > DAILY_REWARDS.length) {
+  if (!campaign) {
     return {
       campaignActive: false,
+      campaignName: null,
+      campaignEndDate: null,
+      nextCampaign: getNextCampaign(new Date()),
       dayNumber: 0,
-      totalDays: DAILY_REWARDS.length,
+      totalDays: 0,
+      firstDayNumber: 0,
+      rewards: [] as number[],
       todaysReward: 0,
       claimed: false,
       coinBalance: await getUserCoinBalance(userId),
@@ -215,24 +286,27 @@ export async function getRewardProgress(userId: string) {
     where: {
       userId_day: {
         userId,
-        day: dayNumber,
+        day: campaign.dayNumber,
       },
     },
   });
 
   return {
     campaignActive: true,
-    dayNumber,
-    totalDays: DAILY_REWARDS.length,
-    todaysReward: DAILY_REWARDS[dayNumber - 1],
+    campaignName: campaign.name,
+    campaignEndDate: campaign.endDate,
+    nextCampaign: null,
+    // Day within the current campaign, for display ("Day 3 of 84").
+    dayNumber: campaign.campaignDay,
+    totalDays: campaign.totalDays,
+    firstDayNumber: campaign.firstDayNumber,
+    rewards: campaign.rewards,
+    todaysReward: campaign.rewards[campaign.campaignDay - 1],
     claimed: !!claimed,
     coinBalance: await getUserCoinBalance(userId),
   };
 }
 
 export const COIN_CONFIG = {
-  rewards: DAILY_REWARDS,
   unlocks: DEFAULT_UNLOCK_TIERS,
-  campaignStart: REWARD_CAMPAIGN_START,
-  campaignEnd: REWARD_CAMPAIGN_END,
 };

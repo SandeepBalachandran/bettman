@@ -7,6 +7,7 @@ import { deleteMatch, finishMatch, setMatchLocked } from "@/actions/match";
 import { TeamFlag } from "@/components/TeamFlag";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PlayerCombobox } from "@/components/features/predictions/PlayerCombobox";
+import { DRAW_PICK } from "@/lib/competition";
 
 export type AdminMatchRowData = {
   id: string;
@@ -27,7 +28,14 @@ export type AdminMatchRowData = {
   winnerTeamId: string | null;
 };
 
-export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) {
+export function AdminMatchRow({
+  match,
+  allowDraw = false,
+}: {
+  readonly match: AdminMatchRowData;
+  /** League matches can be finished as a draw. */
+  readonly allowDraw?: boolean;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [winnerTeamId, setWinnerTeamId] = useState(match.winnerTeamId ?? "");
@@ -102,8 +110,9 @@ export function AdminMatchRow({ match }: { readonly match: AdminMatchRowData }) 
             onChange={(e) => setWinnerTeamId(e.target.value)}
             className="input-pill sm:col-span-2"
           >
-            <option value="">Winner...</option>
+            <option value="">{allowDraw ? "Result..." : "Winner..."}</option>
             <option value={match.homeTeam.id}>{match.homeTeam.name}</option>
+            {allowDraw && <option value={DRAW_PICK}>Draw</option>}
             <option value={match.awayTeam.id}>{match.awayTeam.name}</option>
           </select>
           {[0, 1, 2].map((index) => (

@@ -15,7 +15,8 @@ type FlagKey =
   | "navFixtures"
   | "navMyPredictions"
   | "navLeaderboard"
-  | "navMoney";
+  | "navMoney"
+  | "fixturesChronological";
 
 type FlagValues = Record<FlagKey, boolean>;
 
@@ -32,6 +33,13 @@ const FEATURES: { key: FlagKey; icon: string; name: string; description: string 
   { key: "navMyPredictions", icon: "📝", name: "My Predictions Menu", description: "My Predictions menu item and page" },
   { key: "navLeaderboard", icon: "🏅", name: "Leaderboard Menu", description: "Leaderboard menu item and page" },
   { key: "navMoney", icon: "💰", name: "Money Menu", description: "Money menu item and page" },
+  {
+    key: "fixturesChronological",
+    icon: "↕️",
+    name: "Fixtures: Past Matches On Top",
+    description:
+      "On: date order, auto-scrolled to the live or latest finished match. Off: upcoming matchweeks first, finished ones at the bottom. Applies to admins too.",
+  },
 ];
 
 const DEFAULT_FLAGS: FlagValues = Object.fromEntries(

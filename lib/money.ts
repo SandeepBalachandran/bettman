@@ -1,6 +1,8 @@
 import { prisma } from "./prisma";
 import { MoneyConfig, moneyConfig } from "./money-config";
 import { applyPointsBoosterMultiplier } from "@/lib/points-booster";
+import { isOutcomeDecided, isResultPickCorrect, type MatchOutcome, type ResultPick } from "@/lib/scoring";
+import { activeMatchWhere } from "@/lib/competition";
 
 export type MatchMoney = {
   winnerMoney: number;
@@ -9,27 +11,20 @@ export type MatchMoney = {
 };
 
 export function calculateMatchMoney(
-  prediction: {
-    winnerTeamId: string;
+  prediction: ResultPick & {
     scorerPlayerIds: string[];
   },
-  match: {
-    winnerTeamId: string | null;
-    wonOnPenalties?: boolean;
-  },
+  match: MatchOutcome,
   actualScorerPlayerIds: string[],
   config: MoneyConfig,
   hasPointsBooster: boolean = false
 ): MatchMoney {
+  const winnerCorrect = isResultPickCorrect(prediction, match);
   let winnerMoney = 0;
-  if (match.winnerTeamId) {
-    winnerMoney =
-      prediction.winnerTeamId === match.winnerTeamId
-        ? config.moneyPerCorrectWinner
-        : config.moneyPerIncorrectWinner;
+  if (isOutcomeDecided(match)) {
+    winnerMoney = winnerCorrect ? config.moneyPerCorrectWinner : config.moneyPerIncorrectWinner;
   }
 
-  const winnerCorrect = match.winnerTeamId && prediction.winnerTeamId === match.winnerTeamId;
   let scorerMoney = 0;
 
   // If match was won on penalties and user predicted the correct winner,
@@ -68,7 +63,7 @@ export type SettlementLogEntry = {
  */
 export async function getSettlementLog(): Promise<SettlementLogEntry[]> {
   const finishedMatches = await prisma.match.findMany({
-    where: { status: "FINISHED" },
+    where: { status: "FINISHED", ...activeMatchWhere() },
     include: {
       homeTeam: true,
       awayTeam: true,
@@ -88,9 +83,10 @@ export async function getSettlementLog(): Promise<SettlementLogEntry[]> {
       const money = calculateMatchMoney(
         {
           winnerTeamId: prediction.winnerTeamId,
+          predictedDraw: prediction.predictedDraw,
           scorerPlayerIds: prediction.scorers.map((s) => s.playerId),
         },
-        { winnerTeamId: match.winnerTeamId },
+        { winnerTeamId: match.winnerTeamId, isDraw: match.isDraw, wonOnPenalties: match.wonOnPenalties },
         actualScorerPlayerIds,
         moneyConfig,
         prediction.usedPointsBooster

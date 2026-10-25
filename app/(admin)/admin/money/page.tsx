@@ -38,7 +38,7 @@ export default async function AdminMoneyPage() {
         <SummaryCard label="Total Money Won" value={formatMoney(totalMoneyWon)} color="success" />
         <SummaryCard label="Total Money Lost" value={formatMoney(totalMoneyLost)} color="danger" />
         <SummaryCard
-          label="Tournament Net"
+          label="Season Net"
           value={formatMoney(tournamentNet)}
           color={tournamentNet >= 0 ? "success" : "danger"}
         />

@@ -14,7 +14,8 @@ export type FeatureFlagKey =
   | "navFixtures"
   | "navMyPredictions"
   | "navLeaderboard"
-  | "navMoney";
+  | "navMoney"
+  | "fixturesChronological";
 
 export type FeatureFlagValues = Record<FeatureFlagKey, boolean>;
 
@@ -31,6 +32,7 @@ export const FEATURE_FLAG_KEYS: FeatureFlagKey[] = [
   "navMyPredictions",
   "navLeaderboard",
   "navMoney",
+  "fixturesChronological",
 ];
 
 export const ALL_ENABLED: FeatureFlagValues = Object.fromEntries(

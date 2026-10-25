@@ -63,7 +63,7 @@ export default function SyncResultsPage() {
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Sync Match Results</h1>
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            Sync latest game results from the Football Data API
+            Pull the latest scores, results and goal scorers from the live results provider
           </p>
         </div>
         <Link href="/admin" className="text-xs sm:text-sm text-accent hover:underline self-start sm:self-auto">
@@ -225,7 +225,7 @@ export default function SyncResultsPage() {
           <li>• <span className="font-medium">Detailed Sync</span> also adds goal scorers from API</li>
           <li>• Safe to run multiple times — already-synced matches are skipped</li>
           <li>• Results populate leaderboard and user payouts immediately</li>
-          <li>• Check logs if sync times out on very large tournaments</li>
+          <li>• For ISL every option does the same full sync (results + scorers + squads) — and it also runs on its own whenever someone opens the app</li>
         </ul>
       </div>
     </main>

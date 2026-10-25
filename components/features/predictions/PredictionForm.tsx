@@ -9,6 +9,7 @@ import { PlayerCombobox } from "@/components/features/predictions/PlayerCombobox
 import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import type { MostPickedPlayer } from "@/lib/most-picked-players";
+import { DRAW_PICK } from "@/lib/competition";
 
 export type PredictionFormPlayer = {
   id: string;
@@ -30,14 +31,18 @@ export function PredictionForm({
   awayTeam,
   initialWinnerTeamId,
   initialScorerPlayerIds,
+  allowDraw = false,
   coinBalance = 0,
   mostPickedPlayers = [],
 }: {
   readonly matchId: string;
   readonly homeTeam: PredictionFormTeam;
   readonly awayTeam: PredictionFormTeam;
+  /** A team id, DRAW_PICK for a saved draw prediction, or null when there's no prediction yet. */
   readonly initialWinnerTeamId: string | null;
   readonly initialScorerPlayerIds: string[];
+  /** League matches can end level, so offer a Draw pick between the two teams. */
+  readonly allowDraw?: boolean;
   readonly coinBalance?: number;
   readonly mostPickedPlayers?: MostPickedPlayer[];
 }) {
@@ -110,7 +115,7 @@ export function PredictionForm({
     setError(null);
 
     if (!winnerTeamId) {
-      setError("Please pick a winner.");
+      setError(allowDraw ? "Please pick a result." : "Please pick a winner.");
       return;
     }
 
@@ -185,12 +190,16 @@ export function PredictionForm({
       )}
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Winner</legend>
-        {[homeTeam, awayTeam].map((team) => (
+        <legend className="text-sm font-medium">{allowDraw ? "Result" : "Winner"}</legend>
+        {[
+          { id: homeTeam.id, label: homeTeam.name },
+          ...(allowDraw ? [{ id: DRAW_PICK, label: "Draw" }] : []),
+          { id: awayTeam.id, label: awayTeam.name },
+        ].map((option) => (
           <label
-            key={team.id}
+            key={option.id}
             className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
-              winnerTeamId === team.id
+              winnerTeamId === option.id
                 ? "border-accent bg-accent/10"
                 : "border-transparent bg-black/2 dark:bg-white/5"
             }`}
@@ -198,11 +207,11 @@ export function PredictionForm({
             <input
               type="radio"
               name="winnerTeamId"
-              value={team.id}
-              checked={winnerTeamId === team.id}
-              onChange={() => setWinnerTeamId(team.id)}
+              value={option.id}
+              checked={winnerTeamId === option.id}
+              onChange={() => setWinnerTeamId(option.id)}
             />
-            {team.name}
+            {option.label}
           </label>
         ))}
       </fieldset>

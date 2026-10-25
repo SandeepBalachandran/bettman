@@ -21,13 +21,13 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
-  title: "Bettman — World Cup Prediction League",
+  title: "Bettman",
   description:
-    "Predict winners & scorers, climb the leaderboard, and win bragging rights. Join our private World Cup prediction game! ⚽🏆",
+    "Predict results & scorers, climb the leaderboard, and win bragging rights. Join our private football prediction league! ⚽🏆",
   openGraph: {
-    title: "Bettman — World Cup Prediction League",
+    title: "Bettman",
     description:
-      "Predict winners & scorers, climb the leaderboard, and win bragging rights. Join our private World Cup prediction game! ⚽🏆",
+      "Predict results & scorers, climb the leaderboard, and win bragging rights. Join our private football prediction league! ⚽🏆",
     url: appUrl,
     siteName: "Bettman",
     type: "website",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "Bettman", statusBarStyle: "default" },
   twitter: {
     card: "summary_large_image",
-    title: "Bettman — World Cup Prediction League",
+    title: "Bettman",
     description:
       "Predict winners & scorers, climb the leaderboard, and win bragging rights. ⚽🏆",
   },

@@ -17,13 +17,13 @@ import {
 const FEATURES = [
   {
     icon: Target,
-    title: "Knockout Predictions",
-    description: "Call the winner of every Round of 16, quarter-final, semi-final and the Final.",
+    title: "Match Predictions",
+    description: "Call every result — home win, draw or away win — all season long.",
   },
   {
     icon: Goal,
     title: "Goal Scorer Picks",
-    description: "Name 3 goal scorers per match — +10 points for every hit, -5 for a miss.",
+    description: "Name 2–4 goal scorers per match — +10 points for every goal they score.",
   },
   {
     icon: Trophy,
@@ -32,8 +32,8 @@ const FEATURES = [
   },
   {
     icon: Lock,
-    title: "Auto-Lock at Kickoff",
-    description: "Predictions seal themselves the second the match starts — no late edits, no excuses.",
+    title: "Auto-Lock Before Kickoff",
+    description: "Predictions seal themselves 30 minutes before kickoff — no late edits, no excuses.",
   },
   {
     icon: Coins,
@@ -48,7 +48,7 @@ const FEATURES = [
   {
     icon: PartyPopper,
     title: "Champion Finale",
-    description: "A dedicated celebration crowns the tournament champion when the dust settles.",
+    description: "A dedicated celebration crowns the champion when the season's last match is done.",
   },
   {
     icon: Smartphone,
@@ -66,7 +66,7 @@ const STEPS = [
   {
     number: "2",
     title: "Predict before kickoff",
-    description: "Pick the winner and 3 goal scorers for every knockout match, before it locks.",
+    description: "Pick the result and your goal scorers for every match, before it locks.",
   },
   {
     number: "3",
@@ -121,7 +121,7 @@ export function Landing() {
               Win bragging rights.
             </h1>
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 sm:text-base">
-              Bettman is a private, invite-only World Cup knockout prediction game for you and your
+              Bettman is a private, invite-only football prediction game for you and your
               friends. Call every winner, name your goal scorers, and see who really knows football.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center md:justify-start">
@@ -226,7 +226,7 @@ export function Landing() {
           🏆 <span className="gradient-text">Bettman</span>
         </p>
         <p className="mt-1 text-xs text-gray-500">
-          A private World Cup prediction league. &copy; {new Date().getFullYear()}
+          A private football prediction league. &copy; {new Date().getFullYear()}
         </p>
       </footer>
     </main>

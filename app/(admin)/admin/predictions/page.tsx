@@ -5,35 +5,15 @@ import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import { RemindMissingButton } from "@/components/features/admin/RemindMissingButton";
 import { isMatchLocked } from "@/lib/match-lock";
-import type { Round } from "@prisma/client";
-
-const ROUND_ORDER: Round[] = ["FINAL", "THIRD_PLACE", "SEMI_FINALS", "QUARTER_FINALS", "ROUND_OF_16"];
-
-const ROUND_LABELS: Record<Round, string> = {
-  GROUP_STAGE: "Group Stage",
-  REGULAR_SEASON: "Regular Season",
-  ROUND_OF_16: "Round of 16",
-  QUARTER_FINALS: "Quarter Finals",
-  SEMI_FINALS: "Semi Finals",
-  THIRD_PLACE: "Third Place Play-off",
-  FINAL: "Final",
-};
-
-const ROUND_BADGE_STYLES: Record<Round, string> = {
-  GROUP_STAGE: "bg-primary/15 text-primary",
-  REGULAR_SEASON: "bg-primary/15 text-primary",
-  ROUND_OF_16: "bg-accent/15 text-accent",
-  QUARTER_FINALS: "bg-secondary/15 text-secondary",
-  SEMI_FINALS: "bg-highlight/20 text-highlight-foreground dark:text-highlight",
-  THIRD_PLACE: "bg-warning/15 text-warning",
-  FINAL: "bg-danger/15 text-danger",
-};
+import { activeMatchWhere } from "@/lib/competition";
+import { groupByMatch } from "@/lib/match-groups";
 
 export default async function AdminPredictionsPage() {
   await requireAdmin();
 
   const [matches, allUsers] = await Promise.all([
     prisma.match.findMany({
+      where: activeMatchWhere(),
       include: {
         homeTeam: true,
         awayTeam: true,
@@ -50,12 +30,7 @@ export default async function AdminPredictionsPage() {
     prisma.user.findMany({ select: { id: true, name: true } }),
   ]);
 
-  const matchesByRound = new Map<Round, typeof matches>();
-  for (const match of matches) {
-    const existing = matchesByRound.get(match.round) ?? [];
-    existing.push(match);
-    matchesByRound.set(match.round, existing);
-  }
+  const groups = groupByMatch(matches, (match) => match);
 
   return (
     <main className="mx-auto max-w-4xl space-y-6 sm:space-y-8 p-3 sm:p-4 md:p-6">
@@ -66,24 +41,17 @@ export default async function AdminPredictionsPage() {
         </p>
       </div>
 
-      {ROUND_ORDER.map((round) => {
-        const roundMatches = matchesByRound.get(round);
-        if (!roundMatches || roundMatches.length === 0) {
-          return null;
-        }
-
+      {groups.map((group) => {
         return (
-          <section key={round} className="space-y-3">
+          <section key={group.key} className="space-y-3">
             <h2 className="inline-block">
-              <span
-                className={`rounded-full px-3 py-1 text-sm font-bold ${ROUND_BADGE_STYLES[round]}`}
-              >
-                {ROUND_LABELS[round]}
+              <span className={`rounded-full px-3 py-1 text-sm font-bold ${group.badgeClass}`}>
+                {group.label}
               </span>
             </h2>
 
             <div className="space-y-3">
-              {roundMatches.map((match) => {
+              {group.items.map((match) => {
                 const predictedUserIds = new Set(match.predictions.map((p) => p.userId));
                 const missingUsers = allUsers.filter((u) => !predictedUserIds.has(u.id));
                 const locked = isMatchLocked(match);
@@ -129,7 +97,10 @@ export default async function AdminPredictionsPage() {
                             </div>
                             <span className="text-gray-500 hidden sm:inline">→</span>
                             <span className="line-clamp-1">
-                              Winner: <span className="font-medium text-accent">{prediction.winnerTeam.name}</span>
+                              Result:{" "}
+                              <span className="font-medium text-accent">
+                                {prediction.predictedDraw ? "Draw" : (prediction.winnerTeam?.name ?? "—")}
+                              </span>
                             </span>
                             <span className="w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-gray-200 dark:border-gray-700 pt-1 sm:pt-0 sm:pl-2 text-gray-500">
                               Scorers:

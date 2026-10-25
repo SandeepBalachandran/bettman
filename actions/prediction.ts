@@ -6,9 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { isMatchLocked } from "@/lib/match-lock";
 import { spendCoins, getUnlockCost } from "@/lib/coin-rewards";
+import { COMPETITIONS, DRAW_PICK, getActiveCompetition, type CompetitionCode } from "@/lib/competition";
 
 const predictionSchema = z.object({
   matchId: z.string().min(1),
+  /** A team id, or DRAW_PICK. */
   winnerTeamId: z.string().min(1),
   scorerPlayerIds: z
     .array(z.string().min(1))
@@ -31,7 +33,7 @@ export async function submitPrediction(input: PredictionInput) {
     where: { id: data.matchId },
   });
 
-  if (!match) {
+  if (!match || match.competition !== getActiveCompetition().code) {
     throw new Error("Match not found.");
   }
 
@@ -45,9 +47,14 @@ export async function submitPrediction(input: PredictionInput) {
     throw new Error("This match's teams haven't been determined yet.");
   }
 
-  if (data.winnerTeamId !== match.homeTeamId && data.winnerTeamId !== match.awayTeamId) {
+  const predictedDraw = data.winnerTeamId === DRAW_PICK;
+  if (predictedDraw && !COMPETITIONS[match.competition as CompetitionCode]?.allowsDraws) {
+    throw new Error("This match can't end in a draw — pick a winner.");
+  }
+  if (!predictedDraw && data.winnerTeamId !== match.homeTeamId && data.winnerTeamId !== match.awayTeamId) {
     throw new Error("Winner pick must be one of the two teams in this match.");
   }
+  const winnerTeamId = predictedDraw ? null : data.winnerTeamId;
 
   const validPlayers = await prisma.player.findMany({
     where: {
@@ -81,11 +88,12 @@ export async function submitPrediction(input: PredictionInput) {
   const prediction = await prisma.$transaction(async (tx) => {
     const upserted = await tx.prediction.upsert({
       where: { userId_matchId: { userId: user.id, matchId: data.matchId } },
-      update: { winnerTeamId: data.winnerTeamId },
+      update: { winnerTeamId, predictedDraw },
       create: {
         userId: user.id,
         matchId: data.matchId,
-        winnerTeamId: data.winnerTeamId,
+        winnerTeamId,
+        predictedDraw,
       },
     });
 

@@ -53,9 +53,12 @@ export function InstallButton({ className }: { readonly className?: string }) {
         className={className}
         onClick={() => (promptEvent ? promptInstall() : setShowIosHelp((v) => !v))}
         aria-expanded={platform === "ios" ? showIosHelp : undefined}
+        aria-label="Install app"
+        title="Install app"
       >
         <Download className="h-4 w-4 shrink-0" aria-hidden />
-        <span>Install app</span>
+        {/* Icon-only on phones, where the header has no room for the label. */}
+        <span className="hidden sm:inline">Install app</span>
       </button>
 
       {showIosHelp && (

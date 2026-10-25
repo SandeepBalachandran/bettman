@@ -7,6 +7,23 @@ import { requireAdmin } from "@/lib/authz";
 import { syncMatchesFromLiveApi, type SyncMatchesResult } from "@/lib/sync-matches";
 import { syncFinishedMatchResults, syncFinishedMatchResultsWithScorers } from "@/lib/sync-match-results";
 import { sendPushToAll } from "@/lib/push";
+import { COMPETITIONS, DRAW_PICK, getActiveCompetition, type CompetitionCode } from "@/lib/competition";
+import { importIslSchedule, syncIslResults } from "@/lib/sync-isl";
+import { finishedMatchPushBody, notifyFinishedMatches } from "@/lib/refresh-results";
+
+/** Toast-ready outcome of an admin sync, regardless of which provider ran. */
+export type AdminSyncMessages = { successes: string[]; errors: string[] };
+
+function revalidateResultPages(matchIds: string[]) {
+  revalidatePath("/fixtures");
+  revalidatePath("/admin/matches");
+  revalidatePath("/leaderboard");
+  revalidatePath("/admin");
+  revalidatePath("/money");
+  for (const matchId of matchIds) {
+    revalidatePath(`/match/${matchId}`);
+  }
+}
 
 const matchObjectSchema = z.object({
   round: z.enum(["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "FINAL"]),
@@ -78,6 +95,7 @@ export async function setMatchLocked(matchId: string, locked: boolean) {
 }
 
 const finishMatchSchema = z.object({
+  /** A team id, or DRAW_PICK for a drawn league match. */
   winnerTeamId: z.string().min(1),
   scorerPlayerIds: z.array(z.string().min(1)).default([]),
 });
@@ -97,9 +115,14 @@ export async function finishMatch(
     throw new Error("Match not found.");
   }
 
-  if (data.winnerTeamId !== match.homeTeamId && data.winnerTeamId !== match.awayTeamId) {
+  const isDraw = data.winnerTeamId === DRAW_PICK;
+  if (isDraw && !COMPETITIONS[match.competition as CompetitionCode]?.allowsDraws) {
+    throw new Error("This match can't end in a draw.");
+  }
+  if (!isDraw && data.winnerTeamId !== match.homeTeamId && data.winnerTeamId !== match.awayTeamId) {
     throw new Error("Winner must be one of the two teams in this match.");
   }
+  const winnerTeamId = isDraw ? null : data.winnerTeamId;
 
   if (data.scorerPlayerIds.length > 0) {
     const validPlayers = await prisma.player.findMany({
@@ -119,7 +142,8 @@ export async function finishMatch(
       where: { id: matchId },
       data: {
         status: "FINISHED",
-        winnerTeamId: data.winnerTeamId,
+        winnerTeamId,
+        isDraw,
         locked: true,
       },
     });
@@ -138,23 +162,43 @@ export async function finishMatch(
   revalidatePath("/leaderboard");
   revalidatePath("/admin");
 
-  const winnerName =
-    data.winnerTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name;
+  const outcome = isDraw
+    ? "it's a draw"
+    : `${winnerTeamId === match.homeTeamId ? match.homeTeam.name : match.awayTeam.name} won`;
   await sendPushToAll({
     title: "Match finished!",
-    body: `${match.homeTeam.name} vs ${match.awayTeam.name} — ${winnerName} won. Check your points and money.`,
+    body: `${match.homeTeam.name} vs ${match.awayTeam.name} — ${outcome}. Check your points and money.`,
     url: `/match/${matchId}`,
   }).catch((error) => console.error("Failed to send match-finished push:", error));
 }
 
-export async function syncMatchesFromLiveApiAction(
-  competitionCode = process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC"
-): Promise<SyncMatchesResult> {
+export async function syncMatchesFromLiveApiAction(): Promise<AdminSyncMessages> {
   await requireAdmin();
-  const result = await syncMatchesFromLiveApi(prisma, competitionCode);
+
+  if (getActiveCompetition().goalApi) {
+    const schedule = await importIslSchedule(prisma);
+    const results = await syncIslResults(prisma);
+    await notifyFinishedMatches(results.finished);
+    revalidateResultPages(results.finished.map((m) => m.matchId));
+    return {
+      successes: [
+        `Synced ${schedule.matches} ISL matches across ${schedule.teams} teams` +
+          (results.finished.length > 0 ? `, ${results.finished.length} new result(s).` : "."),
+      ],
+      errors: [],
+    };
+  }
+
+  const result: SyncMatchesResult = await syncMatchesFromLiveApi(
+    prisma,
+    process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC"
+  );
   revalidatePath("/fixtures");
   revalidatePath("/admin/matches");
-  return result;
+  return {
+    successes: [`Synced ${result.determinedCount} confirmed and ${result.placeholderCount} TBD match(es).`],
+    errors: [],
+  };
 }
 
 export async function syncMatchResultsAction(
@@ -183,8 +227,22 @@ export async function syncMatchResultsAction(
   return result;
 }
 
-export async function syncMatchResultsWithScorersAction() {
+export async function syncMatchResultsWithScorersAction(): Promise<AdminSyncMessages> {
   await requireAdmin();
+
+  if (getActiveCompetition().goalApi) {
+    const result = await syncIslResults(prisma);
+    await notifyFinishedMatches(result.finished);
+    revalidateResultPages(result.finished.map((m) => m.matchId));
+    return {
+      successes:
+        result.finished.length > 0
+          ? result.finished.map(finishedMatchPushBody)
+          : [`No new finished matches (${result.live} live right now).`],
+      errors: [],
+    };
+  }
+
   const result = await syncFinishedMatchResultsWithScorers(prisma);
 
   if (result.updated.length > 0) {
@@ -208,7 +266,23 @@ export async function syncMatchResultsWithScorersAction() {
     }
   }
 
-  return result;
+  const messages: AdminSyncMessages = { successes: [], errors: [] };
+  if (result.updated.length === 0) {
+    messages.successes.push("No new finished matches to sync.");
+  }
+  for (const match of result.updated) {
+    const scorers = match.scorerNames.length > 0 ? ` — scorers: ${match.scorerNames.join(", ")}` : "";
+    messages.successes.push(`${match.homeTeamName} vs ${match.awayTeamName}: ${match.winnerName} won${scorers}`);
+    if (match.unmatchedScorerNames.length > 0) {
+      messages.errors.push(
+        `Couldn't match scorer(s) for ${match.homeTeamName} vs ${match.awayTeamName}: ${match.unmatchedScorerNames.join(", ")} — add manually.`
+      );
+    }
+  }
+  if (result.teamLookupFailed.length > 0) {
+    messages.errors.push(`Couldn't resolve team(s) on api-football: ${result.teamLookupFailed.join(", ")}`);
+  }
+  return messages;
 }
 
 export async function calculateLeaderboard() {

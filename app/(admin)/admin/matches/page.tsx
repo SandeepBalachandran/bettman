@@ -3,11 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { AdminMatchRow } from "@/components/features/admin/AdminMatchRow";
 import { SyncMatchesButton } from "@/components/features/admin/SyncMatchesButton";
 import { SyncMatchResultsButton } from "@/components/features/admin/SyncMatchResultsButton";
+import { activeMatchWhere, getActiveCompetition } from "@/lib/competition";
 
 export default async function AdminMatchesPage() {
   await requireAdmin();
+  const competition = getActiveCompetition();
 
   const matches = await prisma.match.findMany({
+    where: activeMatchWhere(),
     include: {
       homeTeam: { include: { players: true } },
       awayTeam: { include: { players: true } },
@@ -22,7 +25,7 @@ export default async function AdminMatchesPage() {
           <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Manage Matches</h1>
           <p className="text-xs text-gray-500">
             Active competition:{" "}
-            <code>{process.env.FOOTBALL_DATA_COMPETITION_CODE ?? "WC"}</code>
+            <code>{competition.name}</code> (<code>ACTIVE_COMPETITION</code>)
           </p>
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
@@ -33,17 +36,17 @@ export default async function AdminMatchesPage() {
 
       {matches.length === 0 ? (
         <p className="text-sm text-gray-500">
-          No matches yet. Click &quot;Sync from live API&quot; above, or run{" "}
-          <code>npx tsx scripts/sync-matches.ts WC</code>.
+          No matches yet. Click &quot;Sync from live API&quot; above.
         </p>
       ) : (
         <div className="space-y-3">
           {matches.map((match) => (
             <AdminMatchRow
               key={match.id}
+              allowDraw={competition.allowsDraws}
               match={{
                 id: match.id,
-                round: match.round,
+                round: match.matchweek ? `Matchweek ${match.matchweek}` : match.round,
                 homeTeam: {
                   id: match.homeTeam.id,
                   name: match.homeTeam.name,

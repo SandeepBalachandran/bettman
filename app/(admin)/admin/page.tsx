@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getLeaderboard } from "@/lib/leaderboard";
 import { getAllUsersMoney } from "@/lib/leaderboard-money";
 import { formatMoney } from "@/lib/format-money";
+import { activeMatchWhere } from "@/lib/competition";
 import { SendNotificationForm } from "@/components/features/admin/SendNotificationForm";
 import { RecentQuizAttemptsTable } from "@/components/features/admin/RecentQuizAttemptsTable";
 
@@ -13,9 +14,9 @@ export default async function AdminDashboardPage() {
   const [userCount, matchCount, finishedCount, predictionCount, leaderboard, playersMoney, players, usersWithCoins, dailyRewardStats] =
     await Promise.all([
       prisma.user.count(),
-      prisma.match.count(),
-      prisma.match.count({ where: { status: "FINISHED" } }),
-      prisma.prediction.count(),
+      prisma.match.count({ where: activeMatchWhere() }),
+      prisma.match.count({ where: { status: "FINISHED", ...activeMatchWhere() } }),
+      prisma.prediction.count({ where: { match: activeMatchWhere() } }),
       getLeaderboard(),
       getAllUsersMoney(),
       prisma.user.findMany({

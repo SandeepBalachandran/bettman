@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { syncLiveMatchResults } from "@/lib/sync-matches";
 import { syncFinishedMatchResultsWithScorers } from "@/lib/sync-match-results";
+import { activeMatchWhere, getActiveCompetition } from "@/lib/competition";
+import { syncIslResults } from "@/lib/sync-isl";
+import { notifyFinishedMatches } from "@/lib/refresh-results";
 
 export async function POST(request: Request) {
   try {
@@ -29,8 +32,22 @@ export async function POST(request: Request) {
       synced: [],
     };
 
+    if (getActiveCompetition().goalApi) {
+      // goal-api gives live status, results and scorers in one pass.
+      const islResult = await syncIslResults(prisma);
+      await notifyFinishedMatches(islResult.finished);
+      results.synced.push("isl-results");
+      results.detailedResults = {
+        checkedMatches: islResult.checked,
+        updated: islResult.finished.length,
+        skipped: 0,
+        notYetPlayed: islResult.checked - islResult.finished.length,
+        failedTeamLookups: [],
+      };
+    }
+
     // Sync live match results (status updates)
-    if (type === "all" || type === "live") {
+    if (!getActiveCompetition().goalApi && (type === "all" || type === "live")) {
       console.log("🔄 Syncing live match results...");
       await syncLiveMatchResults(
         prisma,
@@ -40,7 +57,7 @@ export async function POST(request: Request) {
     }
 
     // Sync finished match results with scorers
-    if (type === "all" || type === "detailed") {
+    if (!getActiveCompetition().goalApi && (type === "all" || type === "detailed")) {
       console.log("🔄 Syncing detailed match results (winners + scorers)...");
       const syncWithScorersResult = await syncFinishedMatchResultsWithScorers(prisma);
       results.synced.push("detailed-results");
@@ -56,11 +73,12 @@ export async function POST(request: Request) {
     // Get summary stats
     const matchStats = await prisma.match.groupBy({
       by: ["status"],
+      where: activeMatchWhere(),
       _count: true,
     });
 
     results.summary = {
-      totalMatches: await prisma.match.count(),
+      totalMatches: await prisma.match.count({ where: activeMatchWhere() }),
       matchesByStatus: Object.fromEntries(
         matchStats.map((stat) => [stat.status, stat._count])
       ),

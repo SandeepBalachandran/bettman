@@ -8,6 +8,8 @@ export interface MoneyConfig {
   maxLossPerMatch: number;
 }
 
+export const MAX_SCORER_PICKS = 4;
+
 function loadMoneyConfig(): MoneyConfig {
   const currencySymbol = process.env.CURRENCY_SYMBOL || "₹";
   const moneyPerCorrectWinner = parseInt(
@@ -45,9 +47,11 @@ function loadMoneyConfig(): MoneyConfig {
     );
   }
 
+  // Best/worst case assume every scorer slot is used (2 free + 2 coin unlocks)
+  // and each correct pick scores once.
   const maxMoneyPerMatch =
-    moneyPerCorrectWinner + 3 * moneyPerCorrectScorer;
-  const maxLossPerMatch = moneyPerIncorrectWinner + 3 * moneyPerIncorrectScorer;
+    moneyPerCorrectWinner + MAX_SCORER_PICKS * moneyPerCorrectScorer;
+  const maxLossPerMatch = moneyPerIncorrectWinner + MAX_SCORER_PICKS * moneyPerIncorrectScorer;
 
   return {
     currencySymbol,

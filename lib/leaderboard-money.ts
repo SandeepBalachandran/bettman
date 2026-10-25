@@ -1,6 +1,7 @@
 import { prisma } from "./prisma";
 import { calculateMatchMoney } from "./money";
 import { moneyConfig } from "./money-config";
+import { activeMatchWhere } from "./competition";
 
 export interface UserMoney {
   currentBalance: number;
@@ -19,12 +20,13 @@ export async function getUserMoney(userId: string): Promise<UserMoney> {
   // Get all matches grouped by status
   const [allMatches, predictions] = await Promise.all([
     prisma.match.findMany({
+      where: activeMatchWhere(),
       include: {
         scorers: true,
       },
     }),
     prisma.prediction.findMany({
-      where: { userId },
+      where: { userId, match: activeMatchWhere() },
       include: { scorers: true },
     }),
   ]);
@@ -45,10 +47,12 @@ export async function getUserMoney(userId: string): Promise<UserMoney> {
       const money = calculateMatchMoney(
         {
           winnerTeamId: prediction.winnerTeamId,
+          predictedDraw: prediction.predictedDraw,
           scorerPlayerIds: prediction.scorers.map((ps) => ps.playerId),
         },
         {
           winnerTeamId: match.winnerTeamId,
+          isDraw: match.isDraw,
           wonOnPenalties: match.wonOnPenalties,
         },
         actualScorerIds,

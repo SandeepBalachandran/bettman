@@ -4,36 +4,27 @@ import { requireAuth } from "@/lib/authz";
 import { requireFeaturePage } from "@/lib/feature-flags";
 import { getLeaderboard, getPreviousLeaderboard } from "@/lib/leaderboard";
 import { getUserMoney } from "@/lib/leaderboard-money";
-import { getRoundMvps, getUserWinnerStreak } from "@/lib/round-mvp";
+import { getUserWinnerStreak } from "@/lib/round-mvp";
+import { activeMatchWhere, getActiveCompetition } from "@/lib/competition";
+import { refreshActiveCompetitionResults } from "@/lib/refresh-results";
 import { LeaderboardList } from "@/components/features/leaderboard/LeaderboardList";
 import { ShareToWhatsApp } from "@/components/ShareToWhatsApp";
 import { formatMoney } from "@/lib/format-money";
-import type { Round } from "@prisma/client";
-
-const ROUND_LABELS: Record<Round, string> = {
-  GROUP_STAGE: "Group Stage",
-  REGULAR_SEASON: "Regular Season",
-  ROUND_OF_16: "Round of 16",
-  QUARTER_FINALS: "Quarter Finals",
-  SEMI_FINALS: "Semi Finals",
-  THIRD_PLACE: "Third Place Play-off",
-  FINAL: "Final",
-};
-
-const ROUND_ORDER: Round[] = ["ROUND_OF_16", "QUARTER_FINALS", "SEMI_FINALS", "THIRD_PLACE", "FINAL"];
 
 export default async function LeaderboardPage() {
   const user = await requireAuth();
   await requireFeaturePage("navLeaderboard", user.role);
+  refreshActiveCompetitionResults();
 
-  const [leaderboard, previousLeaderboard, roundMvps, finalMatch] = await Promise.all([
+  const [leaderboard, previousLeaderboard, matchCount, unfinishedCount] = await Promise.all([
     getLeaderboard(),
     getPreviousLeaderboard(),
-    getRoundMvps(),
-    prisma.match.findFirst({ where: { round: "FINAL" }, select: { status: true } }),
+    prisma.match.count({ where: activeMatchWhere() }),
+    prisma.match.count({ where: { ...activeMatchWhere(), status: { not: "FINISHED" } } }),
   ]);
 
-  const tournamentComplete = finalMatch?.status === "FINISHED";
+  // Champions are crowned once every match of the competition has been played.
+  const tournamentComplete = matchCount > 0 && unfinishedCount === 0;
 
   const previousRankByUserId = new Map(
     previousLeaderboard.map((entry, index) => [entry.userId, index + 1])
@@ -50,13 +41,6 @@ export default async function LeaderboardPage() {
 
   const moneyByUserId = new Map(perUserData.map((d) => [d.userId, d.balance]));
   const streakByUserId = new Map(perUserData.map((d) => [d.userId, d.streak]));
-
-  const mvpsByRound = new Map<Round, typeof roundMvps>();
-  for (const mvp of roundMvps) {
-    const existing = mvpsByRound.get(mvp.round) ?? [];
-    existing.push(mvp);
-    mvpsByRound.set(mvp.round, existing);
-  }
 
   const myIndex = leaderboard.findIndex((entry) => entry.userId === user.id);
   const myEntry = myIndex >= 0 ? leaderboard[myIndex] : null;
@@ -78,7 +62,7 @@ export default async function LeaderboardPage() {
             <span className="font-bold">{myEntry.total} pts</span> ({formatMoney(myBalance)})
           </p>
           <ShareToWhatsApp
-            text={`⚽ World Cup Predictions update!\nI'm #${myRank} on the leaderboard with ${myEntry.total} pts (${formatMoney(
+            text={`⚽ ${getActiveCompetition().shortName} Predictions update!\nI'm #${myRank} on the leaderboard with ${myEntry.total} pts (${formatMoney(
               myBalance
             )}). Think you can beat me?${appUrl ? ` Check it out: ${appUrl}` : ""}`}
           />
@@ -142,7 +126,7 @@ export default async function LeaderboardPage() {
                 ⭐ <span className="text-accent">Points</span>
               </p>
               <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
-                <li>✅ Correct winner: +30 pts</li>
+                <li>✅ Correct result (winner or draw): +30 pts</li>
                 <li>✅ Correct scorer: +10 pts per goal</li>
                 <li>❌ Wrong scorer: 0</li>
               </ul>
@@ -152,8 +136,8 @@ export default async function LeaderboardPage() {
                 💰 <span className="text-success">Money</span>
               </p>
               <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
-                <li>✅ Correct winner: +₹30</li>
-                <li>❌ Wrong winner: -₹30</li>
+                <li>✅ Correct result (winner or draw): +₹30</li>
+                <li>❌ Wrong result: -₹30</li>
                 <li>✅ Correct scorer: +₹5 per goal</li>
                 <li>❌ Wrong scorer: -₹5</li>
               </ul>

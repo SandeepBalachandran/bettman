@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { RewardSuccessModal } from "./RewardSuccessModal";
 
@@ -15,6 +16,7 @@ export function ClaimRewardButton({
   todaysReward,
   onClaimed,
 }: ClaimRewardButtonProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -43,6 +45,8 @@ export function ClaimRewardButton({
       } else {
         setShowSuccess(true);
         onClaimed?.();
+        // Server-rendered balance, history and claim state need re-fetching.
+        router.refresh();
       }
     } catch (error) {
       toast.error(

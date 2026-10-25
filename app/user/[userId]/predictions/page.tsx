@@ -7,30 +7,9 @@ import { calculateMatchMoney } from "@/lib/money";
 import { moneyConfig } from "@/lib/money-config";
 import { formatMoney } from "@/lib/format-money";
 import { PenaltyBadge } from "@/components/PenaltyBadge";
-import type { Round } from "@prisma/client";
+import { activeMatchWhere } from "@/lib/competition";
+import { groupByMatch } from "@/lib/match-groups";
 import Link from "next/link";
-
-const ROUND_ORDER: Round[] = ["FINAL", "THIRD_PLACE", "SEMI_FINALS", "QUARTER_FINALS", "ROUND_OF_16"];
-
-const ROUND_LABELS: Record<Round, string> = {
-  GROUP_STAGE: "Group Stage",
-  REGULAR_SEASON: "Regular Season",
-  ROUND_OF_16: "Round of 16",
-  QUARTER_FINALS: "Quarter Finals",
-  SEMI_FINALS: "Semi Finals",
-  THIRD_PLACE: "Third Place Play-off",
-  FINAL: "Final",
-};
-
-const ROUND_BADGE_STYLES: Record<Round, string> = {
-  GROUP_STAGE: "bg-primary/15 text-primary",
-  REGULAR_SEASON: "bg-primary/15 text-primary",
-  ROUND_OF_16: "bg-accent/15 text-accent",
-  QUARTER_FINALS: "bg-secondary/15 text-secondary",
-  SEMI_FINALS: "bg-highlight/20 text-highlight-foreground dark:text-highlight",
-  THIRD_PLACE: "bg-warning/15 text-warning",
-  FINAL: "bg-danger/15 text-danger",
-};
 
 export default async function UserPredictionsPage({
   params,
@@ -76,7 +55,7 @@ export default async function UserPredictionsPage({
   const predictions = await prisma.prediction.findMany({
     where: {
       userId,
-      match: { status: "FINISHED" },
+      match: { status: "FINISHED", ...activeMatchWhere() },
     },
     include: {
       match: {
@@ -84,8 +63,12 @@ export default async function UserPredictionsPage({
           id: true,
           status: true,
           round: true,
+          matchweek: true,
           kickoffTime: true,
           winnerTeamId: true,
+          isDraw: true,
+          homeScore: true,
+          awayScore: true,
           wonOnPenalties: true,
           homeTeam: true,
           awayTeam: true,
@@ -99,13 +82,8 @@ export default async function UserPredictionsPage({
     orderBy: { match: { kickoffTime: "desc" } },
   });
 
-  // Group by round
-  const byRound = new Map<Round, typeof predictions>();
-  for (const prediction of predictions) {
-    const existing = byRound.get(prediction.match.round) ?? [];
-    existing.push(prediction);
-    byRound.set(prediction.match.round, existing);
-  }
+  // Group by round / matchweek
+  const groups = groupByMatch(predictions, (prediction) => prediction.match);
 
   // Calculate totals
   let totalPoints = 0;
@@ -116,18 +94,20 @@ export default async function UserPredictionsPage({
     const pointsData = calculateMatchPoints(
       {
         winnerTeamId: prediction.winnerTeamId,
+        predictedDraw: prediction.predictedDraw,
         scorerPlayerIds: prediction.scorers.map(s => s.playerId),
       },
-      { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
+      { winnerTeamId: prediction.match.winnerTeamId, isDraw: prediction.match.isDraw, wonOnPenalties: prediction.match.wonOnPenalties },
       actualScorerPlayerIds,
       prediction.usedPointsBooster
     );
     const moneyData = calculateMatchMoney(
       {
         winnerTeamId: prediction.winnerTeamId,
+        predictedDraw: prediction.predictedDraw,
         scorerPlayerIds: prediction.scorers.map(s => s.playerId),
       },
-      { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
+      { winnerTeamId: prediction.match.winnerTeamId, isDraw: prediction.match.isDraw, wonOnPenalties: prediction.match.wonOnPenalties },
       actualScorerPlayerIds,
       moneyConfig,
       prediction.usedPointsBooster
@@ -206,39 +186,34 @@ export default async function UserPredictionsPage({
         </p>
       )}
 
-      {ROUND_ORDER.map((round) => {
-        const roundPredictions = byRound.get(round);
-        if (!roundPredictions || roundPredictions.length === 0) {
-          return null;
-        }
-
+      {groups.map((group) => {
         return (
-          <section key={round} className="space-y-4 pt-2">
+          <section key={group.key} className="space-y-4 pt-2">
             <h2 className="inline-block">
-              <span
-                className={`rounded-full px-4 py-1.5 text-sm font-bold ${ROUND_BADGE_STYLES[round]}`}
-              >
-                {ROUND_LABELS[round]}
+              <span className={`rounded-full px-4 py-1.5 text-sm font-bold ${group.badgeClass}`}>
+                {group.label}
               </span>
             </h2>
             <div className="w-full space-y-3">
-              {roundPredictions.map((prediction) => {
+              {group.items.map((prediction) => {
                 const actualScorerPlayerIds = prediction.match.scorers.map(s => s.playerId);
                 const pointsData = calculateMatchPoints(
                   {
                     winnerTeamId: prediction.winnerTeamId,
+                    predictedDraw: prediction.predictedDraw,
                     scorerPlayerIds: prediction.scorers.map(s => s.playerId),
                   },
-                  { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
+                  { winnerTeamId: prediction.match.winnerTeamId, isDraw: prediction.match.isDraw, wonOnPenalties: prediction.match.wonOnPenalties },
                   actualScorerPlayerIds,
                   prediction.usedPointsBooster
                 );
                 const moneyData = calculateMatchMoney(
                   {
                     winnerTeamId: prediction.winnerTeamId,
+                    predictedDraw: prediction.predictedDraw,
                     scorerPlayerIds: prediction.scorers.map(s => s.playerId),
                   },
-                  { winnerTeamId: prediction.match.winnerTeamId, wonOnPenalties: prediction.match.wonOnPenalties },
+                  { winnerTeamId: prediction.match.winnerTeamId, isDraw: prediction.match.isDraw, wonOnPenalties: prediction.match.wonOnPenalties },
                   actualScorerPlayerIds,
                   moneyConfig,
                   prediction.usedPointsBooster
@@ -313,15 +288,21 @@ export default async function UserPredictionsPage({
                         </p>
 
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                          <span className="text-xs font-semibold text-gray-500">Winner</span>
-                          <TeamFlag
-                            flag={prediction.winnerTeam.flag}
-                            name={prediction.winnerTeam.name}
-                            size={16}
-                          />
-                          <span className="text-sm font-medium">
-                            {prediction.winnerTeam.name}
-                          </span>
+                          <span className="text-xs font-semibold text-gray-500">Result</span>
+                          {prediction.winnerTeam ? (
+                            <>
+                              <TeamFlag
+                                flag={prediction.winnerTeam.flag}
+                                name={prediction.winnerTeam.name}
+                                size={16}
+                              />
+                              <span className="text-sm font-medium">
+                                {prediction.winnerTeam.name}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-sm font-medium">Draw</span>
+                          )}
                         </div>
 
                         <div className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
@@ -354,7 +335,7 @@ export default async function UserPredictionsPage({
                         </p>
 
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                          <span className="text-xs font-semibold text-gray-500">Winner</span>
+                          <span className="text-xs font-semibold text-gray-500">Result</span>
                           {prediction.match.winnerTeam ? (
                             <>
                               <TeamFlag

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { calculateMatchPoints } from "@/lib/scoring";
+import { activeMatchWhere } from "@/lib/competition";
 
 export type LeaderboardEntry = {
   userId: string;
@@ -12,11 +13,13 @@ export type LeaderboardEntry = {
 
 type FinishedMatchWithPredictions = {
   winnerTeamId: string | null;
+  isDraw: boolean;
   wonOnPenalties: boolean;
   scorers: { playerId: string }[];
   predictions: {
     userId: string;
-    winnerTeamId: string;
+    winnerTeamId: string | null;
+    predictedDraw: boolean;
     scorers: { playerId: string }[];
     usedPointsBooster: boolean;
   }[];
@@ -52,9 +55,10 @@ function computeLeaderboardEntries(
       const points = calculateMatchPoints(
         {
           winnerTeamId: prediction.winnerTeamId,
+          predictedDraw: prediction.predictedDraw,
           scorerPlayerIds: prediction.scorers.map((s) => s.playerId),
         },
-        { winnerTeamId: match.winnerTeamId, wonOnPenalties: match.wonOnPenalties },
+        { winnerTeamId: match.winnerTeamId, isDraw: match.isDraw, wonOnPenalties: match.wonOnPenalties },
         actualScorerPlayerIds,
         prediction.usedPointsBooster
       );
@@ -75,13 +79,14 @@ async function getUsersAndFinishedMatches() {
       select: { id: true, name: true, avatarUrl: true },
     }),
     prisma.match.findMany({
-      where: { status: "FINISHED" },
+      where: { status: "FINISHED", ...activeMatchWhere() },
       select: {
         winnerTeamId: true,
+        isDraw: true,
         wonOnPenalties: true,
         scorers: true,
         predictions: {
-          select: { userId: true, winnerTeamId: true, scorers: true, usedPointsBooster: true }
+          select: { userId: true, winnerTeamId: true, predictedDraw: true, scorers: true, usedPointsBooster: true }
         },
       },
       orderBy: { kickoffTime: "asc" },

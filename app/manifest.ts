@@ -3,9 +3,9 @@ import type { MetadataRoute } from "next";
 // Makes the site installable ("Add to Home screen") as a standalone app.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Bettman — World Cup Prediction League",
+    name: "Bettman",
     short_name: "Bettman",
-    description: "Private knockout-stage prediction game",
+    description: "Private football prediction game",
     id: "/",
     start_url: "/",
     scope: "/",

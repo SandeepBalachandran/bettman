@@ -82,6 +82,9 @@ model Team {
   shortName  String
   fifaCode   String
   flag       String?
+  // goal-api.com team id (ISL). externalId stays football-data.org's id for
+  // World Cup teams; ISL teams use goalApiExternalId() so it can't collide.
+  goalApiId  String?
   createdAt  DateTime @default(now())
 
   players           Player[]
@@ -98,6 +101,8 @@ model Player {
   position String?
   photoUrl String?
   jerseyNumber Int?
+  // goal-api.com player key (ISL) — the id goal events and lineups refer to.
+  externalKey  String?
 
   team              Team               @relation(fields: [teamId], references: [id])
   matchScorers      MatchScorer[]
@@ -115,6 +120,14 @@ model Match {
   winnerTeamId String?     @db.ObjectId
   wonOnPenalties Boolean   @default(false)
   locked       Boolean     @default(false)
+  // Which competition this match belongs to ("WC", "ISL-2026"); only the
+  // active competition (lib/competition.ts) is shown anywhere in the app.
+  competition  String      @default("WC")
+  matchweek    Int?
+  isDraw       Boolean     @default(false)
+  homeScore    Int?
+  awayScore    Int?
+  goalApiId    String?
   createdAt    DateTime    @default(now())
 
   homeTeam    Team          @relation("HomeTeam", fields: [homeTeamId], references: [id])
@@ -137,14 +150,16 @@ model Prediction {
   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   userId              String   @db.ObjectId
   matchId             String   @db.ObjectId
-  winnerTeamId        String   @db.ObjectId
+  // Null when the user predicted a draw (predictedDraw = true).
+  winnerTeamId        String?  @db.ObjectId
+  predictedDraw       Boolean  @default(false)
   usedPointsBooster   Boolean  @default(false)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
   user       User               @relation(fields: [userId], references: [id])
   match      Match              @relation(fields: [matchId], references: [id])
-  winnerTeam Team               @relation("PredictionWinnerTeam", fields: [winnerTeamId], references: [id])
+  winnerTeam Team?              @relation("PredictionWinnerTeam", fields: [winnerTeamId], references: [id])
   scorers    PredictionScorer[]
 
   @@unique([userId, matchId])
@@ -257,6 +272,9 @@ model FeatureFlags {
   navMyPredictions Boolean  @default(true)
   navLeaderboard   Boolean  @default(true)
   navMoney         Boolean  @default(true)
+  // Fixtures in date order (past matches on top, auto-scrolled to the live or
+  // latest finished match) instead of upcoming matchweeks first.
+  fixturesChronological Boolean @default(true)
   updatedAt        DateTime @updatedAt
 }
 

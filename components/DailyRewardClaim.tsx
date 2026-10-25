@@ -82,7 +82,7 @@ export function DailyRewardClaim() {
 
   if (!progress.campaignActive) {
     return (
-      <div className="text-xs text-gray-500 dark:text-gray-400">
+      <div className="whitespace-nowrap text-xs font-semibold text-white/90">
         💰 {progress.coinBalance} coins
       </div>
     );

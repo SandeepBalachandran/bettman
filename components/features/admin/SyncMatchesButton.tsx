@@ -13,9 +13,8 @@ export function SyncMatchesButton() {
     startTransition(async () => {
       try {
         const result = await syncMatchesFromLiveApiAction();
-        toast.success(
-          `Synced ${result.determinedCount} confirmed and ${result.placeholderCount} TBD match(es).`
-        );
+        result.successes.forEach((message) => toast.success(message));
+        result.errors.forEach((message) => toast.error(message));
         router.refresh();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Sync failed.");

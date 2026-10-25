@@ -9,6 +9,8 @@ import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import { PenaltyBadge } from "@/components/PenaltyBadge";
+import { getActiveCompetition } from "@/lib/competition";
+import { refreshActiveCompetitionResults } from "@/lib/refresh-results";
 
 const AVATAR_COLORS = ["bg-accent", "bg-secondary", "bg-highlight", "bg-success", "bg-danger"];
 
@@ -24,6 +26,7 @@ export default async function MatchDetailsPage({
 }) {
   const { matchId } = await params;
   const user = await requireAuth();
+  refreshActiveCompetitionResults();
 
   const match = await prisma.match.findUnique({
     where: { id: matchId },
@@ -38,9 +41,12 @@ export default async function MatchDetailsPage({
     },
   });
 
-  if (!match) {
+  if (!match || match.competition !== getActiveCompetition().code) {
     notFound();
   }
+  const pickLabel = (p: { predictedDraw: boolean; winnerTeam: { name: string } | null }) =>
+    p.predictedDraw ? "Draw" : (p.winnerTeam?.name ?? "—");
+  const hasScore = match.homeScore !== null && match.awayScore !== null;
 
   const myPrediction = match.predictions.find((p) => p.userId === user.id) ?? null;
   const isFinished = match.status === "FINISHED";
@@ -52,9 +58,10 @@ export default async function MatchDetailsPage({
       ? calculateMatchPoints(
           {
             winnerTeamId: myPrediction.winnerTeamId,
+            predictedDraw: myPrediction.predictedDraw,
             scorerPlayerIds: myPrediction.scorers.map((s) => s.playerId),
           },
-          { winnerTeamId: match.winnerTeamId, wonOnPenalties: match.wonOnPenalties },
+          { winnerTeamId: match.winnerTeamId, isDraw: match.isDraw, wonOnPenalties: match.wonOnPenalties },
           match.scorers.map((s) => s.playerId)
         )
       : null;
@@ -67,7 +74,9 @@ export default async function MatchDetailsPage({
         <div className="flex items-center justify-center gap-3 text-lg font-bold">
           <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={28} />
           <span>{match.homeTeam.name}</span>
-          <span className="text-white/70">vs</span>
+          <span className="text-white/70">
+            {hasScore ? `${match.homeScore} – ${match.awayScore}` : "vs"}
+          </span>
           <span>{match.awayTeam.name}</span>
           <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={28} />
         </div>
@@ -86,9 +95,16 @@ export default async function MatchDetailsPage({
 
           <div className="rounded-lg bg-white dark:bg-white/5 p-4 space-y-3">
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Winner</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                {match.isDraw ? "Result" : "Winner"}
+              </p>
               <p className="text-base font-bold text-success mt-1">
-                {match.winnerTeam?.name ?? "—"}
+                {match.isDraw ? "Draw" : (match.winnerTeam?.name ?? "—")}
+                {hasScore && (
+                  <span className="ml-2 text-sm font-medium text-gray-500">
+                    ({match.homeScore}–{match.awayScore})
+                  </span>
+                )}
               </p>
             </div>
 
@@ -125,12 +141,8 @@ export default async function MatchDetailsPage({
           </div>
           <div className="space-y-3">
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Your Winner Pick</p>
-              <p className="text-sm font-medium mt-1">
-                {myPrediction.winnerTeamId === match.homeTeamId
-                  ? match.homeTeam.name
-                  : match.awayTeam.name}
-              </p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Your Result Pick</p>
+              <p className="text-sm font-medium mt-1">{pickLabel(myPrediction)}</p>
             </div>
             {myPrediction.scorers.length > 0 && (
               <div>
@@ -179,8 +191,8 @@ export default async function MatchDetailsPage({
               </div>
               <div className="space-y-2 text-sm">
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Winner Pick</p>
-                  <p className="font-medium text-accent mt-0.5">{prediction.winnerTeam.name}</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Result Pick</p>
+                  <p className="font-medium text-accent mt-0.5">{pickLabel(prediction)}</p>
                 </div>
                 {prediction.scorers.length > 0 && (
                   <div>

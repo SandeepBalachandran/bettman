@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Bettman — Private World Cup Prediction League";
+export const alt = "Bettman - Private Football Prediction League";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -55,7 +55,7 @@ export default function OpengraphImage() {
             marginTop: 18,
           }}
         >
-          World Cup Prediction League ⚽
+          Football Prediction League ⚽
         </div>
         <div
           style={{
