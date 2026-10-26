@@ -1,9 +1,9 @@
 import { requireAdmin } from "@/lib/authz";
 import { getSettlementLog } from "@/lib/money";
-import { formatMoney } from "@/lib/format-money";
+import { formatPointsDelta } from "@/lib/format-points";
 
 export const metadata = {
-  title: "Settlement Audit - Bettman",
+  title: "Points Log - Bettman",
 };
 
 export default async function AdminSettlementPage() {
@@ -13,11 +13,11 @@ export default async function AdminSettlementPage() {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <h1 className="gradient-text">Settlement Audit</h1>
+      <h1 className="gradient-text">Points Log</h1>
 
       {settlementLog.length === 0 ? (
         <p className="text-sm text-gray-500">
-          No finished matches yet. Settlement rows appear once matches are finished.
+          No finished matches yet. Rows appear once matches are finished.
         </p>
       ) : (
         <div className="table-card overflow-x-auto">
@@ -26,7 +26,7 @@ export default async function AdminSettlementPage() {
               <tr className="text-left">
                 <th className="py-2.5 pr-2 pl-3">Player</th>
                 <th className="py-2.5 pr-2">Match</th>
-                <th className="py-2.5 pr-3">Money Earned/Lost</th>
+                <th className="py-2.5 pr-3">Points</th>
               </tr>
             </thead>
             <tbody>
@@ -42,10 +42,9 @@ export default async function AdminSettlementPage() {
                     className={`py-2 pr-3 font-bold ${
                       entry.amount >= 0 ? "text-success" : "text-danger"
                     }`}
-                    data-label="Money Earned/Lost"
+                    data-label="Points"
                   >
-                    {entry.amount > 0 ? "+" : ""}
-                    {formatMoney(entry.amount)}
+                    {formatPointsDelta(entry.amount)}
                   </td>
                 </tr>
               ))}

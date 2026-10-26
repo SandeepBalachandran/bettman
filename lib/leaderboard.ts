@@ -88,9 +88,14 @@ function computeLeaderboardEntries(
   return Array.from(entries.values()).sort((a, b) => b.total - a.total);
 }
 
-/** Order a leaderboard by the score the app is showing: points, or money when points are hidden. */
-export function rankEntries(entries: LeaderboardEntry[], by: "points" | "money"): LeaderboardEntry[] {
-  return [...entries].sort((a, b) => (by === "points" ? b.total - a.total : b.money - a.money));
+/**
+ * Order a leaderboard by the season score (`money` — shown to players as points),
+ * then most correct results, then most goals from scorer picks.
+ */
+export function rankEntries(entries: LeaderboardEntry[]): LeaderboardEntry[] {
+  return [...entries].sort(
+    (a, b) => b.money - a.money || b.correctResults - a.correctResults || b.correctScorerGoals - a.correctScorerGoals
+  );
 }
 
 async function getUsersAndFinishedMatches() {

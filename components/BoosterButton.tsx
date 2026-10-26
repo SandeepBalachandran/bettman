@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { formatMoney } from "@/lib/format-money";
 import { BoosterActivatedModal } from "@/components/BoosterActivatedModal";
 
 interface BoosterButtonProps {

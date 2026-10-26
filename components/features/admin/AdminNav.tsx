@@ -9,7 +9,7 @@ const LINKS = [
   { href: "/admin/matches", label: "Matches" },
   { href: "/admin/predictions", label: "Predictions" },
   { href: "/admin/users", label: "Players" },
-  { href: "/admin/money", label: "Finance" },
+  { href: "/admin/money", label: "Points" },
   { href: "/admin/coins", label: "Coins" },
   { href: "/admin/rewards", label: "Rewards" },
   { href: "/admin/prizes", label: "Prizes" },

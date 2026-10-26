@@ -2,8 +2,7 @@ import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { getActiveCompetition } from "@/lib/competition";
 import { getPrizeSettings, getPrizeStandings, isSeasonComplete, prizeWinners } from "@/lib/prizes";
-import { showPointsScore } from "@/lib/feature-flags";
-import { formatMoney } from "@/lib/format-money";
+import { formatPoints } from "@/lib/format-points";
 import { PrizeSettingsForm } from "@/components/features/admin/PrizeSettingsForm";
 import { PrizeSentToggle } from "@/components/features/admin/PrizeSentToggle";
 
@@ -14,15 +13,14 @@ export default async function AdminPrizesPage() {
   const competition = getActiveCompetition();
 
   const settings = await getPrizeSettings();
-  const [standings, seasonComplete, awards, showPoints] = await Promise.all([
+  const [standings, seasonComplete, awards] = await Promise.all([
     getPrizeStandings(settings.minPredictions),
     isSeasonComplete(),
     prisma.prizeAward.findMany({ where: { competition: competition.code } }),
-    showPointsScore(),
   ]);
   const winners = prizeWinners(standings, settings);
   const awardByRank = new Map(awards.map((a) => [a.rank, a]));
-  const score = (s: (typeof standings)[number]) => (showPoints ? `${s.total} pts` : formatMoney(s.money));
+  const score = (s: (typeof standings)[number]) => formatPoints(s.money);
 
   return (
     <div className="space-y-5 sm:space-y-6">

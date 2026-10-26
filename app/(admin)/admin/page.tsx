@@ -2,9 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { getLeaderboard, rankEntries } from "@/lib/leaderboard";
-import { showPointsScore } from "@/lib/feature-flags";
-import { getAllUsersMoney } from "@/lib/leaderboard-money";
-import { formatMoney } from "@/lib/format-money";
+import { formatPoints } from "@/lib/format-points";
 import { activeMatchWhere } from "@/lib/competition";
 import { SendNotificationForm } from "@/components/features/admin/SendNotificationForm";
 import { RecentQuizAttemptsTable } from "@/components/features/admin/RecentQuizAttemptsTable";
@@ -12,14 +10,13 @@ import { RecentQuizAttemptsTable } from "@/components/features/admin/RecentQuizA
 export default async function AdminDashboardPage() {
   await requireAdmin();
 
-  const [userCount, matchCount, finishedCount, predictionCount, rawLeaderboard, playersMoney, players, usersWithCoins, dailyRewardStats, showPoints] =
+  const [userCount, matchCount, finishedCount, predictionCount, rawLeaderboard, players, usersWithCoins, dailyRewardStats] =
     await Promise.all([
       prisma.user.count(),
       prisma.match.count({ where: activeMatchWhere() }),
       prisma.match.count({ where: { status: "FINISHED", ...activeMatchWhere() } }),
       prisma.prediction.count({ where: { match: activeMatchWhere() } }),
       getLeaderboard(),
-      getAllUsersMoney(),
       prisma.user.findMany({
         where: { role: "USER", active: true },
         select: { id: true, name: true },
@@ -35,11 +32,8 @@ export default async function AdminDashboardPage() {
         _sum: { coins: true },
         _count: true,
       }),
-      showPointsScore(),
     ]);
-  const leaderboard = rankEntries(rawLeaderboard, showPoints ? "points" : "money");
-
-  const tournamentNet = playersMoney.reduce((sum, p) => sum + p.currentBalance, 0);
+  const leaderboard = rankEntries(rawLeaderboard);
 
   // Calculate coin stats
   const totalCoinsInSystem = usersWithCoins.reduce((sum, u) => sum + (u.coinBalance?.balance ?? 0), 0);
@@ -68,7 +62,7 @@ export default async function AdminDashboardPage() {
         </Link>
         <StatCard label="Pred %" value={`${predictionPercentage}%`} color="success" />
         <Link href="/admin/money" className="col-span-2 block md:col-span-1">
-          <StatCard label="Payment" value={formatMoney(tournamentNet)} color="success" />
+          <StatCard label="Leader" value={leaderboard[0] ? formatPoints(leaderboard[0].money) : "—"} color="success" />
         </Link>
       </div>
 
@@ -82,8 +76,8 @@ export default async function AdminDashboardPage() {
               <span className="truncate">
                 {index + 1}. {entry.name}
               </span>
-              <span className={`font-medium flex-shrink-0 ${showPoints ? "" : entry.money >= 0 ? "text-success" : "text-danger"}`}>
-                {showPoints ? `${entry.total} pts` : formatMoney(entry.money)}
+              <span className={`font-medium flex-shrink-0 ${entry.money >= 0 ? "text-success" : "text-danger"}`}>
+                {formatPoints(entry.money)}
               </span>
             </li>
           ))}

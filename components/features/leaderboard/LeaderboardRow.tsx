@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
-import { formatMoney } from "@/lib/format-money";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -63,31 +62,22 @@ export function LeaderboardRow({
   entry,
   rank,
   isCurrentUser,
-  moneyBalance,
   streak = 0,
   rankChange = 0,
-  highlightedMetric = "points",
   winnerTag = null,
-  showPoints = true,
   prizeAmount,
 }: {
   readonly entry: LeaderboardEntry;
   readonly rank: number;
   readonly isCurrentUser: boolean;
-  readonly moneyBalance: number;
   readonly streak?: number;
   /** Positive = moved up this many spots since the last finished match, negative = moved down. */
   readonly rankChange?: number;
-  readonly highlightedMetric?: "points" | "money";
-  /** Final-standings badge (e.g. "🏆 Points Champion") shown when the tournament is over. */
+  /** Final-standings badge (e.g. "🏆 Champion") shown when the tournament is over. */
   readonly winnerTag?: string | null;
-  /** Off = hide the points total and the W/S/P points breakdown. */
-  readonly showPoints?: boolean;
   /** ₹ Amazon voucher this player would win if the season ended now. */
   readonly prizeAmount?: number;
 }) {
-  const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
-  const scorerGains = entry.scorerPoints - penalty;
   const medal = MEDALS[rank - 1];
 
   return (
@@ -136,21 +126,6 @@ export function LeaderboardRow({
           )}
           </div>
           <div className="mt-0.5 flex flex-wrap gap-0.5 sm:gap-1 text-[8px] sm:text-[10px]">
-          {showPoints && (
-            <>
-              <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
-                W +{entry.winnerPoints}
-              </span>
-              <span className="rounded-full bg-success/10 px-1 sm:px-1.5 py-0.5 font-medium text-success">
-                S +{scorerGains}
-              </span>
-            </>
-          )}
-          {showPoints && penalty < 0 && (
-            <span className="rounded-full bg-danger/10 px-1 sm:px-1.5 py-0.5 font-medium text-danger">
-              P {penalty}
-            </span>
-          )}
           {prizeAmount !== undefined && (
             <span className="rounded-full bg-accent px-1 sm:px-1.5 py-0.5 font-semibold text-accent-foreground" title="Season prize if the season ended now">
               🎁 ₹{prizeAmount}
@@ -164,36 +139,11 @@ export function LeaderboardRow({
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-0.5 sm:gap-1">
-          {highlightedMetric === "points" ? (
-            <>
-              <div className={`rounded-lg px-2 py-1 transition-all ${
-                highlightedMetric === "points" ? "bg-accent/10" : ""
-              }`}>
-                <p className="gradient-text text-lg sm:text-xl font-extrabold">{entry.total}</p>
-                <p className="text-[8px] sm:text-[10px] text-gray-400">pts</p>
-              </div>
-              <div className={`text-right text-[8px] sm:text-[10px] font-semibold rounded-lg px-2 py-1 transition-all ${
-                moneyBalance >= 0 ? "text-success" : "text-danger"
-              }`}>
-                <p>{formatMoney(moneyBalance)}</p>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className={`text-right transition-all ${
-                moneyBalance >= 0 ? "text-success" : "text-danger"
-              } rounded-lg px-2 py-1 bg-success/10`}>
-                <p className="text-lg sm:text-xl font-extrabold">{formatMoney(moneyBalance)}</p>
-                <p className="text-[8px] sm:text-[10px] text-gray-400">💰</p>
-              </div>
-              {showPoints && (
-                <div className={`rounded-lg px-2 py-1 transition-all`}>
-                  <p className="text-[8px] sm:text-[10px] font-semibold text-gray-500">{entry.total} pts</p>
-                </div>
-              )}
-            </>
-          )}
+        <div className="shrink-0 rounded-xl bg-accent/10 px-2.5 py-1 text-right">
+          <p className={`font-display text-2xl leading-none sm:text-3xl ${entry.money < 0 ? "text-danger" : "text-accent"}`}>
+            {entry.money}
+          </p>
+          <p className="text-[9px] text-gray-400 sm:text-[10px]">pts</p>
         </div>
       </motion.div>
     </Link>

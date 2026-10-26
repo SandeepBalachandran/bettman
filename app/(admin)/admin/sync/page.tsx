@@ -218,7 +218,7 @@ export default function SyncResultsPage() {
           <li>• <span className="font-medium">Live Status</span> updates UPCOMING → LIVE → FINISHED</li>
           <li>• <span className="font-medium">Detailed Sync</span> also adds goal scorers from API</li>
           <li>• Safe to run multiple times — already-synced matches are skipped</li>
-          <li>• Results populate leaderboard and user payouts immediately</li>
+          <li>• Results update the leaderboard and everyone's points immediately</li>
           <li>• For ISL every option does the same full sync (results + scorers + squads) — and it also runs on its own whenever someone opens the app</li>
         </ul>
       </div>

@@ -83,19 +83,18 @@ export async function getUserMoney(userId: string): Promise<UserMoney> {
   };
 }
 
-export type UserMoneyRow = UserMoney & { userId: string; name: string; upiId: string | null };
+export type UserMoneyRow = UserMoney & { userId: string; name: string };
 
 export async function getAllUsersMoney(): Promise<UserMoneyRow[]> {
   const users = await prisma.user.findMany({
     where: { role: "USER" },
-    select: { id: true, name: true, upiId: true },
+    select: { id: true, name: true },
   });
 
   return Promise.all(
     users.map(async (user) => ({
       userId: user.id,
       name: user.name,
-      upiId: user.upiId,
       ...(await getUserMoney(user.id)),
     }))
   );

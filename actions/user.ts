@@ -82,27 +82,6 @@ export async function reactivateUser(userId: string) {
   revalidatePath("/admin/users");
 }
 
-const setUpiIdSchema = z.object({
-  upiId: z
-    .string()
-    .trim()
-    .regex(/^[\w.+-]{2,256}@[a-zA-Z][\w-]{1,64}$/, "Enter a valid UPI ID (e.g. name@bank)")
-    .or(z.literal("")),
-});
-
-export async function setUpiId(userId: string, input: z.infer<typeof setUpiIdSchema>) {
-  await requireAdmin();
-  const data = setUpiIdSchema.parse(input);
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: { upiId: data.upiId || null },
-  });
-
-  revalidatePath("/admin/users");
-  revalidatePath("/admin/money");
-}
-
 const setAvatarUrlSchema = z.object({
   avatarUrl: z.string().trim().url("Enter a valid image URL").or(z.literal("")),
 });

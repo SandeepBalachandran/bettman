@@ -10,7 +10,6 @@ import {
   reactivateUser,
   resetPassword,
   setAvatarUrl,
-  setUpiId,
 } from "@/actions/user";
 import { toggleUserChatMute } from "@/actions/chat";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
@@ -22,7 +21,6 @@ export type AdminUserRowData = {
   role: string;
   active: boolean;
   isSelf: boolean;
-  upiId: string | null;
   avatarUrl: string | null;
   chatMuted: boolean;
 };
@@ -31,7 +29,6 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [newPassword, setNewPassword] = useState("");
-  const [upiId, setUpiIdValue] = useState(user.upiId ?? "");
   const [avatarUrl, setAvatarUrlValue] = useState(user.avatarUrl ?? "");
 
   function run(action: () => Promise<unknown>, successMessage: string) {
@@ -70,16 +67,7 @@ export function AdminUserRow({ user }: { readonly user: AdminUserRowData }) {
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-3">
-        <FieldWithSave
-          placeholder="UPI ID (name@bank)"
-          value={upiId}
-          onChange={setUpiIdValue}
-          disabled={isPending || upiId === (user.upiId ?? "")}
-          onSave={() => run(() => setUpiId(user.id, { upiId }), "UPI ID saved")}
-          label="Save UPI ID"
-          icon={<Save size={16} />}
-        />
+      <div className="grid gap-2 sm:grid-cols-2">
         <FieldWithSave
           placeholder="Avatar image URL"
           value={avatarUrl}

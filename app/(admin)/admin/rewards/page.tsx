@@ -144,7 +144,7 @@ export default function AdminRewardsPage() {
             ⚡ 2x Booster Cost
           </label>
           <p className="text-xs text-gray-500">
-            Price users pay to double their winnings on one prediction
+            Price users pay to double the points they win on one prediction
           </p>
           <div className="flex items-center gap-2">
             <input

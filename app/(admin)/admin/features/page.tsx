@@ -16,8 +16,7 @@ type FlagKey =
   | "navMyPredictions"
   | "navLeaderboard"
   | "navMoney"
-  | "fixturesChronological"
-  | "showPoints";
+  | "fixturesChronological";
 
 type FlagValues = Record<FlagKey, boolean>;
 
@@ -33,7 +32,7 @@ const FEATURES: { key: FlagKey; icon: string; name: string; description: string 
   { key: "navFixtures", icon: "🗓️", name: "Fixtures Menu", description: "Fixtures menu item and page" },
   { key: "navMyPredictions", icon: "📝", name: "My Predictions Menu", description: "My Predictions menu item and page" },
   { key: "navLeaderboard", icon: "🏅", name: "Leaderboard Menu", description: "Leaderboard menu item and page" },
-  { key: "navMoney", icon: "💰", name: "Money Menu", description: "Money menu item and page" },
+  { key: "navMoney", icon: "💤", name: "Old Money Page (unused)", description: "No longer used — /money now redirects to Rewards" },
   {
     key: "fixturesChronological",
     icon: "↕️",
@@ -41,25 +40,15 @@ const FEATURES: { key: FlagKey; icon: string; name: string; description: string 
     description:
       "On: date order, auto-scrolled to the live or latest finished match. Off: upcoming matchweeks first, finished ones at the bottom. Applies to admins too.",
   },
-  {
-    key: "showPoints",
-    icon: "⭐",
-    name: "Points Score",
-    description:
-      "Show points next to money on the leaderboard, match and prediction pages. Off: money is the only score. Points keep being counted either way. Applies to admins too.",
-  },
 ];
 
-/** Flags that are off unless turned on (mirrors FLAGS_DEFAULT_OFF in lib/feature-flags). */
-const DEFAULT_OFF: FlagKey[] = ["showPoints"];
-
 const DEFAULT_FLAGS: FlagValues = Object.fromEntries(
-  FEATURES.map((f) => [f.key, !DEFAULT_OFF.includes(f.key)])
+  FEATURES.map((f) => [f.key, true])
 ) as FlagValues;
 
 function pickFlags(data: Record<string, unknown>): FlagValues {
   return Object.fromEntries(
-    FEATURES.map((f) => [f.key, Boolean(data[f.key] ?? !DEFAULT_OFF.includes(f.key))])
+    FEATURES.map((f) => [f.key, Boolean(data[f.key] ?? true)])
   ) as FlagValues;
 }
 

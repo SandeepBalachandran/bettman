@@ -1,35 +1,34 @@
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
-import { requireFeaturePage, showPointsScore } from "@/lib/feature-flags";
+import { requireFeaturePage } from "@/lib/feature-flags";
 import { getLeaderboard, getPreviousLeaderboard, rankEntries } from "@/lib/leaderboard";
-import { getUserMoney } from "@/lib/leaderboard-money";
 import { getUserWinnerStreak } from "@/lib/round-mvp";
 import { activeMatchWhere, getActiveCompetition } from "@/lib/competition";
 import { refreshActiveCompetitionResults } from "@/lib/refresh-results";
 import { LeaderboardList } from "@/components/features/leaderboard/LeaderboardList";
 import { ShareToWhatsApp } from "@/components/ShareToWhatsApp";
-import { formatMoney } from "@/lib/format-money";
+import { formatPoints } from "@/lib/format-points";
 import { getCurrentPrizeHolders, getPrizeSettings } from "@/lib/prizes";
 import { PrizesCard } from "@/components/PrizesCard";
+import { MoneyRulesCard } from "@/components/MoneyRulesCard";
 
 export default async function LeaderboardPage() {
   const user = await requireAuth();
   await requireFeaturePage("navLeaderboard", user.role);
   refreshActiveCompetitionResults();
 
-  const [rawLeaderboard, rawPreviousLeaderboard, matchCount, unfinishedCount, showPoints] = await Promise.all([
-    getLeaderboard(),
-    getPreviousLeaderboard(),
-    prisma.match.count({ where: activeMatchWhere() }),
-    prisma.match.count({ where: { ...activeMatchWhere(), status: { not: "FINISHED" } } }),
-    showPointsScore(),
-  ]);
-  const [prizeSettings, prizeByUserId] = await Promise.all([getPrizeSettings(), getCurrentPrizeHolders()]);
-  // With points hidden, money is the only score — rank (and rank movement) by it.
-  const rankBy = showPoints ? "points" : "money";
-  const leaderboard = rankEntries(rawLeaderboard, rankBy);
-  const previousLeaderboard = rankEntries(rawPreviousLeaderboard, rankBy);
+  const [rawLeaderboard, rawPreviousLeaderboard, matchCount, unfinishedCount, prizeSettings, prizeByUserId] =
+    await Promise.all([
+      getLeaderboard(),
+      getPreviousLeaderboard(),
+      prisma.match.count({ where: activeMatchWhere() }),
+      prisma.match.count({ where: { ...activeMatchWhere(), status: { not: "FINISHED" } } }),
+      getPrizeSettings(),
+      getCurrentPrizeHolders(),
+    ]);
+  const leaderboard = rankEntries(rawLeaderboard);
+  const previousLeaderboard = rankEntries(rawPreviousLeaderboard);
 
   // Champions are crowned once every match of the competition has been played.
   const tournamentComplete = matchCount > 0 && unfinishedCount === 0;
@@ -37,23 +36,14 @@ export default async function LeaderboardPage() {
   const previousRankByUserId = new Map(
     previousLeaderboard.map((entry, index) => [entry.userId, index + 1])
   );
-
-  // Fetch money + streak data for all users
-  const perUserData = await Promise.all(
-    leaderboard.map(async (entry) => ({
-      userId: entry.userId,
-      balance: (await getUserMoney(entry.userId)).currentBalance,
-      streak: await getUserWinnerStreak(entry.userId),
-    }))
+  const streaks = await Promise.all(
+    leaderboard.map(async (entry) => [entry.userId, await getUserWinnerStreak(entry.userId)] as const)
   );
-
-  const moneyByUserId = new Map(perUserData.map((d) => [d.userId, d.balance]));
-  const streakByUserId = new Map(perUserData.map((d) => [d.userId, d.streak]));
+  const streakByUserId = new Map(streaks);
 
   const myIndex = leaderboard.findIndex((entry) => entry.userId === user.id);
   const myEntry = myIndex >= 0 ? leaderboard[myIndex] : null;
   const myRank = myIndex >= 0 ? myIndex + 1 : null;
-  const myBalance = myEntry ? moneyByUserId.get(myEntry.userId) || 0 : 0;
   const requestHeaders = await headers();
   const host = requestHeaders.get("host");
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
@@ -67,18 +57,14 @@ export default async function LeaderboardPage() {
         <div className="card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4">
           <p className="text-xs sm:text-sm">
             You&apos;re <span className="font-bold">#{myRank}</span> with{" "}
-            {showPoints ? (
-              <>
-                <span className="font-bold">{myEntry.total} pts</span> ({formatMoney(myBalance)})
-              </>
-            ) : (
-              <span className={`font-bold ${myBalance >= 0 ? "text-success" : "text-danger"}`}>{formatMoney(myBalance)}</span>
-            )}
+            <span className={`font-bold ${myEntry.money >= 0 ? "text-success" : "text-danger"}`}>
+              {formatPoints(myEntry.money)}
+            </span>
           </p>
           <ShareToWhatsApp
-            text={`⚽ ${getActiveCompetition().shortName} Predictions update!\nI'm #${myRank} on the leaderboard with ${
-              showPoints ? `${myEntry.total} pts (${formatMoney(myBalance)})` : formatMoney(myBalance)
-            }. Think you can beat me?${appUrl ? ` Check it out: ${appUrl}` : ""}`}
+            text={`⚽ ${getActiveCompetition().shortName} Predictions update!\nI'm #${myRank} on the leaderboard with ${formatPoints(
+              myEntry.money
+            )}. Think you can beat me?${appUrl ? ` Check it out: ${appUrl}` : ""}`}
           />
         </div>
       )}
@@ -86,28 +72,6 @@ export default async function LeaderboardPage() {
       {leaderboard.length > 0 && (
         <div className="card flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1.5 p-2 sm:p-3 text-[9px] sm:text-[11px] text-gray-500">
           <span className="font-semibold text-gray-400">Legend:</span>
-          {showPoints && (
-            <>
-              <span className="inline-flex items-center gap-0.5 sm:gap-1">
-                <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
-                  W
-                </span>
-                <span className="hidden sm:inline">winner points</span><span className="sm:hidden">wins</span>
-              </span>
-              <span className="inline-flex items-center gap-0.5 sm:gap-1">
-                <span className="rounded-full bg-success/10 px-1 sm:px-1.5 py-0.5 font-medium text-success">
-                  S
-                </span>
-                <span className="hidden sm:inline">scorer points</span><span className="sm:hidden">scorers</span>
-              </span>
-              <span className="inline-flex items-center gap-0.5 sm:gap-1">
-                <span className="rounded-full bg-danger/10 px-1 sm:px-1.5 py-0.5 font-medium text-danger">
-                  P
-                </span>
-                <span className="hidden sm:inline">penalty</span><span className="sm:hidden">pen</span>
-              </span>
-            </>
-          )}
           <span className="inline-flex items-center gap-0.5 sm:gap-1">
             <span className="rounded-full bg-highlight/15 px-1 sm:px-1.5 py-0.5 font-medium text-highlight-foreground dark:text-highlight">
               🔥
@@ -129,51 +93,15 @@ export default async function LeaderboardPage() {
           entries={leaderboard}
           currentUserId={user.id}
           previousRankByUserId={previousRankByUserId}
-          moneyByUserId={moneyByUserId}
           streakByUserId={streakByUserId}
           tournamentComplete={tournamentComplete}
-          showPoints={showPoints}
           prizeByUserId={prizeByUserId}
         />
       )}
 
       <PrizesCard settings={prizeSettings} seasonName={getActiveCompetition().name} />
 
-      <div className="card space-y-2 sm:space-y-3 p-3 sm:p-4">
-        <div className="space-y-2">
-          <p className="font-semibold text-xs sm:text-sm">📋 Scoring Guide</p>
-          <div className="space-y-1 sm:space-y-1.5 text-[11px] sm:text-xs text-gray-600 dark:text-gray-400">
-            {showPoints && (
-              <div>
-                <p className="font-medium text-gray-700 dark:text-gray-300 mb-0.5 sm:mb-1">
-                  ⭐ <span className="text-accent">Points</span>
-                </p>
-                <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
-                  <li>✅ Correct result (winner or draw): +30 pts</li>
-                  <li>✅ Correct scorer: +10 pts per goal</li>
-                  <li>❌ Wrong scorer: 0</li>
-                </ul>
-              </div>
-            )}
-            <div>
-              <p className="font-medium text-gray-700 dark:text-gray-300 mb-0.5 sm:mb-1">
-                💰 <span className="text-success">Money</span>
-              </p>
-              <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
-                <li>✅ Correct result (winner or draw): +₹30</li>
-                <li>❌ Wrong result: -₹30</li>
-                <li>✅ Correct scorer: +₹5 per goal</li>
-                <li>❌ Wrong scorer: -₹5</li>
-              </ul>
-            </div>
-            <p className="text-[9px] sm:text-[10px] text-gray-500 italic mt-1 sm:mt-2">
-              {showPoints
-                ? "💡 If a player scores multiple goals, you get points/money for each goal. Points reward only. Money has penalties."
-                : "💡 If a player scores multiple goals, you get money for each goal. A 2x booster doubles what you win on that match."}
-            </p>
-          </div>
-        </div>
-      </div>
+      <MoneyRulesCard />
     </main>
   );
 }

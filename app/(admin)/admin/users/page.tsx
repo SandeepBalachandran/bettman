@@ -25,7 +25,6 @@ export default async function AdminUsersPage() {
               role: user.role,
               active: user.active,
               isSelf: user.id === admin.id,
-              upiId: user.upiId,
               avatarUrl: user.avatarUrl,
               chatMuted: user.chatMuted,
             }}

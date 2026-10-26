@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import confetti from "canvas-confetti";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
 import { LeaderboardRow } from "@/components/features/leaderboard/LeaderboardRow";
@@ -9,30 +9,20 @@ export type LeaderboardListProps = {
   entries: LeaderboardEntry[];
   currentUserId: string;
   previousRankByUserId: Map<string, number>;
-  moneyByUserId: Map<string, number>;
   streakByUserId: Map<string, number>;
   tournamentComplete?: boolean;
-  /** Off = money is the only score: no points/money switch, ranked by money. */
-  showPoints?: boolean;
   /** userId → ₹ voucher for players currently in a prize place. */
   prizeByUserId?: Map<string, number>;
 };
-
-type SortBy = "points" | "money";
 
 export function LeaderboardList({
   entries,
   currentUserId,
   previousRankByUserId,
-  moneyByUserId,
   streakByUserId,
   tournamentComplete = false,
-  showPoints = true,
   prizeByUserId,
 }: LeaderboardListProps) {
-  const [chosenSort, setSortBy] = useState<SortBy>("points");
-  const sortBy: SortBy = showPoints ? chosenSort : "money";
-
   // Celebrate the champions on every visit/reload once the tournament is over
   useEffect(() => {
     if (!tournamentComplete) return;
@@ -48,46 +38,16 @@ export function LeaderboardList({
     }, 700);
   }, [tournamentComplete]);
 
-  const sorted = [...entries].sort((a, b) => {
-    if (sortBy === "points") {
-      return b.total - a.total;
-    } else {
-      const balanceA = moneyByUserId.get(a.userId) || 0;
-      const balanceB = moneyByUserId.get(b.userId) || 0;
-      return balanceB - balanceA;
-    }
-  });
-
+  // Entries arrive already ranked (rankEntries).
   return (
     <div className="space-y-4">
-      {showPoints && (
-      <div className="flex gap-2">
-        <button
-          onClick={() => setSortBy("points")}
-          className={`btn text-sm h-10 px-4 sm:px-6 ${
-            sortBy === "points" ? "btn-primary" : "btn-outline"
-          }`}
-        >
-          ⭐ <span className="hidden xs:inline">Points</span><span className="xs:hidden">Points</span>
-        </button>
-        <button
-          onClick={() => setSortBy("money")}
-          className={`btn text-sm h-10 px-4 sm:px-6 ${
-            sortBy === "money" ? "btn-primary" : "btn-outline"
-          }`}
-        >
-          💰 <span className="hidden xs:inline">Money</span><span className="xs:hidden">Money</span>
-        </button>
-      </div>
-      )}
-
       <div className="space-y-3 sm:space-y-4">
-        {sorted.map((entry, index) => {
+        {entries.map((entry, index) => {
           const rank = index + 1;
           const previousRank = previousRankByUserId.get(entry.userId) ?? rank;
           let winnerTag: string | null = null;
           if (tournamentComplete && rank === 1) {
-            winnerTag = sortBy === "points" ? "🏆 Points Champion" : "💰 Money Champion";
+            winnerTag = "🏆 Champion";
           } else if (tournamentComplete && rank === 2) {
             winnerTag = "🥈 Runner-up";
           }
@@ -97,12 +57,9 @@ export function LeaderboardList({
               entry={entry}
               rank={rank}
               isCurrentUser={entry.userId === currentUserId}
-              moneyBalance={moneyByUserId.get(entry.userId) || 0}
               streak={streakByUserId.get(entry.userId) || 0}
               rankChange={previousRank - rank}
-              highlightedMetric={sortBy}
               winnerTag={winnerTag}
-              showPoints={showPoints}
               prizeAmount={prizeByUserId?.get(entry.userId)}
             />
           );

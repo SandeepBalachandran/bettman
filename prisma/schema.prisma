@@ -302,9 +302,6 @@ model FeatureFlags {
   // Fixtures in date order (past matches on top, auto-scrolled to the live or
   // latest finished match) instead of upcoming matchweeks first.
   fixturesChronological Boolean @default(true)
-  // Show the points score (leaderboard, match pages, predictions). Off = money
-  // is the only score shown; points are still calculated so they can come back.
-  showPoints       Boolean  @default(false)
   updatedAt        DateTime @updatedAt
 }
 

@@ -2,14 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
-import { calculateMatchPoints } from "@/lib/scoring";
 import { calculateMatchMoney } from "@/lib/money";
 import { moneyConfig } from "@/lib/money-config";
-import { formatMoney } from "@/lib/format-money";
+import { formatPointsDelta } from "@/lib/format-points";
 import { PenaltyBadge } from "@/components/PenaltyBadge";
 import { activeMatchWhere } from "@/lib/competition";
 import { groupByMatch } from "@/lib/match-groups";
-import { showPointsScore } from "@/lib/feature-flags";
 import Link from "next/link";
 
 export default async function UserPredictionsPage({
@@ -19,7 +17,6 @@ export default async function UserPredictionsPage({
 }) {
   const currentUser = await requireAuth();
   const { userId } = await params;
-  const showPoints = await showPointsScore();
 
   // Fetch the user whose predictions we're viewing
   const user = await prisma.user.findUnique({
@@ -89,20 +86,9 @@ export default async function UserPredictionsPage({
 
   // Calculate totals
   let totalPoints = 0;
-  let totalMoney = 0;
 
   for (const prediction of predictions) {
     const actualScorerPlayerIds = prediction.match.scorers.map(s => s.playerId);
-    const pointsData = calculateMatchPoints(
-      {
-        winnerTeamId: prediction.winnerTeamId,
-        predictedDraw: prediction.predictedDraw,
-        scorerPlayerIds: prediction.scorers.map(s => s.playerId),
-      },
-      { winnerTeamId: prediction.match.winnerTeamId, isDraw: prediction.match.isDraw, wonOnPenalties: prediction.match.wonOnPenalties },
-      actualScorerPlayerIds,
-      prediction.usedPointsBooster
-    );
     const moneyData = calculateMatchMoney(
       {
         winnerTeamId: prediction.winnerTeamId,
@@ -114,8 +100,7 @@ export default async function UserPredictionsPage({
       moneyConfig,
       prediction.usedPointsBooster
     );
-    totalPoints += pointsData.total;
-    totalMoney += moneyData.total;
+    totalPoints += moneyData.total;
   }
 
   return (
@@ -164,21 +149,11 @@ export default async function UserPredictionsPage({
             Total Performance (Finished Matches)
           </h2>
           <div className="flex flex-wrap gap-8 pt-1">
-            {showPoints && (
-              <div>
-                <p className="text-3xl font-bold text-accent">{totalPoints}</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Total Points</p>
-              </div>
-            )}
             <div>
-              <p
-                className={`text-3xl font-bold ${
-                  totalMoney >= 0 ? "text-success" : "text-danger"
-                }`}
-              >
-                {totalMoney >= 0 ? "+" : ""}{formatMoney(totalMoney)}
+              <p className={`text-3xl font-bold ${totalPoints >= 0 ? "text-success" : "text-danger"}`}>
+                {formatPointsDelta(totalPoints)}
               </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Total Money</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Total Points</p>
             </div>
           </div>
         </div>
@@ -201,16 +176,6 @@ export default async function UserPredictionsPage({
             <div className="w-full space-y-3">
               {group.items.map((prediction) => {
                 const actualScorerPlayerIds = prediction.match.scorers.map(s => s.playerId);
-                const pointsData = calculateMatchPoints(
-                  {
-                    winnerTeamId: prediction.winnerTeamId,
-                    predictedDraw: prediction.predictedDraw,
-                    scorerPlayerIds: prediction.scorers.map(s => s.playerId),
-                  },
-                  { winnerTeamId: prediction.match.winnerTeamId, isDraw: prediction.match.isDraw, wonOnPenalties: prediction.match.wonOnPenalties },
-                  actualScorerPlayerIds,
-                  prediction.usedPointsBooster
-                );
                 const moneyData = calculateMatchMoney(
                   {
                     winnerTeamId: prediction.winnerTeamId,
@@ -222,8 +187,7 @@ export default async function UserPredictionsPage({
                   moneyConfig,
                   prediction.usedPointsBooster
                 );
-                const points = pointsData.total;
-                const money = moneyData.total;
+                const points = moneyData.total;
 
                 return (
                   <div
@@ -248,19 +212,14 @@ export default async function UserPredictionsPage({
                           />
                         </span>
                         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                          {showPoints && (
-                            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
-                              +{points} pts
-                            </span>
-                          )}
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              money >= 0
+                              points >= 0
                                 ? "bg-success/10 text-success"
                                 : "bg-danger/10 text-danger"
                             }`}
                           >
-                            {money >= 0 ? "+" : ""}{formatMoney(money)}
+                            {formatPointsDelta(points)}
                           </span>
                         </div>
                       </div>
@@ -388,52 +347,26 @@ export default async function UserPredictionsPage({
 
                     {/* Score Breakdown */}
                     <div className="border-t border-gray-200 pt-4 dark:border-gray-800">
-                      <div className={`grid gap-4 ${showPoints ? "sm:grid-cols-2" : ""}`}>
-                        {/* Points Breakdown */}
-                        {showPoints && (
+                      <div className="grid gap-4">
+                        {/* Points breakdown */}
                         <div className="space-y-2">
                           <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Points</p>
                           <div className="space-y-1.5">
                             <p className="text-xs text-gray-600 dark:text-gray-400">
                               <span>Winner:</span>{" "}
-                              <span className={pointsData.winnerPoints > 0 ? "text-success font-semibold" : "text-danger"}>
-                                {pointsData.winnerPoints > 0 ? "✅" : "❌"} {pointsData.winnerPoints} pts
-                              </span>
-                            </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              <span>Scorers:</span>{" "}
-                              <span className={pointsData.scorerPoints > 0 ? "text-success font-semibold" : "text-danger"}>
-                                {pointsData.scorerPoints > 0 ? "✅" : "❌"} {pointsData.scorerPoints} pts
-                              </span>
-                            </p>
-                            <div className="border-t border-gray-200 pt-1.5 dark:border-gray-700 mt-1.5">
-                              <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                Total: <span className="text-accent">{pointsData.total} pts</span>
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        )}
-
-                        {/* Money Breakdown */}
-                        <div className="space-y-2">
-                          <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Money</p>
-                          <div className="space-y-1.5">
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              <span>Winner:</span>{" "}
                               <span className={moneyData.winnerMoney > 0 ? "text-success font-semibold" : "text-danger"}>
-                                {moneyData.winnerMoney > 0 ? "+" : ""}{formatMoney(moneyData.winnerMoney)}
+                                {formatPointsDelta(moneyData.winnerMoney)}
                               </span>
                             </p>
                             <p className="text-xs text-gray-600 dark:text-gray-400">
                               <span>Scorers:</span>{" "}
                               <span className={moneyData.scorerMoney > 0 ? "text-success font-semibold" : "text-danger"}>
-                                {moneyData.scorerMoney > 0 ? "+" : ""}{formatMoney(moneyData.scorerMoney)}
+                                {formatPointsDelta(moneyData.scorerMoney)}
                               </span>
                             </p>
                             <div className="border-t border-gray-200 pt-1.5 dark:border-gray-700 mt-1.5">
                               <p className={`text-xs font-semibold ${moneyData.total > 0 ? "text-success" : "text-danger"}`}>
-                                Total: {moneyData.total > 0 ? "+" : ""}{formatMoney(moneyData.total)}
+                                Total: {formatPointsDelta(moneyData.total)}
                               </p>
                             </div>
                           </div>

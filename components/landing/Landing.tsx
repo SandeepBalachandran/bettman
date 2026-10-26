@@ -93,9 +93,9 @@ const HERO_PHOTO = {
 };
 
 const PREVIEW_ROWS = [
-  { medal: "🥇", name: "Priya", amount: "₹285" },
-  { medal: "🥈", name: "Arjun", amount: "₹260" },
-  { medal: "🥉", name: "You", amount: "₹245", isYou: true },
+  { medal: "🥇", name: "Priya", amount: "285 pts" },
+  { medal: "🥈", name: "Arjun", amount: "260 pts" },
+  { medal: "🥉", name: "You", amount: "245 pts", isYou: true },
 ];
 
 export function Landing({

@@ -15,13 +15,9 @@ export type FeatureFlagKey =
   | "navMyPredictions"
   | "navLeaderboard"
   | "navMoney"
-  | "fixturesChronological"
-  | "showPoints";
+  | "fixturesChronological";
 
 export type FeatureFlagValues = Record<FeatureFlagKey, boolean>;
-
-/** Flags that are off unless an admin turns them on (everything else defaults on). */
-export const FLAGS_DEFAULT_OFF: FeatureFlagKey[] = ["showPoints"];
 
 export const FEATURE_FLAG_KEYS: FeatureFlagKey[] = [
   "chat",
@@ -37,7 +33,6 @@ export const FEATURE_FLAG_KEYS: FeatureFlagKey[] = [
   "navLeaderboard",
   "navMoney",
   "fixturesChronological",
-  "showPoints",
 ];
 
 export const ALL_ENABLED: FeatureFlagValues = Object.fromEntries(
@@ -50,16 +45,8 @@ let cacheTimestamp = 0;
 
 function toValues(row: Record<string, unknown>): FeatureFlagValues {
   return Object.fromEntries(
-    FEATURE_FLAG_KEYS.map((key) => [key, Boolean(row[key] ?? !FLAGS_DEFAULT_OFF.includes(key))])
+    FEATURE_FLAG_KEYS.map((key) => [key, Boolean(row[key] ?? true)])
   ) as FeatureFlagValues;
-}
-
-/**
- * Whether to show the points score. Read from the stored flag for everyone,
- * admins included, so admins see the same scoreboard as players.
- */
-export async function showPointsScore(): Promise<boolean> {
-  return (await getFeatureFlags()).showPoints;
 }
 
 /** Raw stored flags (no role bypass). Cached for 60s; creates defaults if missing. */

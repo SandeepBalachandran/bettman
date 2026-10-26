@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard";
 import { activeMatchWhere, getActiveCompetition } from "@/lib/competition";
-import { showPointsScore } from "@/lib/feature-flags";
 
 export type PrizeSettings = {
   enabled: boolean;
@@ -34,15 +33,14 @@ export type PrizeStanding = LeaderboardEntry & {
 };
 
 /**
- * Prize ranking: the leaderboard score (money, or points while points are shown),
- * then most correct results, then most goals from scorer picks, then who joined first.
+ * Prize ranking: the season points, then most correct results, then most goals
+ * from scorer picks, then who joined first.
  * Admins and deactivated players are never eligible.
  */
 export async function getPrizeStandings(minPredictions: number): Promise<PrizeStanding[]> {
-  const [entries, users, showPoints] = await Promise.all([
+  const [entries, users] = await Promise.all([
     getLeaderboard(),
     prisma.user.findMany({ select: { id: true, email: true, role: true, active: true, createdAt: true } }),
-    showPointsScore(),
   ]);
   const userById = new Map(users.map((u) => [u.id, u]));
 
@@ -57,10 +55,9 @@ export async function getPrizeStandings(minPredictions: number): Promise<PrizeSt
     return [{ ...entry, email: user.email, joinedAt: user.createdAt, eligible: !ineligibleReason, ineligibleReason }];
   });
 
-  const score = (s: PrizeStanding) => (showPoints ? s.total : s.money);
   return standings.sort(
     (a, b) =>
-      score(b) - score(a) ||
+      b.money - a.money ||
       b.correctResults - a.correctResults ||
       b.correctScorerGoals - a.correctScorerGoals ||
       a.joinedAt.getTime() - b.joinedAt.getTime()

@@ -25,7 +25,6 @@ async function main() {
   await setMissing("Match", "isDraw", false);
   await setMissing("Prediction", "predictedDraw", false);
   await setMissing("FeatureFlags", "fixturesChronological", true);
-  await setMissing("FeatureFlags", "showPoints", false);
 
   const byCompetition = await prisma.match.groupBy({ by: ["competition"], _count: true });
   console.log("Matches per competition:", byCompetition.map((c) => `${c.competition}=${c._count}`).join(", "));

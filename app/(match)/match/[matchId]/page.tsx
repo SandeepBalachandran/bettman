@@ -2,11 +2,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
-import { calculateMatchPoints } from "@/lib/scoring";
 import { calculateMatchMoney } from "@/lib/money";
 import { moneyConfig } from "@/lib/money-config";
-import { formatMoney } from "@/lib/format-money";
-import { showPointsScore } from "@/lib/feature-flags";
+import { formatPoints, formatPointsDelta } from "@/lib/format-points";
 import { isMatchLocked } from "@/lib/match-lock";
 import { PerfectPredictionConfetti } from "@/components/features/match/PerfectPredictionConfetti";
 import { TeamFlag } from "@/components/TeamFlag";
@@ -31,7 +29,6 @@ export default async function MatchDetailsPage({
   const { matchId } = await params;
   const user = await requireAuth();
   refreshActiveCompetitionResults();
-  const showPoints = await showPointsScore();
 
   const match = await prisma.match.findUnique({
     where: { id: matchId },
@@ -60,19 +57,6 @@ export default async function MatchDetailsPage({
 
   const points =
     isFinished && myPrediction
-      ? calculateMatchPoints(
-          {
-            winnerTeamId: myPrediction.winnerTeamId,
-            predictedDraw: myPrediction.predictedDraw,
-            scorerPlayerIds: myPrediction.scorers.map((s) => s.playerId),
-          },
-          { winnerTeamId: match.winnerTeamId, isDraw: match.isDraw, wonOnPenalties: match.wonOnPenalties },
-          match.scorers.map((s) => s.playerId)
-        )
-      : null;
-
-  const money =
-    isFinished && myPrediction
       ? calculateMatchMoney(
           {
             winnerTeamId: myPrediction.winnerTeamId,
@@ -85,10 +69,19 @@ export default async function MatchDetailsPage({
           myPrediction.usedPointsBooster
         )
       : null;
+  // Perfect: right result and every scorer pick found the net.
+  const actualScorerIds = new Set(match.scorers.map((s) => s.playerId));
+  const isPerfect = Boolean(
+    points &&
+      points.winnerMoney > 0 &&
+      myPrediction &&
+      myPrediction.scorers.length > 0 &&
+      myPrediction.scorers.every((s) => actualScorerIds.has(s.playerId))
+  );
 
   return (
     <main className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
-      <PerfectPredictionConfetti isPerfect={points?.total === 60} />
+      <PerfectPredictionConfetti isPerfect={isPerfect} />
 
       <div className="gradient-header card rounded-2xl border-0 p-5 text-white shadow-xl">
         <div className="flex items-center justify-center gap-3 text-lg font-bold">
@@ -187,19 +180,13 @@ export default async function MatchDetailsPage({
                 </div>
               </div>
             )}
-            {(showPoints ? points : money) && (
+            {points && (
               <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                {showPoints && points ? (
-                  <p className="text-xs font-semibold text-highlight-foreground dark:text-highlight">
-                    ⭐ Points: {points.total} (winner {points.winnerPoints}, scorers {points.scorerPoints})
-                  </p>
-                ) : money ? (
-                  <p className={`text-xs font-semibold ${money.total >= 0 ? "text-success" : "text-danger"}`}>
-                    💰 {money.total >= 0 ? "+" : ""}
-                    {formatMoney(money.total)} (result {formatMoney(money.winnerMoney)}, scorers {formatMoney(money.scorerMoney)})
-                    {myPrediction?.usedPointsBooster && " · ⚡ 2x"}
-                  </p>
-                ) : null}
+                <p className={`text-xs font-semibold ${points.total >= 0 ? "text-success" : "text-danger"}`}>
+                  ⭐ {formatPointsDelta(points.total)} (result {formatPoints(points.winnerMoney)}, scorers{" "}
+                  {formatPoints(points.scorerMoney)})
+                  {myPrediction?.usedPointsBooster && " · ⚡ 2x"}
+                </p>
               </div>
             )}
           </div>

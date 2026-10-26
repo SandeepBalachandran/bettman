@@ -121,7 +121,7 @@ export default async function RewardsPage() {
             slot="booster"
             balance={balance}
             title="2x Booster"
-            description="Double your winnings on one prediction (from My Predictions)"
+            description="Double the points you win on one prediction (from My Predictions)"
           />
           <RewardUnlockCard
             slot={3}
