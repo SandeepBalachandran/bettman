@@ -19,16 +19,16 @@ export default async function AdminMatchesPage() {
   });
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-3 sm:p-4 md:p-6">
+    <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Manage Matches</h1>
+          <h1 className="gradient-text">Matches</h1>
           <p className="text-xs text-gray-500">
             Active competition:{" "}
             <code>{competition.name}</code> (<code>ACTIVE_COMPETITION</code>)
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <SyncMatchResultsButton />
           <SyncMatchesButton />
         </div>
@@ -36,7 +36,7 @@ export default async function AdminMatchesPage() {
 
       {matches.length === 0 ? (
         <p className="text-sm text-gray-500">
-          No matches yet. Click &quot;Sync from live API&quot; above.
+          No matches yet. Click &quot;Sync schedule&quot; above.
         </p>
       ) : (
         <div className="space-y-3">
@@ -79,6 +79,6 @@ export default async function AdminMatchesPage() {
           ))}
         </div>
       )}
-    </main>
+    </div>
   );
 }

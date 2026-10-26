@@ -27,9 +27,9 @@ export function SyncMatchResultsButton() {
       type="button"
       disabled={isPending}
       onClick={handleSync}
-      className="btn btn-outline"
+      className="btn btn-outline h-10 text-sm"
     >
-      {isPending ? "Checking results…" : "🔄 Sync results + scorers"}
+      {isPending ? "Checking results…" : "Sync results + scorers"}
     </button>
   );
 }

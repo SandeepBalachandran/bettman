@@ -95,17 +95,17 @@ export default function AdminRewardsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Loading...</p>
+      <div className="flex items-center justify-center py-20">
+        <p className="text-sm text-gray-500">Loading...</p>
       </div>
     );
   }
 
   if (error && !config) {
     return (
-      <main className="mx-auto max-w-2xl space-y-8 p-4 sm:p-6">
+      <div className="space-y-5 sm:space-y-6">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold gradient-text">Manage Rewards</h1>
+          <h1 className="gradient-text">Rewards</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Configure pricing for all reward items
           </p>
@@ -124,14 +124,14 @@ export default function AdminRewardsPage() {
             ↻ Try again
           </button>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto max-w-2xl space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
+    <div className="space-y-5 sm:space-y-6">
       <div className="space-y-1 sm:space-y-2">
-        <h1 className="text-xl sm:text-2xl font-bold gradient-text">Manage Rewards</h1>
+        <h1 className="gradient-text">Rewards</h1>
         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
           Configure pricing for all reward items
         </p>
@@ -212,18 +212,18 @@ export default function AdminRewardsPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex-1 rounded-lg bg-accent px-4 py-3 sm:py-2.5 text-sm sm:text-base font-medium text-white hover:bg-accent/90 disabled:opacity-50 transition-colors touch-none"
+          className="btn btn-primary h-12 flex-1 text-sm"
         >
           {saving ? "Saving..." : "💾 Save Changes"}
         </button>
         <button
           onClick={handleReset}
           disabled={saving}
-          className="flex-1 rounded-lg border border-gray-300 px-4 py-3 sm:py-2.5 text-sm sm:text-base font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors touch-none"
+          className="btn btn-outline h-12 flex-1 text-sm"
         >
           ↻ Reset
         </button>
@@ -234,6 +234,6 @@ export default function AdminRewardsPage() {
           Last updated: {new Date(config.updatedAt).toLocaleString()}
         </p>
       )}
-    </main>
+    </div>
   );
 }

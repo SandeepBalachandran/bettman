@@ -33,9 +33,9 @@ export default async function AdminPredictionsPage() {
   const groups = groupByMatch(matches, (match) => match);
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 sm:space-y-8 p-3 sm:p-4 md:p-6">
+    <div className="space-y-5 sm:space-y-6">
       <div className="space-y-1 sm:space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-bold gradient-text">All Predictions</h1>
+        <h1 className="gradient-text">Predictions</h1>
         <p className="text-xs sm:text-sm text-gray-500">
           {allUsers.length} player{allUsers.length === 1 ? "" : "s"} · every prediction across every match
         </p>
@@ -74,7 +74,7 @@ export default async function AdminPredictionsPage() {
                     {match.predictions.length === 0 ? (
                       <p className="text-xs text-gray-500">No predictions submitted yet.</p>
                     ) : (
-                      <ul className="space-y-1.5 text-xs">
+                      <ul className="space-y-2 text-xs sm:text-sm">
                         {match.predictions.map((prediction) => {
                           const has3rdScorer = prediction.scorers.length >= 3;
                           const has4thScorer = prediction.scorers.length >= 4;
@@ -83,7 +83,7 @@ export default async function AdminPredictionsPage() {
                           return (
                           <li
                             key={prediction.id}
-                            className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-1 sm:gap-2 rounded bg-gray-50 dark:bg-white/5 p-2 sm:p-2.5"
+                            className="flex flex-col gap-1.5 rounded-xl bg-white/[0.04] p-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2"
                           >
                             <div className="flex items-center gap-1">
                               <span className="font-semibold text-secondary line-clamp-1">
@@ -142,6 +142,6 @@ export default async function AdminPredictionsPage() {
           </section>
         );
       })}
-    </main>
+    </div>
   );
 }

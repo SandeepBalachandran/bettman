@@ -12,8 +12,8 @@ export default async function AdminSettlementPage() {
   const settlementLog = await getSettlementLog();
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
-      <h1 className="text-2xl font-bold gradient-text">Settlement Audit</h1>
+    <div className="space-y-5 sm:space-y-6">
+      <h1 className="gradient-text">Settlement Audit</h1>
 
       {settlementLog.length === 0 ? (
         <p className="text-sm text-gray-500">
@@ -53,6 +53,6 @@ export default async function AdminSettlementPage() {
           </table>
         </div>
       )}
-    </main>
+    </div>
   );
 }

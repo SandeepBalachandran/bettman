@@ -76,7 +76,7 @@ body {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.01em;
-  font-size: 2.6rem;
+  font-size: clamp(2rem, 8vw, 2.6rem);
   line-height: 1;
 }
 
@@ -349,6 +349,7 @@ body {
     border-radius: 0.75rem;
     border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
     background: color-mix(in srgb, var(--foreground) 3%, transparent);
+    min-height: 2.5rem;
     padding: 0.4rem 0.75rem;
     font-size: 0.8rem;
     transition:
@@ -389,3 +390,14 @@ body {
 .bg-accent .text-white {
   color: var(--accent-foreground);
 }
+
+/* Phones: 16px form text stops iOS zooming in on focus; scroll rows hide their bar. */
+@media (max-width: 640px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

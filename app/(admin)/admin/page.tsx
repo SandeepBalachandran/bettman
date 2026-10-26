@@ -53,7 +53,7 @@ export default async function AdminDashboardPage() {
   return (
     <>
 
-      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-5">
         <StatCard label="Players" value={userCount} color="accent" />
         <StatCard
           label="Matches"
@@ -71,11 +71,11 @@ export default async function AdminDashboardPage() {
 
       <SendNotificationForm users={players} />
 
-      <section className="card space-y-1 p-2 sm:p-4">
-        <h2 className="text-sm sm:text-lg font-medium">Leaderboard</h2>
-        <ol className="divide-y divide-[color-mix(in_srgb,var(--foreground)_8%,transparent)] text-xs">
+      <section className="card space-y-2 p-4">
+        <h2 className="font-display text-2xl leading-none">Leaderboard</h2>
+        <ol className="divide-y divide-[color-mix(in_srgb,var(--foreground)_8%,transparent)] text-sm">
           {leaderboard.map((entry, index) => (
-            <li key={entry.userId} className="flex justify-between py-1 sm:py-2 gap-2">
+            <li key={entry.userId} className="flex justify-between gap-2 py-2">
               <span className="truncate">
                 {index + 1}. {entry.name}
               </span>
@@ -85,35 +85,35 @@ export default async function AdminDashboardPage() {
         </ol>
       </section>
 
-      <section className="card space-y-2 p-2 sm:p-4">
-        <h2 className="text-sm sm:text-lg font-medium">💰 Coins</h2>
+      <section className="card space-y-3 p-4">
+        <h2 className="font-display text-2xl leading-none">Coins</h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2">
-          <div className="p-1.5 sm:p-2 bg-accent/10 rounded">
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-none">Total</p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="rounded-xl bg-accent/10 p-3">
+            <p className="text-xs leading-none text-gray-500">Total</p>
             <p className="text-sm sm:text-base font-bold text-accent">{totalCoinsInSystem}</p>
           </div>
-          <div className="p-1.5 sm:p-2 bg-success/10 rounded">
+          <div className="rounded-xl bg-success/10 p-3">
             <p className="text-xs text-gray-600 dark:text-gray-400 leading-none">Active</p>
             <p className="text-sm sm:text-base font-bold text-success">{usersWithCoins_}/{userCount}</p>
           </div>
-          <div className="p-1.5 sm:p-2 bg-highlight/10 rounded">
+          <div className="rounded-xl bg-highlight/10 p-3">
             <p className="text-xs text-gray-600 dark:text-gray-400 leading-none">Collect</p>
             <p className="text-sm sm:text-base font-bold text-highlight-foreground dark:text-highlight">{usersWhoCollectedCoins}</p>
           </div>
-          <div className="p-1.5 sm:p-2 bg-secondary/10 rounded">
+          <div className="rounded-xl bg-secondary/10 p-3">
             <p className="text-xs text-gray-600 dark:text-gray-400 leading-none">Avg</p>
             <p className="text-sm sm:text-base font-bold text-secondary">{avgCoinsPerUser}</p>
           </div>
         </div>
 
-        <table className="w-full text-xs">
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[color-mix(in_srgb,var(--foreground)_8%,transparent)]">
-              <th className="text-left py-1 sm:py-2 px-1">Name</th>
-              <th className="text-right py-1 sm:py-2 px-1">💰</th>
-              <th className="text-center py-1 sm:py-2 px-1">C</th>
-              <th className="text-right py-1 sm:py-2 px-1">D</th>
+              <th className="py-2 px-1 text-left">Name</th>
+              <th className="py-2 px-1 text-right">Coins</th>
+              <th className="py-2 px-1 text-center" title="Collected a daily reward">Daily</th>
+              <th className="py-2 px-1 text-right" title="Daily rewards collected">Days</th>
             </tr>
           </thead>
           <tbody>
@@ -123,16 +123,16 @@ export default async function AdminDashboardPage() {
               const hasCollected = rewardCount > 0;
               return (
                 <tr key={user.id} className="border-b border-[color-mix(in_srgb,var(--foreground)_4%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_2%,transparent)]">
-                  <td className="py-1 sm:py-2 px-1 truncate text-xs">{user.name}</td>
-                  <td className="text-right py-1 sm:py-2 px-1 font-semibold text-xs">{balance}</td>
-                  <td className="text-center py-1 sm:py-2 px-1">
-                    <span className={`inline-block px-0.5 py-0.5 rounded text-xs font-semibold ${
+                  <td className="max-w-0 truncate py-2 px-1">{user.name}</td>
+                  <td className="py-2 px-1 text-right font-semibold">{balance}</td>
+                  <td className="py-2 px-1 text-center">
+                    <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-semibold ${
                       hasCollected ? "bg-success/20 text-success" : "bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
                     }`}>
                       {hasCollected ? "✓" : "✗"}
                     </span>
                   </td>
-                  <td className="text-right py-1 sm:py-2 px-1 text-gray-600 dark:text-gray-400 text-xs">{rewardCount}</td>
+                  <td className="py-2 px-1 text-right text-gray-500">{rewardCount}</td>
                 </tr>
               );
             })}
@@ -162,9 +162,9 @@ function StatCard({
   readonly color: keyof typeof STAT_CARD_COLORS;
 }) {
   return (
-    <div className={`card card-interactive h-full border-t-4 p-1.5 sm:p-3 ${STAT_CARD_COLORS[color]}`}>
-      <p className="text-xs text-gray-500 leading-none">{label}</p>
-      <p className="text-sm sm:text-base md:text-lg font-bold break-words">{value}</p>
+    <div className={`card card-interactive h-full border-t-4 p-3 ${STAT_CARD_COLORS[color]}`}>
+      <p className="text-xs leading-none text-gray-500">{label}</p>
+      <p className="font-display mt-1.5 text-2xl leading-none break-words sm:text-3xl">{value}</p>
     </div>
   );
 }

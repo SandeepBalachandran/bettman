@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { toast } from "sonner";
 
 type SyncType = "all" | "live" | "detailed";
@@ -58,17 +57,12 @@ export default function SyncResultsPage() {
   };
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6 p-3 sm:p-4 md:p-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Sync Match Results</h1>
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            Pull the latest scores, results and goal scorers from the live results provider
-          </p>
-        </div>
-        <Link href="/admin" className="text-xs sm:text-sm text-accent hover:underline self-start sm:self-auto">
-          ← Back to Admin
-        </Link>
+    <div className="space-y-5 sm:space-y-6">
+      <div className="space-y-1">
+        <h1 className="gradient-text">Sync Results</h1>
+        <p className="text-xs text-gray-500 sm:text-sm">
+          Pull the latest scores, results and goal scorers from the live results provider
+        </p>
       </div>
 
       {/* Sync Type Selection */}
@@ -132,7 +126,7 @@ export default function SyncResultsPage() {
       <button
         onClick={handleSync}
         disabled={loading}
-        className="w-full rounded-lg bg-accent px-4 py-3 sm:py-2.5 font-medium text-white hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition touch-none"
+        className="btn btn-primary h-12 w-full text-sm"
       >
         {loading ? "🔄 Syncing..." : "▶ Start Sync"}
       </button>
@@ -201,7 +195,7 @@ export default function SyncResultsPage() {
           {/* Match Summary */}
           <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
             <p className="text-sm font-semibold mb-3">Match Summary</p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               <div className="p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
                 <p className="text-xs text-gray-600 dark:text-gray-400">Total</p>
                 <p className="text-lg font-bold">{result.summary.totalMatches}</p>
@@ -228,6 +222,6 @@ export default function SyncResultsPage() {
           <li>• For ISL every option does the same full sync (results + scorers + squads) — and it also runs on its own whenever someone opens the app</li>
         </ul>
       </div>
-    </main>
+    </div>
   );
 }

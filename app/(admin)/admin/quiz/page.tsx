@@ -51,8 +51,8 @@ export default async function QuizAdminPage() {
   );
 
   return (
-    <main className="mx-auto max-w-4xl space-y-4 sm:space-y-6 md:space-y-8 p-3 sm:p-4 md:p-6">
-      <h1 className="text-xl sm:text-2xl font-bold gradient-text">Quiz Management</h1>
+    <div className="space-y-5 sm:space-y-6">
+      <h1 className="gradient-text">Quiz</h1>
 
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         <QuizConfigForm initialConfig={config} />
@@ -60,46 +60,35 @@ export default async function QuizAdminPage() {
       </div>
 
       {/* Questions list */}
-      <section className="card p-3 sm:p-4">
+      <section className="card p-4">
         <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Questions ({questions.length})</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs sm:text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left py-2 px-2">Question</th>
-                <th className="text-center py-2 px-2">Difficulty</th>
-                <th className="text-center py-2 px-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {questions.map((q) => (
-                <tr key={q.id} className="border-b border-gray-100 dark:border-gray-800">
-                  <td className="py-2 px-2 text-xs">
-                    <p className="line-clamp-2">{q.question}</p>
-                  </td>
-                  <td className="text-center py-2 px-2">
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                      q.difficulty === 'EASY' ? 'bg-success/10 text-success' :
-                      q.difficulty === 'MEDIUM' ? 'bg-warning/10 text-warning' :
-                      'bg-danger/10 text-danger'
-                    }`}>
-                      {q.difficulty}
-                    </span>
-                  </td>
-                  <td className="text-center py-2 px-2">
-                    <span className={`text-xs font-medium ${q.active ? 'text-success' : 'text-gray-500'}`}>
-                      {q.active ? '✓ Active' : '✗ Inactive'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ul className="divide-y divide-white/[0.06]">
+          {questions.map((q) => (
+            <li key={q.id} className="space-y-1.5 py-2.5">
+              <p className="text-sm leading-snug">{q.question}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                    q.difficulty === "EASY"
+                      ? "bg-success/10 text-success"
+                      : q.difficulty === "MEDIUM"
+                        ? "bg-warning/10 text-warning"
+                        : "bg-danger/10 text-danger"
+                  }`}
+                >
+                  {q.difficulty}
+                </span>
+                <span className={`text-[11px] font-medium ${q.active ? "text-success" : "text-gray-500"}`}>
+                  {q.active ? "✓ Active" : "✗ Inactive"}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* Quiz history */}
-      <section className="card p-3 sm:p-4">
+      <section className="card p-4">
         <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Recent Quizzes (7 days)</h2>
         <div className="space-y-2">
           {quizAttemptCounts.length === 0 ? (
@@ -114,6 +103,6 @@ export default async function QuizAdminPage() {
           )}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -1,35 +1,56 @@
-import Link from "next/link";
+"use client";
 
+import { useEffect, useRef } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const LINKS = [
+  { href: "/admin", label: "Dashboard" },
+  { href: "/admin/matches", label: "Matches" },
+  { href: "/admin/predictions", label: "Predictions" },
+  { href: "/admin/users", label: "Players" },
+  { href: "/admin/money", label: "Finance" },
+  { href: "/admin/coins", label: "Coins" },
+  { href: "/admin/rewards", label: "Rewards" },
+  { href: "/admin/quiz", label: "Quiz" },
+  { href: "/admin/sync", label: "Sync" },
+  { href: "/admin/features", label: "Features" },
+];
+
+/** Admin section switcher: one swipeable row of pills on phones, wrapping on wider screens. */
 export function AdminNav() {
+  const pathname = usePathname();
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  // Keep the current section's pill visible in the swipeable row.
+  useEffect(() => {
+    const row = rowRef.current;
+    const active = row?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (row && active) row.scrollLeft = active.offsetLeft - (row.clientWidth - active.offsetWidth) / 2;
+  }, [pathname]);
+
   return (
-    <div className="flex flex-col gap-2 sm:gap-3 pb-4 sm:pb-6 border-b border-[color-mix(in_srgb,var(--foreground)_8%,transparent)]">
-      <h1 className="text-lg sm:text-2xl font-bold gradient-text">Admin Dashboard</h1>
-      <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 sm:gap-2 md:flex md:flex-wrap text-xs">
-        <Link href="/admin/users" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-          Players
-        </Link>
-        <Link
-          href="/admin/predictions"
-          className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1"
-        >
-          Predict
-        </Link>
-        <Link href="/admin/money" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-          Finance
-        </Link>
-        <Link href="/admin/rewards" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-          Rewards
-        </Link>
-        <Link href="/admin/quiz" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-          Quiz
-        </Link>
-        <Link href="/admin/coins" className="rounded-full bg-accent/10 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-accent hover:bg-accent/15 transition-colors line-clamp-1">
-          Coins
-        </Link>
-        <Link href="/admin/features" className="rounded-full bg-highlight/15 px-2 py-0.5 sm:px-3 sm:py-1 text-center text-highlight-foreground dark:text-highlight hover:bg-highlight/25 transition-colors line-clamp-1">
-          Features
-        </Link>
+    <nav aria-label="Admin sections" className="space-y-3">
+      <p className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">Admin</p>
+      <div ref={rowRef} className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+        {LINKS.map(({ href, label }) => {
+          const active = href === "/admin" ? pathname === href : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={`flex h-9 shrink-0 items-center rounded-full px-4 text-sm font-medium whitespace-nowrap transition-colors ${
+                active
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-white/[0.06] text-gray-300 hover:bg-white/10"
+              }`}
+            >
+              {label}
+            </Link>
+          );
+        })}
       </div>
-    </div>
+    </nav>
   );
 }

@@ -27,9 +27,9 @@ export function SyncMatchesButton() {
       type="button"
       disabled={isPending}
       onClick={handleSync}
-      className="btn btn-primary"
+      className="btn btn-primary h-10 text-sm"
     >
-      {isPending ? "Syncing…" : "Sync from live API"}
+      {isPending ? "Syncing…" : "Sync schedule"}
     </button>
   );
 }

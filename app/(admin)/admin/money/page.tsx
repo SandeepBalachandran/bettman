@@ -20,12 +20,12 @@ export default async function AdminMoneyPage() {
   const tournamentNet = totalMoneyWon - totalMoneyLost;
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 p-4 sm:p-6">
+    <div className="space-y-5 sm:space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-bold gradient-text sm:text-2xl">Admin Money Dashboard</h1>
+        <h1 className="gradient-text">Finance</h1>
         <Link
           href="/admin/settlement"
-          className="rounded-full bg-accent/10 px-3 py-1 text-sm text-accent self-start"
+          className="btn btn-outline h-9 self-start px-4 text-sm"
         >
           View settlement audit
         </Link>
@@ -47,10 +47,10 @@ export default async function AdminMoneyPage() {
       {sortedPlayers.length === 0 ? (
         <p className="text-sm text-gray-500">No players yet.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
-          <table className="w-full text-xs sm:text-sm">
+        <div className="table-card overflow-x-auto">
+          <table className="responsive-table w-full text-sm">
             <thead>
-              <tr className="text-left bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-800">
+              <tr className="text-left">
                 <th className="py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Player</th>
                 <th className="py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Won</th>
                 <th className="py-2 px-2 sm:py-2.5 sm:px-3 font-semibold">Lost</th>
@@ -62,9 +62,9 @@ export default async function AdminMoneyPage() {
             </thead>
             <tbody>
               {sortedPlayers.map((player) => (
-                <tr key={player.userId} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/5">
+                <tr key={player.userId}>
                   <td className="py-2 px-2 sm:py-2.5 sm:px-3 font-medium" data-label="Player">
-                    <span className="line-clamp-2">{player.name}</span>
+                    <span className="truncate">{player.name}</span>
                   </td>
                   <td className="py-2 px-2 sm:py-2.5 sm:px-3 text-success text-right sm:text-left font-medium" data-label="Won">
                     {formatMoney(player.moneyWon)}
@@ -95,7 +95,7 @@ export default async function AdminMoneyPage() {
                           amount: player.currentBalance,
                           note: "Bettman settlement",
                         })}
-                        className="btn btn-primary text-xs sm:text-sm whitespace-nowrap"
+                        className="btn btn-primary h-8 px-4 text-xs"
                       >
                         Pay
                       </a>
@@ -111,7 +111,7 @@ export default async function AdminMoneyPage() {
           </table>
         </div>
       )}
-    </main>
+    </div>
   );
 }
 
@@ -133,7 +133,7 @@ function SummaryCard({
   return (
     <div className={`card card-interactive border-t-4 p-3 sm:p-4 ${SUMMARY_CARD_COLORS[color]}`}>
       <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-lg font-bold wrap-break-word sm:text-xl">{value}</p>
+      <p className="font-display text-2xl leading-tight wrap-break-word sm:text-3xl">{value}</p>
     </div>
   );
 }

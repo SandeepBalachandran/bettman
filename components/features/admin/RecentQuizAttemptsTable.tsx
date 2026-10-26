@@ -81,15 +81,15 @@ export async function RecentQuizAttemptsTable() {
 
   return (
     <section className="card space-y-4 p-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <div className="flex items-center gap-2">
           <FIFAFootballIcon />
-          <h2 className="text-lg font-medium">Recent Quiz Attempts</h2>
+          <h2 className="font-display text-2xl leading-none">Recent Quiz Attempts</h2>
         </div>
-        <span className="text-sm text-gray-500">{attempts.length} total attempts</span>
+        <span className="text-xs text-gray-500">{attempts.length} total attempts</span>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="p-3 bg-accent/10 rounded-lg">
           <p className="text-xs text-gray-600 dark:text-gray-400">Total Attempts</p>
           <p className="text-lg font-bold text-accent">{stats.totalAttempts}</p>
