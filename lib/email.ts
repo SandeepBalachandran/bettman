@@ -2,7 +2,7 @@ import { Resend } from "resend";
 
 const apiKey = process.env.RESEND_API_KEY;
 const resend = apiKey ? new Resend(apiKey) : null;
-const fromEmail = process.env.RESEND_FROM_EMAIL || "noreply@fifu.app";
+const fromEmail = process.env.RESEND_FROM_EMAIL || "Bettman <onboarding@resend.dev>";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 // Brand colours (match app/globals.css). Email clients don't support CSS
