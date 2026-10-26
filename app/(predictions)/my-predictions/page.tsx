@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
-import { requireFeaturePage, getFeatureFlags, effectiveFlags } from "@/lib/feature-flags";
+import { requireFeaturePage, getFeatureFlags, effectiveFlags, showPointsScore } from "@/lib/feature-flags";
 import { TeamFlag } from "@/components/TeamFlag";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { isMatchLocked } from "@/lib/match-lock";
@@ -19,6 +19,7 @@ export default async function MyPredictionsPage() {
   const user = await requireAuth();
   await requireFeaturePage("navMyPredictions", user.role);
   const flags = effectiveFlags(await getFeatureFlags(), user.role);
+  const showPoints = await showPointsScore();
 
   const coinBalance = await prisma.coinBalance.findUnique({
     where: { userId: user.id },
@@ -115,9 +116,11 @@ export default async function MyPredictionsPage() {
                       <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                         {isFinished && (
                           <>
-                            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
-                              +{points} pts
-                            </span>
+                            {showPoints && (
+                              <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
+                                +{points} pts
+                              </span>
+                            )}
                             <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                               money >= 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'
                             }`}>

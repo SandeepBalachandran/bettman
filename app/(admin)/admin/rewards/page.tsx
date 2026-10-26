@@ -141,10 +141,10 @@ export default function AdminRewardsPage() {
         {/* 2x Points Booster */}
         <div className="space-y-2 sm:space-y-3 border-b border-gray-200 pb-4 sm:pb-6 dark:border-gray-800">
           <label className="block text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300">
-            ⚡ 2x Points Booster Cost
+            ⚡ 2x Booster Cost
           </label>
           <p className="text-xs text-gray-500">
-            Price users pay to activate 2x points multiplier
+            Price users pay to double their winnings on one prediction
           </p>
           <div className="flex items-center gap-2">
             <input

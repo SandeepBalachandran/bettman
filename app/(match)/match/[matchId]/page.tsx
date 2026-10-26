@@ -3,6 +3,10 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { calculateMatchPoints } from "@/lib/scoring";
+import { calculateMatchMoney } from "@/lib/money";
+import { moneyConfig } from "@/lib/money-config";
+import { formatMoney } from "@/lib/format-money";
+import { showPointsScore } from "@/lib/feature-flags";
 import { isMatchLocked } from "@/lib/match-lock";
 import { PerfectPredictionConfetti } from "@/components/features/match/PerfectPredictionConfetti";
 import { TeamFlag } from "@/components/TeamFlag";
@@ -27,6 +31,7 @@ export default async function MatchDetailsPage({
   const { matchId } = await params;
   const user = await requireAuth();
   refreshActiveCompetitionResults();
+  const showPoints = await showPointsScore();
 
   const match = await prisma.match.findUnique({
     where: { id: matchId },
@@ -63,6 +68,21 @@ export default async function MatchDetailsPage({
           },
           { winnerTeamId: match.winnerTeamId, isDraw: match.isDraw, wonOnPenalties: match.wonOnPenalties },
           match.scorers.map((s) => s.playerId)
+        )
+      : null;
+
+  const money =
+    isFinished && myPrediction
+      ? calculateMatchMoney(
+          {
+            winnerTeamId: myPrediction.winnerTeamId,
+            predictedDraw: myPrediction.predictedDraw,
+            scorerPlayerIds: myPrediction.scorers.map((s) => s.playerId),
+          },
+          { winnerTeamId: match.winnerTeamId, isDraw: match.isDraw, wonOnPenalties: match.wonOnPenalties },
+          match.scorers.map((s) => s.playerId),
+          moneyConfig,
+          myPrediction.usedPointsBooster
         )
       : null;
 
@@ -167,11 +187,19 @@ export default async function MatchDetailsPage({
                 </div>
               </div>
             )}
-            {points && (
+            {(showPoints ? points : money) && (
               <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs font-semibold text-highlight-foreground dark:text-highlight">
-                  ⭐ Points: {points.total} (winner {points.winnerPoints}, scorers {points.scorerPoints})
-                </p>
+                {showPoints && points ? (
+                  <p className="text-xs font-semibold text-highlight-foreground dark:text-highlight">
+                    ⭐ Points: {points.total} (winner {points.winnerPoints}, scorers {points.scorerPoints})
+                  </p>
+                ) : money ? (
+                  <p className={`text-xs font-semibold ${money.total >= 0 ? "text-success" : "text-danger"}`}>
+                    💰 {money.total >= 0 ? "+" : ""}
+                    {formatMoney(money.total)} (result {formatMoney(money.winnerMoney)}, scorers {formatMoney(money.scorerMoney)})
+                    {myPrediction?.usedPointsBooster && " · ⚡ 2x"}
+                  </p>
+                ) : null}
               </div>
             )}
           </div>

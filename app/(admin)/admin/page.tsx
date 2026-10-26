@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
-import { getLeaderboard } from "@/lib/leaderboard";
+import { getLeaderboard, rankEntries } from "@/lib/leaderboard";
+import { showPointsScore } from "@/lib/feature-flags";
 import { getAllUsersMoney } from "@/lib/leaderboard-money";
 import { formatMoney } from "@/lib/format-money";
 import { activeMatchWhere } from "@/lib/competition";
@@ -11,7 +12,7 @@ import { RecentQuizAttemptsTable } from "@/components/features/admin/RecentQuizA
 export default async function AdminDashboardPage() {
   await requireAdmin();
 
-  const [userCount, matchCount, finishedCount, predictionCount, leaderboard, playersMoney, players, usersWithCoins, dailyRewardStats] =
+  const [userCount, matchCount, finishedCount, predictionCount, rawLeaderboard, playersMoney, players, usersWithCoins, dailyRewardStats, showPoints] =
     await Promise.all([
       prisma.user.count(),
       prisma.match.count({ where: activeMatchWhere() }),
@@ -34,7 +35,9 @@ export default async function AdminDashboardPage() {
         _sum: { coins: true },
         _count: true,
       }),
+      showPointsScore(),
     ]);
+  const leaderboard = rankEntries(rawLeaderboard, showPoints ? "points" : "money");
 
   const tournamentNet = playersMoney.reduce((sum, p) => sum + p.currentBalance, 0);
 
@@ -79,7 +82,9 @@ export default async function AdminDashboardPage() {
               <span className="truncate">
                 {index + 1}. {entry.name}
               </span>
-              <span className="font-medium flex-shrink-0">{entry.total}</span>
+              <span className={`font-medium flex-shrink-0 ${showPoints ? "" : entry.money >= 0 ? "text-success" : "text-danger"}`}>
+                {showPoints ? `${entry.total} pts` : formatMoney(entry.money)}
+              </span>
             </li>
           ))}
         </ol>

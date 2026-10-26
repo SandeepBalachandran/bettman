@@ -68,6 +68,7 @@ export function LeaderboardRow({
   rankChange = 0,
   highlightedMetric = "points",
   winnerTag = null,
+  showPoints = true,
 }: {
   readonly entry: LeaderboardEntry;
   readonly rank: number;
@@ -79,6 +80,8 @@ export function LeaderboardRow({
   readonly highlightedMetric?: "points" | "money";
   /** Final-standings badge (e.g. "🏆 Points Champion") shown when the tournament is over. */
   readonly winnerTag?: string | null;
+  /** Off = hide the points total and the W/S/P points breakdown. */
+  readonly showPoints?: boolean;
 }) {
   const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
   const scorerGains = entry.scorerPoints - penalty;
@@ -130,13 +133,17 @@ export function LeaderboardRow({
           )}
           </div>
           <div className="mt-0.5 flex flex-wrap gap-0.5 sm:gap-1 text-[8px] sm:text-[10px]">
-          <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
-            W +{entry.winnerPoints}
-          </span>
-          <span className="rounded-full bg-success/10 px-1 sm:px-1.5 py-0.5 font-medium text-success">
-            S +{scorerGains}
-          </span>
-          {penalty < 0 && (
+          {showPoints && (
+            <>
+              <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
+                W +{entry.winnerPoints}
+              </span>
+              <span className="rounded-full bg-success/10 px-1 sm:px-1.5 py-0.5 font-medium text-success">
+                S +{scorerGains}
+              </span>
+            </>
+          )}
+          {showPoints && penalty < 0 && (
             <span className="rounded-full bg-danger/10 px-1 sm:px-1.5 py-0.5 font-medium text-danger">
               P {penalty}
             </span>
@@ -172,9 +179,11 @@ export function LeaderboardRow({
                 <p className="text-lg sm:text-xl font-extrabold">{formatMoney(moneyBalance)}</p>
                 <p className="text-[8px] sm:text-[10px] text-gray-400">💰</p>
               </div>
-              <div className={`rounded-lg px-2 py-1 transition-all`}>
-                <p className="text-[8px] sm:text-[10px] font-semibold text-gray-500">{entry.total} pts</p>
-              </div>
+              {showPoints && (
+                <div className={`rounded-lg px-2 py-1 transition-all`}>
+                  <p className="text-[8px] sm:text-[10px] font-semibold text-gray-500">{entry.total} pts</p>
+                </div>
+              )}
             </>
           )}
         </div>

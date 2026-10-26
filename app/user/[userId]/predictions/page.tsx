@@ -9,6 +9,7 @@ import { formatMoney } from "@/lib/format-money";
 import { PenaltyBadge } from "@/components/PenaltyBadge";
 import { activeMatchWhere } from "@/lib/competition";
 import { groupByMatch } from "@/lib/match-groups";
+import { showPointsScore } from "@/lib/feature-flags";
 import Link from "next/link";
 
 export default async function UserPredictionsPage({
@@ -18,6 +19,7 @@ export default async function UserPredictionsPage({
 }) {
   const currentUser = await requireAuth();
   const { userId } = await params;
+  const showPoints = await showPointsScore();
 
   // Fetch the user whose predictions we're viewing
   const user = await prisma.user.findUnique({
@@ -162,10 +164,12 @@ export default async function UserPredictionsPage({
             Total Performance (Finished Matches)
           </h2>
           <div className="flex flex-wrap gap-8 pt-1">
-            <div>
-              <p className="text-3xl font-bold text-accent">{totalPoints}</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Total Points</p>
-            </div>
+            {showPoints && (
+              <div>
+                <p className="text-3xl font-bold text-accent">{totalPoints}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Total Points</p>
+              </div>
+            )}
             <div>
               <p
                 className={`text-3xl font-bold ${
@@ -244,9 +248,11 @@ export default async function UserPredictionsPage({
                           />
                         </span>
                         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                          <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
-                            +{points} pts
-                          </span>
+                          {showPoints && (
+                            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
+                              +{points} pts
+                            </span>
+                          )}
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                               money >= 0
@@ -382,8 +388,9 @@ export default async function UserPredictionsPage({
 
                     {/* Score Breakdown */}
                     <div className="border-t border-gray-200 pt-4 dark:border-gray-800">
-                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div className={`grid gap-4 ${showPoints ? "sm:grid-cols-2" : ""}`}>
                         {/* Points Breakdown */}
+                        {showPoints && (
                         <div className="space-y-2">
                           <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Points</p>
                           <div className="space-y-1.5">
@@ -406,6 +413,7 @@ export default async function UserPredictionsPage({
                             </div>
                           </div>
                         </div>
+                        )}
 
                         {/* Money Breakdown */}
                         <div className="space-y-2">

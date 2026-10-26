@@ -15,7 +15,7 @@ let inFlight: Promise<SyncIslResultsResult | null> | null = null;
 export function finishedMatchPushBody(match: FinishedIslMatch): string {
   const outcome = match.winnerName ? `${match.winnerName} won` : "it's a draw";
   const scorers = match.scorerNames.length > 0 ? ` Scorers: ${match.scorerNames.join(", ")}.` : "";
-  return `${match.homeTeamName} ${match.homeScore}–${match.awayScore} ${match.awayTeamName} — ${outcome}.${scorers} Check your points and money.`;
+  return `${match.homeTeamName} ${match.homeScore}–${match.awayScore} ${match.awayTeamName} — ${outcome}.${scorers} See how your picks did.`;
 }
 
 export async function notifyFinishedMatches(finished: FinishedIslMatch[]): Promise<void> {

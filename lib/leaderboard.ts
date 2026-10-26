@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { calculateMatchPoints } from "@/lib/scoring";
+import { calculateMatchMoney } from "@/lib/money";
+import { moneyConfig } from "@/lib/money-config";
 import { activeMatchWhere } from "@/lib/competition";
 
 export type LeaderboardEntry = {
@@ -9,6 +11,8 @@ export type LeaderboardEntry = {
   winnerPoints: number;
   scorerPoints: number;
   total: number;
+  /** Money balance from finished matches (same figure as getUserMoney().currentBalance). */
+  money: number;
 };
 
 type FinishedMatchWithPredictions = {
@@ -39,6 +43,7 @@ function computeLeaderboardEntries(
         winnerPoints: 0,
         scorerPoints: 0,
         total: 0,
+        money: 0,
       },
     ])
   );
@@ -52,24 +57,28 @@ function computeLeaderboardEntries(
         continue;
       }
 
-      const points = calculateMatchPoints(
-        {
-          winnerTeamId: prediction.winnerTeamId,
-          predictedDraw: prediction.predictedDraw,
-          scorerPlayerIds: prediction.scorers.map((s) => s.playerId),
-        },
-        { winnerTeamId: match.winnerTeamId, isDraw: match.isDraw, wonOnPenalties: match.wonOnPenalties },
-        actualScorerPlayerIds,
-        prediction.usedPointsBooster
-      );
+      const pick = {
+        winnerTeamId: prediction.winnerTeamId,
+        predictedDraw: prediction.predictedDraw,
+        scorerPlayerIds: prediction.scorers.map((s) => s.playerId),
+      };
+      const outcome = { winnerTeamId: match.winnerTeamId, isDraw: match.isDraw, wonOnPenalties: match.wonOnPenalties };
+      const points = calculateMatchPoints(pick, outcome, actualScorerPlayerIds, prediction.usedPointsBooster);
+      const money = calculateMatchMoney(pick, outcome, actualScorerPlayerIds, moneyConfig, prediction.usedPointsBooster);
 
       entry.winnerPoints += points.winnerPoints;
       entry.scorerPoints += points.scorerPoints;
       entry.total += points.total;
+      entry.money += money.total;
     }
   }
 
   return Array.from(entries.values()).sort((a, b) => b.total - a.total);
+}
+
+/** Order a leaderboard by the score the app is showing: points, or money when points are hidden. */
+export function rankEntries(entries: LeaderboardEntry[], by: "points" | "money"): LeaderboardEntry[] {
+  return [...entries].sort((a, b) => (by === "points" ? b.total - a.total : b.money - a.money));
 }
 
 async function getUsersAndFinishedMatches() {

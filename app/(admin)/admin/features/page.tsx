@@ -16,7 +16,8 @@ type FlagKey =
   | "navMyPredictions"
   | "navLeaderboard"
   | "navMoney"
-  | "fixturesChronological";
+  | "fixturesChronological"
+  | "showPoints";
 
 type FlagValues = Record<FlagKey, boolean>;
 
@@ -27,7 +28,7 @@ const FEATURES: { key: FlagKey; icon: string; name: string; description: string 
   { key: "pushBanner", icon: "🔔", name: "Push Notification Prompt", description: "Enable-notifications banner" },
   { key: "finalDayBanner", icon: "🏆", name: "Final Day Popup", description: "Final day celebration popup" },
   { key: "rewardsPage", icon: "🎁", name: "Rewards Page", description: "Rewards page and its menu link" },
-  { key: "booster", icon: "⚡", name: "2x Points Booster", description: "Booster button in prediction flow" },
+  { key: "booster", icon: "⚡", name: "2x Booster", description: "Booster button in prediction flow" },
   { key: "dailyRewardClaim", icon: "📅", name: "Daily Reward Claim", description: "Claim button in the header" },
   { key: "navFixtures", icon: "🗓️", name: "Fixtures Menu", description: "Fixtures menu item and page" },
   { key: "navMyPredictions", icon: "📝", name: "My Predictions Menu", description: "My Predictions menu item and page" },
@@ -40,15 +41,25 @@ const FEATURES: { key: FlagKey; icon: string; name: string; description: string 
     description:
       "On: date order, auto-scrolled to the live or latest finished match. Off: upcoming matchweeks first, finished ones at the bottom. Applies to admins too.",
   },
+  {
+    key: "showPoints",
+    icon: "⭐",
+    name: "Points Score",
+    description:
+      "Show points next to money on the leaderboard, match and prediction pages. Off: money is the only score. Points keep being counted either way. Applies to admins too.",
+  },
 ];
 
+/** Flags that are off unless turned on (mirrors FLAGS_DEFAULT_OFF in lib/feature-flags). */
+const DEFAULT_OFF: FlagKey[] = ["showPoints"];
+
 const DEFAULT_FLAGS: FlagValues = Object.fromEntries(
-  FEATURES.map((f) => [f.key, true])
+  FEATURES.map((f) => [f.key, !DEFAULT_OFF.includes(f.key)])
 ) as FlagValues;
 
 function pickFlags(data: Record<string, unknown>): FlagValues {
   return Object.fromEntries(
-    FEATURES.map((f) => [f.key, Boolean(data[f.key] ?? true)])
+    FEATURES.map((f) => [f.key, Boolean(data[f.key] ?? !DEFAULT_OFF.includes(f.key))])
   ) as FlagValues;
 }
 

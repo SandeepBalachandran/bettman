@@ -32,13 +32,13 @@ export function BoosterActivatedModal({ isOpen, onClose }: BoosterActivatedModal
             2x Booster Activated!
           </h2>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-            Your points will be doubled on this match
+            Your winnings on this match will be doubled
           </p>
         </div>
 
         <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 sm:p-4 border border-amber-200 dark:border-amber-800">
           <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-300 font-semibold">
-            💡 Tip: Your predictions with the booster will earn 2x points!
+            💡 Tip: Correct picks on this match pay out 2x. Losses aren't doubled.
           </p>
         </div>
 

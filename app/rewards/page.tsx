@@ -32,7 +32,7 @@ export default async function RewardsPage() {
       <div className="space-y-1 sm:space-y-2">
         <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Daily Rewards</h1>
         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-          Claim coins every day and spend them on extra scorer picks and points boosters.
+          Claim coins every day and spend them on extra scorer picks and 2x boosters.
         </p>
       </div>
 
@@ -114,8 +114,8 @@ export default async function RewardsPage() {
           <RewardUnlockCard
             slot="booster"
             balance={balance}
-            title="Points Booster"
-            description="Double your points and money on one prediction (from My Predictions)"
+            title="2x Booster"
+            description="Double your winnings on one prediction (from My Predictions)"
           />
           <RewardUnlockCard
             slot={3}

@@ -12,6 +12,8 @@ export type LeaderboardListProps = {
   moneyByUserId: Map<string, number>;
   streakByUserId: Map<string, number>;
   tournamentComplete?: boolean;
+  /** Off = money is the only score: no points/money switch, ranked by money. */
+  showPoints?: boolean;
 };
 
 type SortBy = "points" | "money";
@@ -23,8 +25,10 @@ export function LeaderboardList({
   moneyByUserId,
   streakByUserId,
   tournamentComplete = false,
+  showPoints = true,
 }: LeaderboardListProps) {
-  const [sortBy, setSortBy] = useState<SortBy>("points");
+  const [chosenSort, setSortBy] = useState<SortBy>("points");
+  const sortBy: SortBy = showPoints ? chosenSort : "money";
 
   // Celebrate the champions on every visit/reload once the tournament is over
   useEffect(() => {
@@ -53,6 +57,7 @@ export function LeaderboardList({
 
   return (
     <div className="space-y-4">
+      {showPoints && (
       <div className="flex gap-2">
         <button
           onClick={() => setSortBy("points")}
@@ -71,6 +76,7 @@ export function LeaderboardList({
           💰 <span className="hidden xs:inline">Money</span><span className="xs:hidden">Money</span>
         </button>
       </div>
+      )}
 
       <div className="space-y-3 sm:space-y-4">
         {sorted.map((entry, index) => {
@@ -93,6 +99,7 @@ export function LeaderboardList({
               rankChange={previousRank - rank}
               highlightedMetric={sortBy}
               winnerTag={winnerTag}
+              showPoints={showPoints}
             />
           );
         })}

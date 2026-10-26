@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
-import { requireFeaturePage } from "@/lib/feature-flags";
-import { getLeaderboard, getPreviousLeaderboard } from "@/lib/leaderboard";
+import { requireFeaturePage, showPointsScore } from "@/lib/feature-flags";
+import { getLeaderboard, getPreviousLeaderboard, rankEntries } from "@/lib/leaderboard";
 import { getUserMoney } from "@/lib/leaderboard-money";
 import { getUserWinnerStreak } from "@/lib/round-mvp";
 import { activeMatchWhere, getActiveCompetition } from "@/lib/competition";
@@ -16,12 +16,17 @@ export default async function LeaderboardPage() {
   await requireFeaturePage("navLeaderboard", user.role);
   refreshActiveCompetitionResults();
 
-  const [leaderboard, previousLeaderboard, matchCount, unfinishedCount] = await Promise.all([
+  const [rawLeaderboard, rawPreviousLeaderboard, matchCount, unfinishedCount, showPoints] = await Promise.all([
     getLeaderboard(),
     getPreviousLeaderboard(),
     prisma.match.count({ where: activeMatchWhere() }),
     prisma.match.count({ where: { ...activeMatchWhere(), status: { not: "FINISHED" } } }),
+    showPointsScore(),
   ]);
+  // With points hidden, money is the only score — rank (and rank movement) by it.
+  const rankBy = showPoints ? "points" : "money";
+  const leaderboard = rankEntries(rawLeaderboard, rankBy);
+  const previousLeaderboard = rankEntries(rawPreviousLeaderboard, rankBy);
 
   // Champions are crowned once every match of the competition has been played.
   const tournamentComplete = matchCount > 0 && unfinishedCount === 0;
@@ -59,12 +64,18 @@ export default async function LeaderboardPage() {
         <div className="card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4">
           <p className="text-xs sm:text-sm">
             You&apos;re <span className="font-bold">#{myRank}</span> with{" "}
-            <span className="font-bold">{myEntry.total} pts</span> ({formatMoney(myBalance)})
+            {showPoints ? (
+              <>
+                <span className="font-bold">{myEntry.total} pts</span> ({formatMoney(myBalance)})
+              </>
+            ) : (
+              <span className={`font-bold ${myBalance >= 0 ? "text-success" : "text-danger"}`}>{formatMoney(myBalance)}</span>
+            )}
           </p>
           <ShareToWhatsApp
-            text={`⚽ ${getActiveCompetition().shortName} Predictions update!\nI'm #${myRank} on the leaderboard with ${myEntry.total} pts (${formatMoney(
-              myBalance
-            )}). Think you can beat me?${appUrl ? ` Check it out: ${appUrl}` : ""}`}
+            text={`⚽ ${getActiveCompetition().shortName} Predictions update!\nI'm #${myRank} on the leaderboard with ${
+              showPoints ? `${myEntry.total} pts (${formatMoney(myBalance)})` : formatMoney(myBalance)
+            }. Think you can beat me?${appUrl ? ` Check it out: ${appUrl}` : ""}`}
           />
         </div>
       )}
@@ -72,24 +83,28 @@ export default async function LeaderboardPage() {
       {leaderboard.length > 0 && (
         <div className="card flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1.5 p-2 sm:p-3 text-[9px] sm:text-[11px] text-gray-500">
           <span className="font-semibold text-gray-400">Legend:</span>
-          <span className="inline-flex items-center gap-0.5 sm:gap-1">
-            <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
-              W
-            </span>
-            <span className="hidden sm:inline">winner points</span><span className="sm:hidden">wins</span>
-          </span>
-          <span className="inline-flex items-center gap-0.5 sm:gap-1">
-            <span className="rounded-full bg-success/10 px-1 sm:px-1.5 py-0.5 font-medium text-success">
-              S
-            </span>
-            <span className="hidden sm:inline">scorer points</span><span className="sm:hidden">scorers</span>
-          </span>
-          <span className="inline-flex items-center gap-0.5 sm:gap-1">
-            <span className="rounded-full bg-danger/10 px-1 sm:px-1.5 py-0.5 font-medium text-danger">
-              P
-            </span>
-            <span className="hidden sm:inline">penalty</span><span className="sm:hidden">pen</span>
-          </span>
+          {showPoints && (
+            <>
+              <span className="inline-flex items-center gap-0.5 sm:gap-1">
+                <span className="rounded-full bg-accent/10 px-1 sm:px-1.5 py-0.5 font-medium text-accent">
+                  W
+                </span>
+                <span className="hidden sm:inline">winner points</span><span className="sm:hidden">wins</span>
+              </span>
+              <span className="inline-flex items-center gap-0.5 sm:gap-1">
+                <span className="rounded-full bg-success/10 px-1 sm:px-1.5 py-0.5 font-medium text-success">
+                  S
+                </span>
+                <span className="hidden sm:inline">scorer points</span><span className="sm:hidden">scorers</span>
+              </span>
+              <span className="inline-flex items-center gap-0.5 sm:gap-1">
+                <span className="rounded-full bg-danger/10 px-1 sm:px-1.5 py-0.5 font-medium text-danger">
+                  P
+                </span>
+                <span className="hidden sm:inline">penalty</span><span className="sm:hidden">pen</span>
+              </span>
+            </>
+          )}
           <span className="inline-flex items-center gap-0.5 sm:gap-1">
             <span className="rounded-full bg-highlight/15 px-1 sm:px-1.5 py-0.5 font-medium text-highlight-foreground dark:text-highlight">
               🔥
@@ -114,6 +129,7 @@ export default async function LeaderboardPage() {
           moneyByUserId={moneyByUserId}
           streakByUserId={streakByUserId}
           tournamentComplete={tournamentComplete}
+          showPoints={showPoints}
         />
       )}
 
@@ -121,16 +137,18 @@ export default async function LeaderboardPage() {
         <div className="space-y-2">
           <p className="font-semibold text-xs sm:text-sm">📋 Scoring Guide</p>
           <div className="space-y-1 sm:space-y-1.5 text-[11px] sm:text-xs text-gray-600 dark:text-gray-400">
-            <div>
-              <p className="font-medium text-gray-700 dark:text-gray-300 mb-0.5 sm:mb-1">
-                ⭐ <span className="text-accent">Points</span>
-              </p>
-              <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
-                <li>✅ Correct result (winner or draw): +30 pts</li>
-                <li>✅ Correct scorer: +10 pts per goal</li>
-                <li>❌ Wrong scorer: 0</li>
-              </ul>
-            </div>
+            {showPoints && (
+              <div>
+                <p className="font-medium text-gray-700 dark:text-gray-300 mb-0.5 sm:mb-1">
+                  ⭐ <span className="text-accent">Points</span>
+                </p>
+                <ul className="ml-3 sm:ml-5 list-disc space-y-0.5 text-[10px] sm:text-xs">
+                  <li>✅ Correct result (winner or draw): +30 pts</li>
+                  <li>✅ Correct scorer: +10 pts per goal</li>
+                  <li>❌ Wrong scorer: 0</li>
+                </ul>
+              </div>
+            )}
             <div>
               <p className="font-medium text-gray-700 dark:text-gray-300 mb-0.5 sm:mb-1">
                 💰 <span className="text-success">Money</span>
@@ -143,7 +161,9 @@ export default async function LeaderboardPage() {
               </ul>
             </div>
             <p className="text-[9px] sm:text-[10px] text-gray-500 italic mt-1 sm:mt-2">
-              💡 If a player scores multiple goals, you get points/money for each goal. Points reward only. Money has penalties.
+              {showPoints
+                ? "💡 If a player scores multiple goals, you get points/money for each goal. Points reward only. Money has penalties."
+                : "💡 If a player scores multiple goals, you get money for each goal. A 2x booster doubles what you win on that match."}
             </p>
           </div>
         </div>

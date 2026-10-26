@@ -24,7 +24,7 @@ const FEATURES = [
   {
     icon: Goal,
     title: "Goal Scorer Picks",
-    description: "Name 2–4 goal scorers per match — +10 points for every goal they score.",
+    description: "Name 2–4 goal scorers per match — you win for every goal they score.",
   },
   {
     icon: Trophy,
@@ -72,14 +72,14 @@ const STEPS = [
   {
     number: "3",
     title: "Climb & earn coins",
-    description: "Score points, chase daily rewards, and watch your name rise up the leaderboard.",
+    description: "Win on every correct call, chase daily rewards, and watch your name rise up the leaderboard.",
   },
 ];
 
 const PREVIEW_ROWS = [
-  { medal: "🥇", name: "Priya", pts: 285 },
-  { medal: "🥈", name: "Arjun", pts: 260 },
-  { medal: "🥉", name: "You", pts: 245, isYou: true },
+  { medal: "🥇", name: "Priya", amount: "₹285" },
+  { medal: "🥈", name: "Arjun", amount: "₹260" },
+  { medal: "🥉", name: "You", amount: "₹245", isYou: true },
 ];
 
 export function Landing() {
@@ -155,7 +155,7 @@ export function Landing() {
                       <span>{row.medal}</span>
                       {row.name}
                     </span>
-                    <span className="font-display text-xl leading-none">{row.pts} pts</span>
+                    <span className="font-display text-xl leading-none">{row.amount}</span>
                   </motion.div>
                 ))}
               </div>
