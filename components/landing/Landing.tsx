@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { InstallButton } from "@/components/InstallButton";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -78,6 +79,19 @@ const STEPS = [
   },
 ];
 
+/**
+ * Hero photo. Only openly licensed photos (Wikimedia Commons) with their credit —
+ * club/league/agency photos are copyrighted. Add more here to rotate later.
+ */
+const HERO_PHOTO = {
+  src: "/landing/adrian-luna.webp",
+  alt: "Adrian Luna smiling in a Kerala Blasters training kit",
+  player: "Adrian Luna",
+  credit: "Sonu Shaji01",
+  licence: "CC BY-SA 4.0",
+  licenceUrl: "https://commons.wikimedia.org/wiki/File:Adrian_Luna_Kerala.jpg",
+};
+
 const PREVIEW_ROWS = [
   { medal: "🥇", name: "Priya", amount: "₹285" },
   { medal: "🥈", name: "Arjun", amount: "₹260" },
@@ -146,26 +160,52 @@ export function Landing({
             transition={{ duration: 0.5, delay: 0.15 }}
             className="w-full flex-1 md:max-w-sm"
           >
-            <div className="card gradient-header p-4 text-white shadow-2xl">
-              <p className="font-display mb-3 text-2xl leading-none">Leaderboard</p>
-              <div className="space-y-2">
-                {PREVIEW_ROWS.map((row, i) => (
-                  <motion.div
-                    key={row.name}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: 0.3 + i * 0.12 }}
-                    className={`flex items-center justify-between rounded-xl px-3 py-2 ${
-                      row.isYou ? "bg-accent text-accent-foreground" : "bg-white/[0.06]"
-                    }`}
-                  >
-                    <span className="flex items-center gap-2 text-sm font-medium">
-                      <span>{row.medal}</span>
-                      {row.name}
-                    </span>
-                    <span className="font-display text-xl leading-none">{row.amount}</span>
-                  </motion.div>
-                ))}
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-[#161616] shadow-2xl ring-1 ring-white/10">
+              <Image
+                src={HERO_PHOTO.src}
+                alt={HERO_PHOTO.alt}
+                fill
+                priority
+                sizes="(min-width: 768px) 384px, 100vw"
+                className="object-cover object-top"
+              />
+              {/* Fade into the page at the bottom, lime glow top-right */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/5 to-black/90" aria-hidden="true" />
+              <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-accent/35 blur-3xl" aria-hidden="true" />
+
+              <a
+                href={HERO_PHOTO.licenceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute top-3 right-4 max-w-[70%] truncate text-[10px] text-white/60 hover:text-white"
+              >
+                Photo: {HERO_PHOTO.credit} · {HERO_PHOTO.licence}
+              </a>
+              <span className="absolute top-3 left-4 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur">
+                {HERO_PHOTO.player}
+              </span>
+
+              <div className="absolute inset-x-3 bottom-3 rounded-3xl bg-black/55 p-3 ring-1 ring-white/10 backdrop-blur-md">
+                <p className="font-display mb-2 text-2xl leading-none text-white">Leaderboard</p>
+                <div className="space-y-1.5">
+                  {PREVIEW_ROWS.map((row, i) => (
+                    <motion.div
+                      key={row.name}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.3 + i * 0.12 }}
+                      className={`flex items-center justify-between rounded-xl px-3 py-1.5 ${
+                        row.isYou ? "bg-accent text-accent-foreground" : "bg-white/[0.08] text-white"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 text-sm font-medium">
+                        <span>{row.medal}</span>
+                        {row.name}
+                      </span>
+                      <span className="font-display text-xl leading-none">{row.amount}</span>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
