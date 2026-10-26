@@ -2,7 +2,7 @@
 
 import { AuthError } from "next-auth";
 import { z } from "zod";
-import { signIn, signOut } from "@/lib/auth";
+import { EmailNotVerifiedError, signIn, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validatePasswordStrength } from "@/lib/password";
 import { createVerificationToken, invalidateToken, verifyEmailToken } from "@/lib/verification-token";
@@ -40,8 +40,7 @@ export async function login(
     return {};
   } catch (error) {
     if (error instanceof AuthError) {
-      const errorMessage = error.message || "";
-      if (errorMessage.includes("Email not verified")) {
+      if (error instanceof EmailNotVerifiedError || (error as { code?: string }).code === "email_not_verified") {
         return { error: "Please verify your email before signing in." };
       }
       return { error: "Invalid email or password." };

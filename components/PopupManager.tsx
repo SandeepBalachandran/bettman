@@ -37,7 +37,8 @@ export function PopupManager() {
         if (dailyCoinsEnabled) {
           // Fetch reward data via API
           const response = await fetch("/api/rewards/progress");
-          if (response.ok) {
+          // Signed out, the proxy redirects this to the login page's HTML — skip it.
+          if (response.ok && response.headers.get("content-type")?.includes("application/json")) {
             const data = await response.json();
             const {
               campaignActive,

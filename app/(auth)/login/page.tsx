@@ -80,15 +80,20 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="remember" />
-          Remember me
-        </label>
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" name="remember" />
+            Remember me
+          </label>
+          <Link href="/forgot-password" className="font-medium text-accent hover:underline">
+            Forgot password?
+          </Link>
+        </div>
 
         {state.error && (
           <div className="rounded-lg bg-danger/10 p-3 text-sm text-danger" role="alert">
             {state.error}
-            {state.error.includes("Email not verified") && (
+            {state.error.includes("verify your email") && (
               <p className="text-xs mt-1">
                 Check your inbox for the verification link, or{" "}
                 <Link href="/signup" className="underline hover:no-underline">

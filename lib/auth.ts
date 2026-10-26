@@ -1,8 +1,13 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+
+/** Right password, but the account's email hasn't been verified yet. */
+export class EmailNotVerifiedError extends CredentialsSignin {
+  code = "email_not_verified";
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -29,14 +34,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        // Check if email is verified
-        if (!user.emailVerified) {
-          throw new Error("Email not verified");
-        }
-
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
           return null;
+        }
+
+        // Only reveal the unverified state to someone who knows the password.
+        if (!user.emailVerified) {
+          throw new EmailNotVerifiedError();
         }
 
         return {
