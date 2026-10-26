@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { calculateMatchPoints } from "@/lib/scoring";
+import { calculateMatchPoints, isResultPickCorrect } from "@/lib/scoring";
 import { calculateMatchMoney } from "@/lib/money";
 import { moneyConfig } from "@/lib/money-config";
 import { activeMatchWhere } from "@/lib/competition";
@@ -13,6 +13,12 @@ export type LeaderboardEntry = {
   total: number;
   /** Money balance from finished matches (same figure as getUserMoney().currentBalance). */
   money: number;
+  /** Finished matches this player predicted. */
+  matchesPlayed: number;
+  /** Finished matches where the result pick (winner or draw) was right — first prize tiebreaker. */
+  correctResults: number;
+  /** Goals scored by the player's scorer picks — second prize tiebreaker. */
+  correctScorerGoals: number;
 };
 
 type FinishedMatchWithPredictions = {
@@ -44,6 +50,9 @@ function computeLeaderboardEntries(
         scorerPoints: 0,
         total: 0,
         money: 0,
+        matchesPlayed: 0,
+        correctResults: 0,
+        correctScorerGoals: 0,
       },
     ])
   );
@@ -70,6 +79,9 @@ function computeLeaderboardEntries(
       entry.scorerPoints += points.scorerPoints;
       entry.total += points.total;
       entry.money += money.total;
+      entry.matchesPlayed += 1;
+      if (isResultPickCorrect(pick, outcome)) entry.correctResults += 1;
+      entry.correctScorerGoals += actualScorerPlayerIds.filter((id) => pick.scorerPlayerIds.includes(id)).length;
     }
   }
 

@@ -10,6 +10,8 @@ import { refreshActiveCompetitionResults } from "@/lib/refresh-results";
 import { LeaderboardList } from "@/components/features/leaderboard/LeaderboardList";
 import { ShareToWhatsApp } from "@/components/ShareToWhatsApp";
 import { formatMoney } from "@/lib/format-money";
+import { getCurrentPrizeHolders, getPrizeSettings } from "@/lib/prizes";
+import { PrizesCard } from "@/components/PrizesCard";
 
 export default async function LeaderboardPage() {
   const user = await requireAuth();
@@ -23,6 +25,7 @@ export default async function LeaderboardPage() {
     prisma.match.count({ where: { ...activeMatchWhere(), status: { not: "FINISHED" } } }),
     showPointsScore(),
   ]);
+  const [prizeSettings, prizeByUserId] = await Promise.all([getPrizeSettings(), getCurrentPrizeHolders()]);
   // With points hidden, money is the only score — rank (and rank movement) by it.
   const rankBy = showPoints ? "points" : "money";
   const leaderboard = rankEntries(rawLeaderboard, rankBy);
@@ -130,8 +133,11 @@ export default async function LeaderboardPage() {
           streakByUserId={streakByUserId}
           tournamentComplete={tournamentComplete}
           showPoints={showPoints}
+          prizeByUserId={prizeByUserId}
         />
       )}
+
+      <PrizesCard settings={prizeSettings} seasonName={getActiveCompetition().name} />
 
       <div className="card space-y-2 sm:space-y-3 p-3 sm:p-4">
         <div className="space-y-2">

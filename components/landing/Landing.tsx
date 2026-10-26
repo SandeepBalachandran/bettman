@@ -4,6 +4,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { InstallButton } from "@/components/InstallButton";
 import { BrandLogo } from "@/components/BrandLogo";
+import { PrizesCard } from "@/components/PrizesCard";
+import type { PrizeSettings } from "@/lib/prizes";
 import {
   Target,
   Goal,
@@ -82,7 +84,13 @@ const PREVIEW_ROWS = [
   { medal: "🥉", name: "You", amount: "₹245", isYou: true },
 ];
 
-export function Landing() {
+export function Landing({
+  prizes,
+  seasonName,
+}: {
+  readonly prizes: PrizeSettings;
+  readonly seasonName: string;
+}) {
   return (
     <main className="flex flex-col">
       {/* Header */}
@@ -209,6 +217,14 @@ export function Landing() {
       </section>
 
       {/* Bottom CTA */}
+      {prizes.enabled && (
+        <section className="px-5 pb-14 sm:px-8 sm:pb-16">
+          <div className="mx-auto max-w-xl">
+            <PrizesCard settings={prizes} seasonName={seasonName} compact />
+          </div>
+        </section>
+      )}
+
       <section className="mx-4 rounded-[2rem] bg-accent px-6 py-12 text-center text-accent-foreground sm:mx-8">
         <h2 className="font-display text-4xl leading-none uppercase sm:text-5xl">Ready to prove you know football?</h2>
         <p className="mt-3 text-sm font-medium sm:text-base">

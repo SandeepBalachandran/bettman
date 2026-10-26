@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/admin/money", label: "Finance" },
   { href: "/admin/coins", label: "Coins" },
   { href: "/admin/rewards", label: "Rewards" },
+  { href: "/admin/prizes", label: "Prizes" },
   { href: "/admin/quiz", label: "Quiz" },
   { href: "/admin/sync", label: "Sync" },
   { href: "/admin/features", label: "Features" },

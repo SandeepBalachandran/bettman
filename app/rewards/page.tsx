@@ -5,6 +5,9 @@ import { getRewardProgress, getUserCoinBalance } from "@/lib/coin-rewards";
 import { RewardUnlockCard } from "@/components/RewardUnlockCard";
 import { ClaimRewardButton } from "@/components/ClaimRewardButton";
 import Link from "next/link";
+import { getPrizeSettings } from "@/lib/prizes";
+import { getActiveCompetition } from "@/lib/competition";
+import { PrizesCard } from "@/components/PrizesCard";
 
 function formatDay(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
@@ -15,6 +18,7 @@ export default async function RewardsPage() {
   await requireFeaturePage("rewardsPage", user.role);
   const progress = await getRewardProgress(user.id);
   const balance = await getUserCoinBalance(user.id);
+  const prizeSettings = await getPrizeSettings();
 
   // Only this campaign's claims — earlier campaigns' days are history.
   const dailyRewards = progress.campaignActive
@@ -35,6 +39,8 @@ export default async function RewardsPage() {
           Claim coins every day and spend them on extra scorer picks and 2x boosters.
         </p>
       </div>
+
+      <PrizesCard settings={prizeSettings} seasonName={getActiveCompetition().name} />
 
       {!progress.campaignActive ? (
         <div className="card space-y-2 border-l-4 border-accent p-4 sm:p-5 md:p-6">

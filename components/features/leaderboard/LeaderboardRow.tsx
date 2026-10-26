@@ -69,6 +69,7 @@ export function LeaderboardRow({
   highlightedMetric = "points",
   winnerTag = null,
   showPoints = true,
+  prizeAmount,
 }: {
   readonly entry: LeaderboardEntry;
   readonly rank: number;
@@ -82,6 +83,8 @@ export function LeaderboardRow({
   readonly winnerTag?: string | null;
   /** Off = hide the points total and the W/S/P points breakdown. */
   readonly showPoints?: boolean;
+  /** ₹ Amazon voucher this player would win if the season ended now. */
+  readonly prizeAmount?: number;
 }) {
   const penalty = entry.scorerPoints < 0 ? entry.scorerPoints : 0;
   const scorerGains = entry.scorerPoints - penalty;
@@ -146,6 +149,11 @@ export function LeaderboardRow({
           {showPoints && penalty < 0 && (
             <span className="rounded-full bg-danger/10 px-1 sm:px-1.5 py-0.5 font-medium text-danger">
               P {penalty}
+            </span>
+          )}
+          {prizeAmount !== undefined && (
+            <span className="rounded-full bg-accent px-1 sm:px-1.5 py-0.5 font-semibold text-accent-foreground" title="Season prize if the season ended now">
+              🎁 ₹{prizeAmount}
             </span>
           )}
           {streak >= 2 && (

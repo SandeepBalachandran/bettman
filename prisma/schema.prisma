@@ -204,6 +204,33 @@ model RewardConfig {
   updatedAt              DateTime @updatedAt
 }
 
+/// End-of-season prizes (Amazon vouchers) for the top 3, one row per competition.
+model PrizeConfig {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  competition    String   @unique
+  enabled        Boolean  @default(true)
+  firstPrize     Int      @default(100) // ₹ voucher value
+  secondPrize    Int      @default(50)
+  thirdPrize     Int      @default(30)
+  /// Players must have predicted at least this many matches to win a prize.
+  minPredictions Int      @default(0)
+  updatedAt      DateTime @updatedAt
+}
+
+/// A season prize marked as sent, with the winner and amount snapshotted at that time.
+model PrizeAward {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  competition String
+  rank        Int
+  userId      String   @db.ObjectId
+  userName    String
+  userEmail   String
+  amount      Int
+  sentAt      DateTime @default(now())
+
+  @@unique([competition, rank])
+}
+
 model CoinTransaction {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   userId      String   @db.ObjectId

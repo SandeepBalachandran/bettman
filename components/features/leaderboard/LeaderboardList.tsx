@@ -14,6 +14,8 @@ export type LeaderboardListProps = {
   tournamentComplete?: boolean;
   /** Off = money is the only score: no points/money switch, ranked by money. */
   showPoints?: boolean;
+  /** userId → ₹ voucher for players currently in a prize place. */
+  prizeByUserId?: Map<string, number>;
 };
 
 type SortBy = "points" | "money";
@@ -26,6 +28,7 @@ export function LeaderboardList({
   streakByUserId,
   tournamentComplete = false,
   showPoints = true,
+  prizeByUserId,
 }: LeaderboardListProps) {
   const [chosenSort, setSortBy] = useState<SortBy>("points");
   const sortBy: SortBy = showPoints ? chosenSort : "money";
@@ -100,6 +103,7 @@ export function LeaderboardList({
               highlightedMetric={sortBy}
               winnerTag={winnerTag}
               showPoints={showPoints}
+              prizeAmount={prizeByUserId?.get(entry.userId)}
             />
           );
         })}
