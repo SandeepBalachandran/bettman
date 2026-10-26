@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
+import { Bebas_Neue, Poppins } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SessionProvider } from "@/app/SessionProvider";
@@ -15,6 +15,13 @@ const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+// Condensed display face for page titles and big scores.
+const bebas = Bebas_Neue({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -34,7 +41,7 @@ export const metadata: Metadata = {
   },
   applicationName: "Bettman",
   // iPhone "Add to Home Screen": open full-screen with the app's name.
-  appleWebApp: { capable: true, title: "Bettman", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Bettman", statusBarStyle: "black-translucent" },
   twitter: {
     card: "summary_large_image",
     title: "Bettman",
@@ -44,7 +51,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d9488",
+  themeColor: "#0b0b0b",
 };
 
 export default function RootLayout({
@@ -56,10 +63,10 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${poppins.variable} h-full antialiased`}
+      className={`${poppins.variable} ${bebas.variable} dark h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col pb-16 sm:pb-0">
-        <ThemeProvider attribute="class" defaultTheme="light">
+      <body className="flex min-h-full flex-col pb-24 sm:pb-0">
+        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
           <SessionProvider>
             <ServiceWorkerRegister />
             <DevelopmentBanner />
@@ -68,7 +75,7 @@ export default function RootLayout({
             <ChatFab />
             <SiteHeader />
             {children}
-            <Toaster richColors position="top-center" />
+            <Toaster richColors theme="dark" position="top-center" />
           </SessionProvider>
         </ThemeProvider>
       </body>

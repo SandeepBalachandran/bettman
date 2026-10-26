@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { PredictionForm } from "@/components/features/predictions/PredictionForm";
-import { TeamFlag } from "@/components/TeamFlag";
+import { TeamBadge } from "@/components/TeamBadge";
 import { MoneyRulesCard } from "@/components/MoneyRulesCard";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
@@ -51,12 +51,20 @@ export default async function PredictPage({
   return (
     <main className="mx-auto max-w-lg space-y-6 p-4 sm:p-6">
       <div className="gradient-header card rounded-2xl border-0 p-5 text-white shadow-xl">
-        <h1 className="flex items-center justify-center gap-2 text-lg font-bold">
-          <TeamFlag flag={match.homeTeam.flag} name={match.homeTeam.name} size={24} />
-          {match.homeTeam.name} vs {match.awayTeam.name}
-          <TeamFlag flag={match.awayTeam.flag} name={match.awayTeam.name} size={24} />
+        <h1 className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <span className="flex flex-col items-center gap-2 text-center">
+            <TeamBadge flag={match.homeTeam.flag} name={match.homeTeam.name} size={72} />
+            <span className="font-display text-2xl leading-tight">{match.homeTeam.name}</span>
+          </span>
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
+            VS
+          </span>
+          <span className="flex flex-col items-center gap-2 text-center">
+            <TeamBadge flag={match.awayTeam.flag} name={match.awayTeam.name} size={72} />
+            <span className="font-display text-2xl leading-tight">{match.awayTeam.name}</span>
+          </span>
         </h1>
-        <p className="mt-1 text-center text-xs text-white/80">
+        <p className="mt-3 text-center text-xs text-white/70">
           Kickoff: <LocalDateTime date={match.kickoffTime.toISOString()} />
         </p>
       </div>

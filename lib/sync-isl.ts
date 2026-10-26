@@ -23,6 +23,12 @@ const { leagueId, season } = ISL.goalApi!;
 // shifted into their own range so the two providers can never collide.
 const GOAL_API_EXTERNAL_ID_OFFSET = 1_000_000_000;
 
+// Logos for teams goal-api has no badge for, keyed by goal-api team id.
+const TEAM_LOGO_FALLBACKS: Record<string, string> = {
+  // SC Delhi (api-football team 26963)
+  cmr7qfta27d0erx06tjwqjilc: "https://media.api-sports.io/football/teams/26963.png",
+};
+
 export function goalApiExternalId(apiId: string): number {
   return GOAL_API_EXTERNAL_ID_OFFSET + Number(apiId);
 }
@@ -82,7 +88,7 @@ export async function importIslSchedule(prisma: PrismaClient): Promise<ImportIsl
       name: team.name,
       shortName: team.name,
       fifaCode: teamCode(team.name),
-      flag: team.badge,
+      flag: team.badge ?? TEAM_LOGO_FALLBACKS[goalApiId] ?? null,
       goalApiId,
     };
     const row = await prisma.team.upsert({

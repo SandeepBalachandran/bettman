@@ -50,7 +50,7 @@ export function ChatFab() {
           setIsOpen(true);
           setUnreadCount(0);
         }}
-        className="fixed bottom-40 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-2xl text-white shadow-lg transition-all hover:bg-secondary/90 hover:shadow-xl"
+        className="fixed bottom-44 sm:bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#262626] ring-1 ring-white/10 text-2xl text-white shadow-lg transition-all hover:bg-secondary/90 hover:shadow-xl"
         title="Chat"
       >
         <span>💬</span>

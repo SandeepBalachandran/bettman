@@ -7,6 +7,7 @@ import { submitPrediction } from "@/actions/prediction";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PlayerCombobox } from "@/components/features/predictions/PlayerCombobox";
 import { TeamFlag } from "@/components/TeamFlag";
+import { TeamBadge } from "@/components/TeamBadge";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import type { MostPickedPlayer } from "@/lib/most-picked-players";
 import { DRAW_PICK } from "@/lib/competition";
@@ -192,9 +193,9 @@ export function PredictionForm({
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{allowDraw ? "Result" : "Winner"}</legend>
         {[
-          { id: homeTeam.id, label: homeTeam.name },
-          ...(allowDraw ? [{ id: DRAW_PICK, label: "Draw" }] : []),
-          { id: awayTeam.id, label: awayTeam.name },
+          { id: homeTeam.id, label: homeTeam.name, team: homeTeam },
+          ...(allowDraw ? [{ id: DRAW_PICK, label: "Draw", team: null }] : []),
+          { id: awayTeam.id, label: awayTeam.name, team: awayTeam },
         ].map((option) => (
           <label
             key={option.id}
@@ -211,7 +212,17 @@ export function PredictionForm({
               checked={winnerTeamId === option.id}
               onChange={() => setWinnerTeamId(option.id)}
             />
-            {option.label}
+            {option.team ? (
+              <TeamBadge flag={option.team.flag} name={option.team.name} size={32} />
+            ) : (
+              <span
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-xs font-bold text-white/70 ring-1 ring-white/10"
+                aria-hidden="true"
+              >
+                =
+              </span>
+            )}
+            <span className="font-medium">{option.label}</span>
           </label>
         ))}
       </fieldset>

@@ -42,10 +42,10 @@ export function FirstMatchCountdown({
   }
 
   return (
-    <div className="card gradient-header border-0 p-4 text-center text-white shadow-xl">
-      <p className="text-xs font-medium tracking-wide text-white/80 uppercase">Next match kicks off in</p>
-      <p className="mt-1 text-2xl font-extrabold tabular-nums">{label}</p>
-      <p className="mt-1 text-xs text-white/90">{matchName}</p>
+    <div className="rounded-[1.75rem] bg-accent p-5 text-center text-accent-foreground">
+      <p className="text-xs font-semibold tracking-wider uppercase">Next match kicks off in</p>
+      <p className="font-display mt-1 text-5xl leading-none tabular-nums">{label}</p>
+      <p className="mt-2 text-sm font-semibold">{matchName}</p>
     </div>
   );
 }

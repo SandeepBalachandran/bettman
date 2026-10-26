@@ -99,7 +99,7 @@ export function QuizFab() {
             console.log("Checkmark clicked - setting showResults to true");
             setShowResults(true);
           }}
-          className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-white text-2xl shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-700 flex items-center justify-center transition-all cursor-pointer active:scale-95"
+          className="fixed bottom-24 sm:bottom-6 right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-white text-2xl shadow-lg hover:shadow-xl hover:from-yellow-500 hover:to-yellow-700 flex items-center justify-center transition-all cursor-pointer active:scale-95"
           title="Click to view today's quiz results"
         >
           <span>✓</span>
@@ -140,7 +140,7 @@ export function QuizFab() {
       `}</style>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-accent hover:bg-accent/90 text-white text-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+        className="fixed bottom-24 sm:bottom-6 right-4 z-40 w-14 h-14 rounded-full bg-accent hover:bg-accent/90 text-white text-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
         title="Daily Quiz"
       >
         <span className="quiz-fab-icon inline-block">⚽</span>

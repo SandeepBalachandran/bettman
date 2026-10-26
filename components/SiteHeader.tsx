@@ -4,6 +4,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { SiteNavLinks } from "@/components/SiteNavLinks";
 import { DailyRewardClaim } from "@/components/DailyRewardClaim";
 import { InstallButton } from "@/components/InstallButton";
+import { BrandLogo } from "@/components/BrandLogo";
 import { getFeatureFlags, effectiveFlags } from "@/lib/feature-flags";
 
 export async function SiteHeader() {
@@ -17,9 +18,9 @@ export async function SiteHeader() {
 
   return (
     <>
-      <header className="gradient-header flex items-center justify-between gap-2 px-4 py-3 text-white shadow-md">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="whitespace-nowrap text-lg font-bold tracking-tight">🏆 Bettman</span>
+      <header className="sticky top-[env(safe-area-inset-top,0px)] z-40 flex items-center justify-between gap-2 border-b border-white/[0.06] bg-background/90 px-4 py-3 text-white backdrop-blur">
+        <div className="flex min-w-0 items-center gap-5">
+          <BrandLogo />
           <SiteNavLinks
             flags={{
               navFixtures: flags.navFixtures,
@@ -32,7 +33,7 @@ export async function SiteHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-          <InstallButton className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/20 p-2 text-xs font-semibold text-white transition hover:bg-white/30 sm:px-3 sm:py-1.5" />
+          <InstallButton className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/[0.08] p-2.5 text-xs font-semibold text-white transition hover:bg-white/15 sm:px-3.5" />
           {flags.dailyRewardClaim && <DailyRewardClaim />}
           <ProfileMenu name={session.user.name ?? "?"} avatarUrl={session.user.avatarUrl} />
         </div>

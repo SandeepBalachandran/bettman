@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { InstallButton } from "@/components/InstallButton";
+import { BrandLogo } from "@/components/BrandLogo";
 import {
   Target,
   Goal,
@@ -85,50 +86,47 @@ export function Landing() {
   return (
     <main className="flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between gap-2 px-4 py-4 sm:px-8">
-        <span className="text-lg font-bold tracking-tight">
-          🏆 <span className="gradient-text">Bettman</span>
-        </span>
+      <header className="sticky top-[env(safe-area-inset-top,0px)] z-40 flex items-center justify-between gap-3 border-b border-white/[0.06] bg-background/90 px-4 py-3 backdrop-blur sm:px-8">
+        <BrandLogo />
         <div className="flex items-center gap-2 sm:gap-3">
-          <InstallButton className="btn btn-outline flex items-center gap-1.5 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm" />
-          <Link
-            href="/login"
-            className="btn btn-outline px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
-          >
+          <InstallButton className="btn btn-outline h-10 w-10 shrink-0 p-0 text-xs sm:w-auto sm:px-4 sm:text-sm" />
+          <Link href="/login" className="btn btn-outline h-10 shrink-0 px-4 text-sm">
             Sign In
           </Link>
-          <Link
-            href="/signup"
-            className="btn btn-primary px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
-          >
+          <Link href="/signup" className="btn btn-primary hidden h-10 px-4 text-sm sm:inline-flex">
             Get Started
           </Link>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="px-4 pt-8 pb-16 sm:px-8 sm:pt-12 sm:pb-24">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-10 md:flex-row md:items-center">
+      <section className="px-5 pt-10 pb-14 sm:px-8 sm:pt-14 sm:pb-24">
+        <div className="mx-auto flex max-w-5xl flex-col items-stretch gap-10 md:flex-row md:items-center">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex-1 text-center md:text-left"
+            className="flex-1"
           >
-            <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl">
-              Predict winners &amp; scorers.{" "}
-              <span className="gradient-text">Climb the leaderboard.</span>{" "}
+            <p className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">
+              Private football prediction league
+            </p>
+            <h1 className="font-display mt-3 text-[3.4rem] leading-[0.95] uppercase sm:text-7xl">
+              Predict results.
+              <br />
+              <span className="text-accent">Climb the board.</span>
+              <br />
               Win bragging rights.
             </h1>
-            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 sm:text-base">
+            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-gray-400 sm:text-base">
               Bettman is a private, invite-only football prediction game for you and your
               friends. Call every winner, name your goal scorers, and see who really knows football.
             </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center md:justify-start">
-              <Link href="/signup" className="btn btn-primary justify-center px-6 py-2.5 text-sm">
+            <div className="mt-7 grid grid-cols-2 gap-3 sm:flex sm:max-w-sm">
+              <Link href="/signup" className="btn btn-primary h-12 flex-1 text-sm">
                 Get Started
               </Link>
-              <Link href="/login" className="btn btn-outline justify-center px-6 py-2.5 text-sm">
+              <Link href="/login" className="btn btn-outline h-12 flex-1 text-sm">
                 Sign In
               </Link>
             </div>
@@ -138,12 +136,10 @@ export function Landing() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="w-full max-w-sm flex-1"
+            className="w-full flex-1 md:max-w-sm"
           >
             <div className="card gradient-header p-4 text-white shadow-2xl">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide opacity-90">
-                Leaderboard
-              </p>
+              <p className="font-display mb-3 text-2xl leading-none">Leaderboard</p>
               <div className="space-y-2">
                 {PREVIEW_ROWS.map((row, i) => (
                   <motion.div
@@ -152,14 +148,14 @@ export function Landing() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 0.3 + i * 0.12 }}
                     className={`flex items-center justify-between rounded-xl px-3 py-2 ${
-                      row.isYou ? "bg-white/25" : "bg-white/10"
+                      row.isYou ? "bg-accent text-accent-foreground" : "bg-white/[0.06]"
                     }`}
                   >
                     <span className="flex items-center gap-2 text-sm font-medium">
                       <span>{row.medal}</span>
                       {row.name}
                     </span>
-                    <span className="text-sm font-extrabold">{row.pts} pts</span>
+                    <span className="font-display text-xl leading-none">{row.pts} pts</span>
                   </motion.div>
                 ))}
               </div>
@@ -169,19 +165,21 @@ export function Landing() {
       </section>
 
       {/* Features */}
-      <section className="px-4 py-16 sm:px-8">
+      <section className="px-5 py-14 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-2xl font-bold sm:text-3xl">
-            Everything you need to talk trash <span className="gradient-text">responsibly</span>
+          <h2 className="font-display text-4xl leading-none uppercase sm:text-center sm:text-5xl">
+            Everything you need to talk trash <span className="text-accent">responsibly</span>
           </h2>
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {FEATURES.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="card card-interactive p-5">
-                <div className="gradient-header mb-3 flex h-10 w-10 items-center justify-center rounded-full text-white">
+              <div key={title} className="card card-interactive flex items-start gap-4 p-4 sm:block sm:p-5">
+                <div className="gradient-header flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white sm:mb-3">
                   <Icon size={20} />
                 </div>
-                <h3 className="text-sm font-semibold">{title}</h3>
-                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">{description}</p>
+                <div>
+                  <h3 className="text-sm font-semibold">{title}</h3>
+                  <p className="mt-1 text-[13px] leading-relaxed text-gray-400">{description}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -189,17 +187,21 @@ export function Landing() {
       </section>
 
       {/* How it works */}
-      <section className="px-4 py-16 sm:px-8">
+      <section className="px-5 py-14 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-2xl font-bold sm:text-3xl">Up and running in 3 steps</h2>
-          <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-3">
+          <h2 className="font-display text-4xl leading-none uppercase sm:text-center sm:text-5xl">
+            Up and running in 3 steps
+          </h2>
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:mt-10 md:grid-cols-3 md:gap-8">
             {STEPS.map((step) => (
-              <div key={step.number} className="text-center">
-                <div className="gradient-header mx-auto flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white">
+              <div key={step.number} className="flex items-start gap-4 md:block md:text-center">
+                <div className="gradient-header font-display flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-2xl text-white md:mx-auto">
                   {step.number}
                 </div>
-                <h3 className="mt-3 text-sm font-semibold">{step.title}</h3>
-                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">{step.description}</p>
+                <div>
+                  <h3 className="text-sm font-semibold md:mt-3">{step.title}</h3>
+                  <p className="mt-1 text-[13px] leading-relaxed text-gray-400">{step.description}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -207,25 +209,20 @@ export function Landing() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="gradient-header px-4 py-14 text-center text-white sm:px-8">
-        <h2 className="text-2xl font-bold sm:text-3xl">Ready to prove you know football?</h2>
-        <p className="mt-2 text-sm opacity-90 sm:text-base">
+      <section className="mx-4 rounded-[2rem] bg-accent px-6 py-12 text-center text-accent-foreground sm:mx-8">
+        <h2 className="font-display text-4xl leading-none uppercase sm:text-5xl">Ready to prove you know football?</h2>
+        <p className="mt-3 text-sm font-medium sm:text-base">
           Join Bettman and put your predictions on the board.
         </p>
-        <Link
-          href="/signup"
-          className="btn mt-6 inline-flex bg-white px-6 py-2.5 text-sm font-semibold text-gray-900 hover:bg-gray-100"
-        >
+        <Link href="/signup" className="btn mt-6 inline-flex h-12 bg-black px-8 text-sm font-semibold text-white hover:bg-black/85">
           Get Started
         </Link>
       </section>
 
       {/* Footer */}
-      <footer className="px-4 py-8 text-center sm:px-8">
-        <p className="text-sm font-bold">
-          🏆 <span className="gradient-text">Bettman</span>
-        </p>
-        <p className="mt-1 text-xs text-gray-500">
+      <footer className="flex flex-col items-center gap-2 px-4 py-10 text-center sm:px-8">
+        <BrandLogo size="sm" />
+        <p className="text-xs text-gray-500">
           A private football prediction league. &copy; {new Date().getFullYear()}
         </p>
       </footer>

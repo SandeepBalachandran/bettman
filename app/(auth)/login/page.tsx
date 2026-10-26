@@ -26,7 +26,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="gradient-header flex min-h-screen items-center justify-center p-4">
+    <main className="flex min-h-screen items-center justify-center bg-background p-4">
       <form
         action={handleSubmit}
         className="card w-full max-w-sm space-y-4 p-6 shadow-2xl"

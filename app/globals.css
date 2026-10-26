@@ -3,35 +3,40 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --accent: #0d9488;
-  --accent-foreground: #ffffff;
-  --secondary: #7c3aed;
-  --secondary-foreground: #ffffff;
-  --highlight: #f59e0b;
-  --highlight-foreground: #422006;
-  --success: #16a34a;
-  --success-foreground: #ffffff;
-  --danger: #dc2626;
-  --danger-foreground: #ffffff;
-  --header-gradient: linear-gradient(135deg, #0d9488 0%, #7c3aed 100%);
+  /* Dark-only "dark + lime" theme. The .dark block mirrors :root so markup
+     written with dark: variants and markup without them both land dark. */
+  --background: #0b0b0b;
+  --foreground: #f2f2f2;
+  --surface: #161616;
+  --surface-2: #1f1f1f;
+  --accent: #c6ff00;
+  --accent-foreground: #0b0b0b;
+  --secondary: #b8b8b8;
+  --secondary-foreground: #0b0b0b;
+  --highlight: #ffd23f;
+  --highlight-foreground: #2b2100;
+  --success: #4ade80;
+  --success-foreground: #052e16;
+  --danger: #ff6b6b;
+  --danger-foreground: #2b0606;
+  --header-gradient: #0b0b0b;
+  color-scheme: dark;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --accent: #2dd4bf;
-  --accent-foreground: #042f2e;
-  --secondary: #a78bfa;
-  --secondary-foreground: #2e1065;
-  --highlight: #fbbf24;
-  --highlight-foreground: #422006;
+  --background: #0b0b0b;
+  --foreground: #f2f2f2;
+  --accent: #c6ff00;
+  --accent-foreground: #0b0b0b;
+  --secondary: #b8b8b8;
+  --secondary-foreground: #0b0b0b;
+  --highlight: #ffd23f;
+  --highlight-foreground: #2b2100;
   --success: #4ade80;
   --success-foreground: #052e16;
-  --danger: #f87171;
-  --danger-foreground: #450a0a;
-  --header-gradient: linear-gradient(135deg, #0f766e 0%, #6d28d9 100%);
+  --danger: #ff6b6b;
+  --danger-foreground: #2b0606;
+  --header-gradient: #0b0b0b;
 }
 
 @theme inline {
@@ -47,7 +52,9 @@
   --color-success-foreground: var(--success-foreground);
   --color-danger: var(--danger);
   --color-danger-foreground: var(--danger-foreground);
+  --color-warning: var(--highlight);
   --font-sans: var(--font-poppins);
+  --font-display: var(--font-display);
 }
 
 body {
@@ -56,29 +63,41 @@ body {
   font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
 }
 
-.gradient-header {
-  background: var(--header-gradient);
+/* Lime fills (buttons, chips, bubbles) take dark text. Hero cards marked
+   .gradient-header.card stay on the dark surface with white text. */
+.gradient-header:not(.card).text-white,
+.gradient-header:not(.card) .text-white {
+  color: var(--accent-foreground);
 }
 
 .gradient-text {
-  background: var(--header-gradient);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--foreground);
+  font-family: var(--font-display), var(--font-poppins), sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-poppins), sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
 @keyframes pulse-border {
   0%,
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--highlight) 55%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 5px color-mix(in srgb, var(--highlight) 0%, transparent);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 0%, transparent);
   }
 }
 
 .animate-pulse-border {
-  border-color: var(--highlight) !important;
+  border-color: var(--accent) !important;
   animation: pulse-border 2s ease-in-out infinite;
 }
 
@@ -102,235 +121,271 @@ body {
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
-/* ---------------------------------------------------------------------- */
-/* Design system: curvy cards, soft shadows, unified buttons + tables     */
-/* ---------------------------------------------------------------------- */
-
-.card {
-  border-radius: 1.25rem;
-  background: #ffffff;
-  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 10px 26px -14px rgba(0, 0, 0, 0.2);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-/* .card's white background would otherwise win the cascade over
-   .gradient-header (both are same-specificity classes; .card is declared
-   later), hiding white title text on a white box in light mode. */
-.gradient-header.card {
-  background: var(--header-gradient);
-  border-color: transparent;
-}
-
-.card-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.06),
-    0 18px 34px -16px rgba(0, 0, 0, 0.28);
-}
-
-.dark .card {
-  background: color-mix(in srgb, #ffffff 5%, transparent);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.45),
-    0 12px 30px -16px rgba(0, 0, 0, 0.7);
-}
-
-/* .card's translucent dark background is intentional for content sitting in
-   normal page flow, but it reads as "broken/see-through" for a floating menu
-   or dropdown overlaid on top of other content — those need a solid backing. */
-.popover {
-  border-radius: 1.25rem;
-  background: var(--background);
-  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 10px 26px -14px rgba(0, 0, 0, 0.2);
-}
-
-.dark .popover {
-  background: #1c1c1e;
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.45),
-    0 12px 30px -16px rgba(0, 0, 0, 0.7);
-}
-
-.table-card {
-  border-radius: 1.25rem;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 12px 28px -16px rgba(0, 0, 0, 0.2);
-}
-
-.dark .table-card {
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.45),
-    0 14px 32px -16px rgba(0, 0, 0, 0.7);
-}
-
-.table-card table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.table-card thead th {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--foreground) 65%, transparent);
-}
-
-.table-card tbody tr {
-  transition: background-color 0.15s ease;
-}
-
-.table-card tbody tr:hover {
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
-}
-
-.table-card tbody tr:not(:last-child) td {
-  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
-}
-
-/* Stacks each row into its own rounded card below the sm breakpoint */
-@media (max-width: 640px) {
-  .responsive-table thead {
-    display: none;
+/* Component classes live in the components layer so Tailwind utilities on the
+   same element (hidden, px-*, rounded-*, border-0…) override them. */
+@layer components {
+  .gradient-header {
+    background: var(--accent);
   }
-  .responsive-table,
-  .responsive-table tbody,
-  .responsive-table tr,
-  .responsive-table td {
-    display: block;
-    width: 100%;
-  }
-  /* Overrides any Tailwind min-w-* utility on the <table> itself — without
-     this, tables set up with a wide min-width for desktop scrolling still
-     force horizontal overflow here even though rows are stacked to blocks. */
-  .responsive-table {
-    min-width: 0 !important;
-  }
-  .table-card:has(.responsive-table) {
-    overflow-x: hidden;
-  }
-  .responsive-table tbody tr {
-    margin: 0.75rem;
-    border-radius: 1rem;
+
+  /* ---------------------------------------------------------------------- */
+  /* Design system: curvy cards, soft shadows, unified buttons + tables     */
+  /* ---------------------------------------------------------------------- */
+
+  .card {
+    border-radius: 1.5rem;
+    background: var(--surface);
     border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
-    box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.25);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 10px 26px -14px rgba(0, 0, 0, 0.2);
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
   }
-  .dark .responsive-table tbody tr {
+
+  /* .card's white background would otherwise win the cascade over
+     .gradient-header (both are same-specificity classes; .card is declared
+     later), hiding white title text on a white box in light mode. */
+  .gradient-header.card {
+    background: var(--surface);
     border-color: rgba(255, 255, 255, 0.08);
   }
-  .responsive-table tbody tr:hover {
-    background: transparent;
+
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.06),
+      0 18px 34px -16px rgba(0, 0, 0, 0.28);
   }
-  .responsive-table td {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.5rem 0.85rem !important;
-    text-align: right;
-    border-bottom: none !important;
+
+  .dark .card {
+    background: var(--surface);
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.45),
+      0 12px 30px -16px rgba(0, 0, 0, 0.7);
   }
-  .responsive-table tbody tr td:not(:last-child) {
-    border-bottom: 1px dashed color-mix(in srgb, var(--foreground) 10%, transparent) !important;
+
+  /* .card's translucent dark background is intentional for content sitting in
+     normal page flow, but it reads as "broken/see-through" for a floating menu
+     or dropdown overlaid on top of other content — those need a solid backing. */
+  .popover {
+    border-radius: 1.25rem;
+    background: var(--background);
+    border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 10px 26px -14px rgba(0, 0, 0, 0.2);
   }
-  .responsive-table td::before {
-    content: attr(data-label);
+
+  .dark .popover {
+    background: var(--surface-2);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.45),
+      0 12px 30px -16px rgba(0, 0, 0, 0.7);
+  }
+
+  .table-card {
+    border-radius: 1.25rem;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 12px 28px -16px rgba(0, 0, 0, 0.2);
+  }
+
+  .dark .table-card {
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.45),
+      0 14px 32px -16px rgba(0, 0, 0, 0.7);
+  }
+
+  .table-card table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .table-card thead th {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
     font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--foreground) 55%, transparent);
-    text-align: left;
+    color: color-mix(in srgb, var(--foreground) 65%, transparent);
+  }
+
+  .table-card tbody tr {
+    transition: background-color 0.15s ease;
+  }
+
+  .table-card tbody tr:hover {
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+  }
+
+  .table-card tbody tr:not(:last-child) td {
+    border-bottom: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  }
+
+  /* Stacks each row into its own rounded card below the sm breakpoint */
+  @media (max-width: 640px) {
+    .responsive-table thead {
+      display: none;
+    }
+    .responsive-table,
+    .responsive-table tbody,
+    .responsive-table tr,
+    .responsive-table td {
+      display: block;
+      width: 100%;
+    }
+    /* Overrides any Tailwind min-w-* utility on the <table> itself — without
+       this, tables set up with a wide min-width for desktop scrolling still
+       force horizontal overflow here even though rows are stacked to blocks. */
+    .responsive-table {
+      min-width: 0 !important;
+    }
+    .table-card:has(.responsive-table) {
+      overflow-x: hidden;
+    }
+    .responsive-table tbody tr {
+      margin: 0.75rem;
+      border-radius: 1rem;
+      border: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+      box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.25);
+    }
+    .dark .responsive-table tbody tr {
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .responsive-table tbody tr:hover {
+      background: transparent;
+    }
+    .responsive-table td {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.5rem 0.85rem !important;
+      text-align: right;
+      border-bottom: none !important;
+    }
+    .responsive-table tbody tr td:not(:last-child) {
+      border-bottom: 1px dashed color-mix(in srgb, var(--foreground) 10%, transparent) !important;
+    }
+    .responsive-table td::before {
+      content: attr(data-label);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: color-mix(in srgb, var(--foreground) 55%, transparent);
+      text-align: left;
+    }
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    border-radius: 9999px;
+    padding: 0.55rem 1.1rem;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease,
+      filter 0.15s ease,
+      background-color 0.15s ease;
+    box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.18);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .btn-outline {
+    border: 1px solid color-mix(in srgb, var(--foreground) 18%, transparent);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.06);
+    box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+
+  .btn-danger {
+    border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+    background: color-mix(in srgb, var(--danger) 10%, transparent);
+    color: var(--danger);
+    box-shadow: none;
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--danger) 20%, transparent);
+  }
+
+  .input-pill {
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
+    background: color-mix(in srgb, var(--foreground) 3%, transparent);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .input-pill:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
   }
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  border-radius: 9999px;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    filter 0.15s ease,
-    background-color 0.15s ease;
-  box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.18);
-}
 
-.btn:active:not(:disabled) {
-  transform: scale(0.96);
-}
+/* ---------------------------------------------------------------------- */
+/* Dark-only remaps for light colour utilities that were written without   */
+/* a dark: counterpart. Unlayered, so they win over Tailwind's utilities.  */
+/* ---------------------------------------------------------------------- */
+.bg-white { background-color: var(--surface); }
+.bg-gray-50, .bg-gray-100 { background-color: var(--surface-2); }
+.bg-gray-200 { background-color: #2a2a2a; }
+.text-gray-900, .text-gray-800 { color: #f2f2f2; }
+.text-gray-700 { color: #dcdcdc; }
+.text-gray-600 { color: #b8b8b8; }
+.text-gray-500 { color: #a3a3a3; }
+.border-gray-200, .border-gray-300 { border-color: rgba(255, 255, 255, 0.1); }
+.hover\:bg-gray-50:hover, .hover\:bg-gray-100:hover { background-color: #262626; }
+.bg-green-50, .bg-green-100 { background-color: color-mix(in srgb, var(--success) 12%, transparent); }
+.bg-yellow-50, .bg-yellow-100, .bg-orange-50, .bg-orange-100 { background-color: color-mix(in srgb, var(--highlight) 12%, transparent); }
+.bg-red-50, .bg-red-100 { background-color: color-mix(in srgb, var(--danger) 12%, transparent); }
+.bg-blue-50, .bg-blue-100 { background-color: color-mix(in srgb, #60a5fa 12%, transparent); }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.btn-outline {
-  border: 1px solid color-mix(in srgb, var(--foreground) 18%, transparent);
-  background: transparent;
-  box-shadow: none;
-}
-
-.btn-outline:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-}
-
-.btn-primary {
-  background: var(--accent);
+/* Bright solid fills always take dark text — white on lime is unreadable. */
+.bg-accent.text-white,
+.bg-success.text-white,
+.bg-highlight.text-white,
+.bg-accent .text-white {
   color: var(--accent-foreground);
-}
-
-.btn-primary:hover:not(:disabled) {
-  filter: brightness(1.06);
-  box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--accent) 55%, transparent);
-}
-
-.btn-danger {
-  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
-  color: var(--danger);
-  box-shadow: none;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--danger) 20%, transparent);
-}
-
-.input-pill {
-  border-radius: 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
-  background: color-mix(in srgb, var(--foreground) 3%, transparent);
-  padding: 0.4rem 0.75rem;
-  font-size: 0.8rem;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.input-pill:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }

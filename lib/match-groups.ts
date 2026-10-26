@@ -11,13 +11,13 @@ const ROUND_LABELS: Record<Round, string> = {
 };
 
 const ROUND_BADGE_STYLES: Record<Round, string> = {
-  GROUP_STAGE: "bg-primary/15 text-primary",
-  REGULAR_SEASON: "bg-primary/15 text-primary",
+  GROUP_STAGE: "bg-accent/15 text-accent",
+  REGULAR_SEASON: "bg-accent/15 text-accent",
   ROUND_OF_16: "bg-accent/15 text-accent",
-  QUARTER_FINALS: "bg-secondary/15 text-secondary",
-  SEMI_FINALS: "bg-highlight/20 text-highlight-foreground dark:text-highlight",
-  THIRD_PLACE: "bg-warning/15 text-warning",
-  FINAL: "bg-danger/15 text-danger",
+  QUARTER_FINALS: "bg-accent/15 text-accent",
+  SEMI_FINALS: "bg-accent/15 text-accent",
+  THIRD_PLACE: "bg-white/10 text-white",
+  FINAL: "bg-accent text-accent-foreground",
 };
 
 export type MatchGroupFields = { round: Round; matchweek: number | null; kickoffTime: Date };

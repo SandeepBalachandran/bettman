@@ -24,10 +24,10 @@ export function SiteNavLinks({
   const pathname = usePathname();
 
   const linkClass = (href: string) =>
-    `rounded-full px-3 py-1 transition ${
+    `rounded-full px-3.5 py-1.5 transition ${
       isActive(pathname, href)
-        ? "bg-white/25 font-semibold shadow-inner"
-        : "hover:bg-white/20"
+        ? "bg-accent font-semibold text-accent-foreground"
+        : "text-white/70 hover:bg-white/10 hover:text-white"
     }`;
 
   return (
@@ -57,8 +57,8 @@ export function SiteNavLinks({
           href="/admin"
           className={`rounded-full px-3 py-1 font-semibold transition ${
             isActive(pathname, "/admin")
-              ? "bg-white text-highlight shadow-inner"
-              : "bg-highlight text-highlight-foreground hover:brightness-105"
+              ? "bg-accent text-accent-foreground"
+              : "bg-white/[0.08] text-white hover:bg-white/15"
           }`}
         >
           Admin
