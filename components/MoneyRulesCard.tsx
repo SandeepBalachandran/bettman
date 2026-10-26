@@ -37,7 +37,7 @@ export function MoneyRulesCard({
         </li>
       </ul>
       <p className="mt-3 text-xs text-muted-foreground">
-        Pick at least 2 goal scorers per match — a 3rd and 4th can be unlocked with coins. Each
+        Pick at least 2 goal scorers per match (optional if you pick a draw) — a 3rd and 4th can be unlocked with coins. Each
         pick is scored on its own, once per goal they score. E.g. 2 correct + 1 wrong ={" "}
         {formatMoney(2 * moneyConfig.moneyPerCorrectScorer + moneyConfig.moneyPerIncorrectScorer)}
         , not one combined amount.

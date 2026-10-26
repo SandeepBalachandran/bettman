@@ -14,7 +14,6 @@ const predictionSchema = z.object({
   winnerTeamId: z.string().min(1),
   scorerPlayerIds: z
     .array(z.string().min(1))
-    .min(2, "Pick at least 2 goal scorers.")
     .max(4, "Pick at most 4 goal scorers."),
 });
 
@@ -55,6 +54,11 @@ export async function submitPrediction(input: PredictionInput) {
     throw new Error("Winner pick must be one of the two teams in this match.");
   }
   const winnerTeamId = predictedDraw ? null : data.winnerTeamId;
+
+  // Scorers are optional on a draw pick; a win pick needs at least 2.
+  if (!predictedDraw && data.scorerPlayerIds.length < 2) {
+    throw new Error("Pick at least 2 goal scorers.");
+  }
 
   const validPlayers = await prisma.player.findMany({
     where: {
@@ -101,12 +105,14 @@ export async function submitPrediction(input: PredictionInput) {
       where: { predictionId: upserted.id },
     });
 
-    await tx.predictionScorer.createMany({
-      data: data.scorerPlayerIds.map((playerId) => ({
-        predictionId: upserted.id,
-        playerId,
-      })),
-    });
+    if (data.scorerPlayerIds.length > 0) {
+      await tx.predictionScorer.createMany({
+        data: data.scorerPlayerIds.map((playerId) => ({
+          predictionId: upserted.id,
+          playerId,
+        })),
+      });
+    }
 
     return upserted;
   });

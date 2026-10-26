@@ -68,6 +68,8 @@ export function PredictionForm({
   const [costFor4thScorer, setCostFor4thScorer] = useState(150);
 
   const scorerCount = scorers.filter(Boolean).length;
+  // A draw pick doesn't need scorers (0–0 is a draw too); a win pick needs at least 2.
+  const minScorers = winnerTeamId === DRAW_PICK ? 0 : 2;
   const maxScorerIndex = 3; // Allow up to 4 scorers
 
   // Fetch dynamic scorer costs from config
@@ -121,7 +123,7 @@ export function PredictionForm({
     }
 
     const scorerPlayerIds = scorers.filter(Boolean);
-    if (scorerPlayerIds.length < 2) {
+    if (scorerPlayerIds.length < minScorers) {
       setError("Please pick at least 2 goal scorers.");
       return;
     }
@@ -230,7 +232,7 @@ export function PredictionForm({
       <fieldset className="space-y-2">
         <div className="flex items-center justify-between">
           <legend className="text-sm font-medium">
-            Goal scorers (pick at least 2, up to 4)
+            {minScorers === 0 ? "Goal scorers (optional, up to 4)" : "Goal scorers (pick at least 2, up to 4)"}
           </legend>
           <div className="text-xs text-gray-600 dark:text-gray-400">
             {predictedCost > 0 && (
@@ -273,7 +275,7 @@ export function PredictionForm({
         disabled={
           isPending ||
           !winnerTeamId ||
-          scorers.filter(Boolean).length < 2 ||
+          scorerCount < minScorers ||
           scorers.filter(Boolean).length > maxScorerIndex + 1 ||
           !hasEnoughCoins
         }
