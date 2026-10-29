@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { announceDailyRewardClaimed } from "@/lib/daily-reward-events";
 
 interface DailyCoinsModalProps {
   isOpen: boolean;
@@ -47,8 +48,17 @@ export function DailyCoinsModal({
         throw new Error(data.error || "Failed to claim reward");
       }
 
-      toast.success(`🎉 Collected ${coinsAmount} coins!`);
-      onCollected();
+      const result = await response.json();
+      if (result.success) {
+        toast.success(`🎉 Collected ${result.awarded} coins!`);
+        announceDailyRewardClaimed(result.awarded);
+        onCollected();
+      } else if (result.reason === "already_claimed") {
+        toast.info("Already claimed today's reward");
+        announceDailyRewardClaimed(0);
+      } else {
+        toast.error("Could not claim reward");
+      }
       onClose();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to collect coins";

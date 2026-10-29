@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { DAILY_REWARD_CLAIMED_EVENT, type DailyRewardClaimedDetail } from "@/lib/daily-reward-events";
 
 interface RewardProgress {
   campaignActive: boolean;
@@ -36,6 +37,19 @@ export function DailyRewardClaim() {
     loadProgress();
   }, []);
 
+  // Claimed somewhere else (the daily coins popup or the rewards page): hide the
+  // Claim button and add the coins instead of offering a claim that would fail.
+  useEffect(() => {
+    function handleClaimed(event: Event) {
+      const { awarded } = (event as CustomEvent<DailyRewardClaimedDetail>).detail;
+      setProgress((prev) =>
+        prev && !prev.claimed ? { ...prev, claimed: true, coinBalance: prev.coinBalance + awarded } : prev
+      );
+    }
+    window.addEventListener(DAILY_REWARD_CLAIMED_EVENT, handleClaimed);
+    return () => window.removeEventListener(DAILY_REWARD_CLAIMED_EVENT, handleClaimed);
+  }, []);
+
   async function handleClaimReward() {
     if (!progress || progress.claimed || claiming) return;
 
@@ -64,7 +78,8 @@ export function DailyRewardClaim() {
             : null
         );
       } else if (data.reason === "already_claimed") {
-        toast.info("Already claimed today's reward");
+        // Claimed in another tab or device: just hide the button.
+        setProgress((prev) => (prev ? { ...prev, claimed: true } : null));
       } else {
         toast.error("Failed to claim reward");
       }

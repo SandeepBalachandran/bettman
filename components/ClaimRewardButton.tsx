@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { RewardSuccessModal } from "./RewardSuccessModal";
+import { announceDailyRewardClaimed } from "@/lib/daily-reward-events";
 
 interface ClaimRewardButtonProps {
   alreadyClaimed: boolean;
@@ -37,6 +38,8 @@ export function ClaimRewardButton({
       if (!result.success) {
         if (result.reason === "already_claimed") {
           toast.info("You've already claimed today's reward");
+          announceDailyRewardClaimed(0);
+          router.refresh();
         } else if (result.reason === "campaign_not_active") {
           toast.info("Campaign is not active");
         } else {
@@ -44,6 +47,7 @@ export function ClaimRewardButton({
         }
       } else {
         setShowSuccess(true);
+        announceDailyRewardClaimed(result.awarded);
         onClaimed?.();
         // Server-rendered balance, history and claim state need re-fetching.
         router.refresh();
