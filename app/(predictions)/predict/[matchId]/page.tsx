@@ -6,7 +6,7 @@ import { TeamBadge } from "@/components/TeamBadge";
 import { MoneyRulesCard } from "@/components/MoneyRulesCard";
 import { LocalDateTime } from "@/components/LocalDateTime";
 import { isMatchLocked, AUTO_LOCK_MINUTES_BEFORE_KICKOFF } from "@/lib/match-lock";
-import { getUserCoinBalance } from "@/lib/coin-rewards";
+import { getScorerCoinsPaid, getUserCoinBalance } from "@/lib/coin-rewards";
 import { getMostPickedPlayers } from "@/lib/most-picked-players";
 import { refreshActiveCompetitionResults } from "@/lib/refresh-results";
 import { COMPETITIONS, DRAW_PICK, getActiveCompetition, type CompetitionCode } from "@/lib/competition";
@@ -46,6 +46,7 @@ export default async function PredictPage({
   const existingPrediction = match.predictions.find((p) => p.userId === user.id) ?? null;
 
   const coinBalance = await getUserCoinBalance(user.id);
+  const scorerCoinsPaid = await getScorerCoinsPaid(user.id, matchId);
   const mostPickedPlayers = await getMostPickedPlayers(matchId, 5);
 
   return (
@@ -192,6 +193,7 @@ export default async function PredictPage({
             allowDraw={allowDraw}
             initialScorerPlayerIds={existingPrediction?.scorers.map((s) => s.playerId) ?? []}
             coinBalance={coinBalance}
+            scorerCoinsPaid={scorerCoinsPaid}
             mostPickedPlayers={mostPickedPlayers}
           />
         </>

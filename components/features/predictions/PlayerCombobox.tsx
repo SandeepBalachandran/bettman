@@ -43,7 +43,7 @@ export function PlayerCombobox({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="input-pill flex w-full items-center gap-2 text-left"
+        className={`input-pill flex w-full items-center gap-2 text-left ${selected ? "pr-12" : ""}`}
       >
         {selected ? (
           <>
@@ -63,6 +63,16 @@ export function PlayerCombobox({
           <span className="text-gray-400">{placeholder}</span>
         )}
       </button>
+      {selected && (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          aria-label={`Remove ${selected.name}`}
+          className="absolute inset-y-0 right-1 flex w-10 items-center justify-center rounded-full text-lg leading-none text-gray-400 hover:text-danger"
+        >
+          ✕
+        </button>
+      )}
 
       {open && (
         <>

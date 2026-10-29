@@ -34,6 +34,7 @@ export function PredictionForm({
   initialScorerPlayerIds,
   allowDraw = false,
   coinBalance = 0,
+  scorerCoinsPaid = 0,
   mostPickedPlayers = [],
 }: {
   readonly matchId: string;
@@ -45,6 +46,8 @@ export function PredictionForm({
   /** League matches can end level, so offer a Draw pick between the two teams. */
   readonly allowDraw?: boolean;
   readonly coinBalance?: number;
+  /** Coins already paid for extra scorers on this match; only the difference is charged or refunded. */
+  readonly scorerCoinsPaid?: number;
   readonly mostPickedPlayers?: MostPickedPlayer[];
 }) {
   const router = useRouter();
@@ -88,14 +91,16 @@ export function PredictionForm({
     };
     fetchCosts();
   }, []);
-  let predictedCost = 0;
+  let scorerCost = 0;
   if (scorerCount === 3) {
-    predictedCost = costFor3rdScorer;
+    scorerCost = costFor3rdScorer;
   } else if (scorerCount === 4) {
-    predictedCost = costFor4thScorer;
+    scorerCost = costFor4thScorer;
   }
+  // Positive: coins still to pay. Negative: coins refunded for removed scorers.
+  const coinsDue = scorerCost - scorerCoinsPaid;
 
-  const hasEnoughCoins = coinBalance >= predictedCost;
+  const hasEnoughCoins = coinBalance >= coinsDue;
 
   // Sort alphabetically within each team, but keep the two teams as separate
   // blocks (home team's roster, then away team's) rather than interleaving them.
@@ -109,7 +114,10 @@ export function PredictionForm({
     setScorers((prev) => {
       const next = [...prev];
       next[index] = playerId;
-      return next;
+      // Keep picks in the first slots so a removed scorer leaves no gap and the
+      // 3rd/4th slot labels (which carry the coin cost) match the pick count.
+      const picked = next.filter(Boolean);
+      return [...picked, ...Array(next.length - picked.length).fill("")];
     });
   }
 
@@ -137,12 +145,8 @@ export function PredictionForm({
     }
 
     // Check coin balance for premium scorers
-    if (scorerPlayerIds.length === 3 && coinBalance < costFor3rdScorer) {
-      setError(`Using 3 scorers costs ${costFor3rdScorer} coins. You have ${coinBalance}.`);
-      return;
-    }
-    if (scorerPlayerIds.length === 4 && coinBalance < costFor4thScorer) {
-      setError(`Using 4 scorers costs ${costFor4thScorer} coins. You have ${coinBalance}.`);
+    if (!hasEnoughCoins) {
+      setError(`Using ${scorerPlayerIds.length} scorers costs ${coinsDue} more coins. You have ${coinBalance}.`);
       return;
     }
 
@@ -235,11 +239,12 @@ export function PredictionForm({
             {minScorers === 0 ? "Goal scorers (optional, up to 4)" : "Goal scorers (pick at least 2, up to 4)"}
           </legend>
           <div className="text-xs text-gray-600 dark:text-gray-400">
-            {predictedCost > 0 && (
+            {coinsDue > 0 && (
               <span className={hasEnoughCoins ? "text-success" : "text-danger"}>
-                💰 {predictedCost} coins
+                💰 {coinsDue} coins
               </span>
             )}
+            {coinsDue < 0 && <span className="text-success">↩ {-coinsDue} coins back</span>}
           </div>
         </div>
 
@@ -262,6 +267,13 @@ export function PredictionForm({
             />
           );
         })}
+
+        {winnerTeamId && scorerCount < minScorers && (
+          <p className="text-xs text-gray-500">
+            Pick {minScorers - scorerCount} more scorer{minScorers - scorerCount === 1 ? "" : "s"} to save a win
+            prediction.
+          </p>
+        )}
       </fieldset>
 
       {error && (
@@ -283,8 +295,8 @@ export function PredictionForm({
       >
         {isPending ? (
           "Saving..."
-        ) : predictedCost > 0 ? (
-          `${initialWinnerTeamId ? "Update" : "Save"} prediction (${predictedCost} 💰)`
+        ) : coinsDue > 0 ? (
+          `${initialWinnerTeamId ? "Update" : "Save"} prediction (${coinsDue} 💰)`
         ) : (
           initialWinnerTeamId ? "Update prediction" : "Save prediction"
         )}

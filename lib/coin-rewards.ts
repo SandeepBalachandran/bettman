@@ -245,6 +245,60 @@ export async function spendCoins(
   return true;
 }
 
+export async function refundCoins(
+  userId: string,
+  amount: number,
+  reason: string,
+  relatedId?: string
+): Promise<void> {
+  const coinBalance = await prisma.coinBalance.findUnique({
+    where: { userId },
+  });
+  const balanceBefore = coinBalance?.balance ?? 0;
+
+  await Promise.all([
+    prisma.coinBalance.upsert({
+      where: { userId },
+      update: { balance: { increment: amount } },
+      create: { userId, balance: amount },
+    }),
+    prisma.coinTransaction.create({
+      data: {
+        userId,
+        type: "award",
+        reason,
+        amount,
+        balanceBefore,
+        balanceAfter: balanceBefore + amount,
+        relatedId,
+      },
+    }),
+  ]);
+}
+
+/**
+ * Coins the user has paid so far for extra scorer picks on a match, net of
+ * refunds for scorers they later removed.
+ */
+export async function getScorerCoinsPaid(userId: string, matchId: string): Promise<number> {
+  const transactions = await prisma.coinTransaction.findMany({
+    where: {
+      userId,
+      relatedId: matchId,
+      reason: { in: ["3rd_scorer", "4th_scorer", "scorer_refund"] },
+    },
+    select: { type: true, amount: true },
+  });
+  return transactions.reduce((sum, t) => sum + (t.type === "spend" ? t.amount : -t.amount), 0);
+}
+
+/** Total cost of a prediction with this many scorers (the 3rd and 4th cost coins). */
+export async function getScorerCost(scorerCount: number): Promise<number> {
+  if (scorerCount === 3) return getUnlockCost(3);
+  if (scorerCount === 4) return getUnlockCost(4);
+  return 0;
+}
+
 export async function canUnlockScorer(balance: number, scorerPosition: 3 | 4): Promise<boolean> {
   const tiers = await getUnlockTiers();
   if (scorerPosition === 3) {

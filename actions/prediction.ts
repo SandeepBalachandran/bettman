@@ -5,7 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/authz";
 import { isMatchLocked } from "@/lib/match-lock";
-import { spendCoins, getUnlockCost } from "@/lib/coin-rewards";
+import { spendCoins, refundCoins, getScorerCoinsPaid, getScorerCost } from "@/lib/coin-rewards";
 import { COMPETITIONS, DRAW_PICK, getActiveCompetition, type CompetitionCode } from "@/lib/competition";
 
 const predictionSchema = z.object({
@@ -72,21 +72,19 @@ export async function submitPrediction(input: PredictionInput) {
     throw new Error("Scorer picks must belong to one of the two teams in this match.");
   }
 
-  // Calculate coin cost based on number of scorers
-  let coinCost = 0;
-  if (data.scorerPlayerIds.length === 3) {
-    coinCost = await getUnlockCost(3);
-  } else if (data.scorerPlayerIds.length === 4) {
-    coinCost = await getUnlockCost(4);
-  }
+  // Extra scorers are paid for once per match: charge only the difference from
+  // what was already paid, and refund it when scorers are removed.
+  const coinCost = await getScorerCost(data.scorerPlayerIds.length);
+  const coinsDue = coinCost - (await getScorerCoinsPaid(user.id, data.matchId));
 
-  // Check and spend coins if needed
-  if (coinCost > 0) {
+  if (coinsDue > 0) {
     const reason = data.scorerPlayerIds.length === 3 ? "3rd_scorer" : "4th_scorer";
-    const spent = await spendCoins(user.id, coinCost, reason, data.matchId);
+    const spent = await spendCoins(user.id, coinsDue, reason, data.matchId);
     if (!spent) {
-      throw new Error(`Insufficient coins. Using ${data.scorerPlayerIds.length} scorers costs ${coinCost} coins.`);
+      throw new Error(`Insufficient coins. Using ${data.scorerPlayerIds.length} scorers costs ${coinsDue} more coins.`);
     }
+  } else if (coinsDue < 0) {
+    await refundCoins(user.id, -coinsDue, "scorer_refund", data.matchId);
   }
 
   const prediction = await prisma.$transaction(async (tx) => {
